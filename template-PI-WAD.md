@@ -2,9 +2,9 @@
 
 **_Os trechos em itálico servem apenas como guia para o preenchimento da seção. Por esse motivo, não devem fazer parte da documentação final._**
 
-## Nome do Projeto
+## Pcr Labor
 
-#### Autor do projeto
+#### Cauã Pirilo Asquino
 
 ## Sumário
 
@@ -18,8 +18,7 @@
 
 ## <a name="c1"></a>1. Introdução (Semana 01)
 
-*Preencha com até 300 palavras – sem necessidade de fonte.*
-*Descreva brevemente o sistema que você irá desenvolver.*
+*O projeto consiste no desenvolvimento de uma aplicação web para a empresa PCR Labor, com o objetivo de melhorar a integração entre plataformas de e-commerce (como Mercado Livre e Shopee). A aplicação vai consolidar informações de vendas, sugerir quantidades ideais de compra de produtos e fornecer relatórios de desempenho para facilitar o gerenciamento do estoque e a tomada de decisões comerciais.*
 
 ---
 
@@ -27,11 +26,46 @@
 
 ### 2.1. Personas (Semana 01)
 
-*Posicione aqui sua(s) Persona(s) em forma de texto markdown com imagens, ou como imagem de template preenchido. Atualize esta seção ao longo do módulo se necessário.*
+Nome: Rodrigo Pereira
+
+Idade: 49 anos
+
+Ocupação: Gerente de operações da PCR Labor
+
+Hábitos digitais: Usa o computador diariamente para administrar pedidos, realiza conferência manual das vendas nas plataformas, acessa sistemas ERP simples, utiliza bastante planilhas no Excel.
+
+Necessidades:
+
+Acompanhar rapidamente o volume de vendas por produto.
+
+Saber quanto e quando deve reabastecer o estoque.
+
+Integrar as informações de diferentes plataformas em um único lugar.
+
+Dores:
+
+Perde muito tempo conferindo dados manualmente em múltiplos sites.
+
+Dificuldade em identificar rapidamente quais produtos precisam ser recomprados.
+
+Risco de faltar produtos populares ou de comprar produtos parados em estoque.
+
+Solução:
+O sistema web permitirá a visualização centralizada de vendas e estoques, sugerindo automaticamente quantidades ideais de compra, economizando tempo, evitando erros e otimizando o estoque.
 
 ### 2.2. User Stories (Semana 01)
 
-*Posicione aqui a lista de User Stories levantadas para o projeto. Siga o template de User Stories e utilize a referência USXX para numeração (US01, US02, US03, ...). Indique todas as User Stories mapeadas, mesmo aquelas que não forem implementadas ao longo do projeto. Não se esqueça de explicar o INVEST de 1 User Storie prioritária.*
+US01
+Como gerente de operações, quero visualizar a quantidade de vendas por produto em tempo real, para que eu possa tomar decisões rápidas de reposição de estoque.
+
+US02
+Como gerente de operações, quero receber sugestões automáticas de compra baseadas no histórico de vendas, para que eu possa manter o estoque equilibrado.
+
+US03
+Como gerente de operações, quero consolidar as informações de vendas de múltiplas plataformas em um único painel, para que eu possa gerenciar os dados de forma mais eficiente.
+
+Critério N – Negociável:
+A US01 é negociável porque o gerente de operações pode escolher, por exemplo, se quer ver as vendas organizadas por categorias, por períodos específicos (últimos 7 dias, 30 dias) ou agrupadas por plataforma (Mercado Livre, Shopee). O formato e os filtros podem ser ajustados para melhor atender às necessidades do usuário sem alterar o objetivo principal da funcionalidade.
 
 ---
 
