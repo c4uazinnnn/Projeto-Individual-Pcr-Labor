@@ -26,32 +26,12 @@
 
 ### 2.1. Personas (Semana 01)
 
-Nome: Rodrigo Pereira
-
-Idade: 49 anos
-
-Ocupação: Gerente de operações da PCR Labor
-
-Hábitos digitais: Usa o computador diariamente para administrar pedidos, realiza conferência manual das vendas nas plataformas, acessa sistemas ERP simples, utiliza bastante planilhas no Excel.
-
-Necessidades:
-
-Acompanhar rapidamente o volume de vendas por produto.
-
-Saber quanto e quando deve reabastecer o estoque.
-
-Integrar as informações de diferentes plataformas em um único lugar.
-
-Dores:
-
-Perde muito tempo conferindo dados manualmente em múltiplos sites.
-
-Dificuldade em identificar rapidamente quais produtos precisam ser recomprados.
-
-Risco de faltar produtos populares ou de comprar produtos parados em estoque.
-
-Solução:
-O sistema web permitirá a visualização centralizada de vendas e estoques, sugerindo automaticamente quantidades ideais de compra, economizando tempo, evitando erros e otimizando o estoque.
+<div align="center">
+  <sub>Persona</sub><br>
+  <img src= "assets/persona.png" width="100%"
+  alt="  "><br>
+  <sup>Fonte: Material produzido pelos autores, 2025</sup>
+</div>
 
 ### 2.2. User Stories (Semana 01)
 
