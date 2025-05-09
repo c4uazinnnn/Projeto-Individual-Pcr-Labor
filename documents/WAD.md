@@ -1,7 +1,5 @@
 # Web Application Document - Projeto Individual - Módulo 2 - Inteli
 
-**_Os trechos em itálico servem apenas como guia para o preenchimento da seção. Por esse motivo, não devem fazer parte da documentação final._**
-
 ## Pcr Labor
 
 #### Cauã Pirilo Asquino
@@ -18,7 +16,7 @@
 
 ## <a name="c1"></a>1. Introdução (Semana 01)
 
-*O projeto consiste no desenvolvimento de uma aplicação web para a empresa PCR Labor, com o objetivo de melhorar a integração entre plataformas de e-commerce (como Mercado Livre e Shopee). A aplicação vai consolidar informações de vendas, sugerir quantidades ideais de compra de produtos e fornecer relatórios de desempenho para facilitar o gerenciamento do estoque e a tomada de decisões comerciais.*
+O projeto consiste no desenvolvimento de uma aplicação web para a empresa PCR Labor, com o objetivo de melhorar a integração entre plataformas de e-commerce (como Mercado Livre e Shopee). A aplicação vai consolidar informações de vendas, sugerir quantidades ideais de compra de produtos e fornecer relatórios de desempenho para facilitar o gerenciamento do estoque e a tomada de decisões comerciais.
 
 ---
 
@@ -27,8 +25,8 @@
 ### 2.1. Personas (Semana 01)
 
 <div align="center">
-  <sub>Persona</sub><br>
-  <img src= "assets/persona.png" width="100%"
+  <sub></sub><br>
+  <img src="assets/persona.png" width="100%"
   alt="  "><br>
   <sup>Fonte: Material produzido pelos autores, 2025</sup>
 </div>
@@ -53,9 +51,76 @@ A US01 é negociável porque o gerente de operações pode escolher, por exemplo
 
 ### 3.1. Modelagem do banco de dados  (Semana 3)
 
-*Posicione aqui os diagramas de modelos relacionais do seu banco de dados, apresentando todos os esquemas de tabelas e suas relações. Utilize texto para complementar suas explicações, se necessário.*
+<div align="center">
+  <sub></sub><br>
+  <img src="assets/Modelo Relacional.png" width="100%"
+  alt="  "><br>
+  <sup>Fonte: Material produzido pelos autores, 2025</sup>
+</div>
 
-*Posicione também o modelo físico com o Schema do BD (arquivo .sql)*
+
+### Codigo SQL
+
+
+```sql
+-- Criação do schema
+CREATE DATABASE IF NOT EXISTS bd_pcr_labor;
+USE bd_pcr_labor;
+
+-- Tabela de empresas
+CREATE TABLE Empresa (
+    id_empresa INT PRIMARY KEY AUTO_INCREMENT,
+    nome_fantasia VARCHAR(100) NOT NULL,
+    cnpj VARCHAR(18) UNIQUE NOT NULL
+);
+
+-- Tabela de usuários (ligados à empresa)
+CREATE TABLE Usuario (
+    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL,
+    id_empresa INT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa)
+);
+
+-- Tabela de plataformas (ex: Shopee, Mercado Livre)
+CREATE TABLE Plataforma (
+    id_plataforma INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(50) NOT NULL
+);
+
+-- Tabela de produtos (ligados à empresa)
+CREATE TABLE Produto (
+    id_produto INT PRIMARY KEY AUTO_INCREMENT,
+    id_empresa INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    sku VARCHAR(50) UNIQUE NOT NULL,
+    preco DECIMAL(10,2) NOT NULL,
+    estoque_atual INT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa)
+);
+
+-- Tabela de vendas
+CREATE TABLE Venda (
+    id_venda INT PRIMARY KEY AUTO_INCREMENT,
+    id_produto INT NOT NULL,
+    id_plataforma INT NOT NULL,
+    quantidade INT NOT NULL,
+    data DATE NOT NULL,
+    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto),
+    FOREIGN KEY (id_plataforma) REFERENCES Plataforma(id_plataforma)
+);
+
+-- Tabela de sugestões de compra
+CREATE TABLE SugestaoCompra (
+    id_sugestao INT PRIMARY KEY AUTO_INCREMENT,
+    id_produto INT NOT NULL,
+    quantidade_sugerida INT NOT NULL,
+    data_gerada DATE NOT NULL,
+    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto)
+);
+```
 
 ### 3.1.1 BD e Models (Semana 5)
 *Descreva aqui os Models implementados no sistema web*
