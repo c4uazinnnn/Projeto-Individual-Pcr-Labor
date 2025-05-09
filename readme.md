@@ -41,7 +41,7 @@
 └── server.js            # Arquivo principal do servidor
 </code></pre>
 
-<h2>📦 Como Rodar o Projeto Localmente</h2>
+<h2>Como Rodar o Projeto Localmente</h2>
 
 <ol>
   <li><strong>Clone o repositório:</strong>
