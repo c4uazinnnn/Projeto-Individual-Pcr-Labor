@@ -138,7 +138,17 @@ CREATE TABLE SugestaoCompra (
 
 ### 3.3. Wireframes (Semana 03)
 
-*Posicione aqui as imagens do wireframe construído para sua solução e, opcionalmente, o link para acesso (mantenha o link sempre público para visualização).*
+<div align="center">
+  <sub></sub><br>
+  <img src="assets/wireframe.png" width="100%"
+  alt="  "><br>
+  <sup>Fonte: Material produzido pelos autores, 2025</sup>
+</div>
+
+
+https://www.figma.com/design/bnIgHQ4EuyuMgQGea0ux2k/Pcr-Labor?node-id=17-193&t=MLZOHU1rxbvsHszI-1
+
+Esse wireframe foi criado no Figma e pode ser acessado pelo link acima. Na primeira página, temos o login; na segunda página, temos um dashboard com informações de vendas, controle de estoque, gestor de tarefas e e-mails, estimativa de quantidade de compra de produtos, calendário e uma IA integrada.
 
 ### 3.4. Guia de estilos (Semana 05)
 
