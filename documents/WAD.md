@@ -148,7 +148,8 @@ CREATE TABLE SugestaoCompra (
 
 https://www.figma.com/design/bnIgHQ4EuyuMgQGea0ux2k/Pcr-Labor?node-id=17-193&t=MLZOHU1rxbvsHszI-1
 
-Esse wireframe foi criado no Figma e pode ser acessado pelo link acima. Na primeira página, temos o login; na segunda página, temos um dashboard com informações de vendas, controle de estoque, gestor de tarefas e e-mails, estimativa de quantidade de compra de produtos, calendário e uma IA integrada.
+Esse wireframe foi criado no Figma e pode ser acessado pelo link acima. Na primeira página, temos o login; na segunda página, temos um dashboard com informações de vendas, controle de estoque, gestor de tarefas, e-mails, estimativa de quantidade de compra de produtos, calendário e uma IA integrada. A partir do dashboard, o usuário consegue acessar outras seções do sistema, como a página de Vendas, que exibe gráficos com o histórico e projeção de vendas, além de permitir a seleção do período desejado. Também é possível acessar a aba de Estoque, onde são mostradas informações sobre a quantidade de produtos em estoque, número de compras realizadas e itens que ainda precisam ser enviados, tudo representado visualmente com gráficos. Na seção de Plataformas, o usuário visualiza o desempenho em diferentes canais de venda, como Shopee, Mercado Livre e a própria plataforma da PCR Labor, com gráficos comparativos. A área de Pedidos apresenta gráficos sobre o volume de pedidos, uma projeção de compras e o check-out dos pedidos em andamento. Por fim, a aba de Perfil concentra dados financeiros como valores a pagar, a receber e saldo total, além das opções de pagamento via boleto, transferência bancária ou link de pagamento. Todas as telas seguem o mesmo padrão visual e mantêm na lateral um painel fixo com tarefas, calendário e um campo para interação com a IA.
+
 
 ### 3.4. Guia de estilos (Semana 05)
 
