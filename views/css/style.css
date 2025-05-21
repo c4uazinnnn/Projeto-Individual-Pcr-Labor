@@ -1,10 +1,30 @@
 /* Reset básico para remover estilos padrão do navegador */
-* {
+*
+ {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
   }
-  
+
+  h1 {
+  margin: 0;
+  padding-top: 35px;
+  padding-bottom: 5px;
+}
+
+  .bemVindo{
+  margin: 0;
+  padding-top: 20px;
+  padding-bottom: 5px;
+  text-align: center;
+
+}
+
+header nav {
+  padding-top: 35px;
+  padding-bottom: 5px;
+}
+
   /* Estilo para o corpo da página */
   body {
     font-family: Arial, sans-serif;
@@ -14,13 +34,58 @@
     margin: 0;
     padding: 0;
   }
+
+  .header-container {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  justify-content: flex-start; /* coloca tudo à esquerda */
+  padding: 0 20px;
+}
+.logo-container {
+  background-color: white; /* ou a cor que quiser */
+  padding: 10px;
+  width: 250px;
+  height: -100px;
+  display: flex;
+  align-items: center;
+  justify-content: center-20px;
+  border-radius: 15px; /* opcional: cantos arredondados */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* sombra opcional */
+}
+
+.logo {
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.h3 {
+  margin: 0;
+  padding-top: 10px;
+  padding-bottom: 5px;
+}
+.graficos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0px 20px;
+  padding: 10px 20px;
+  margin-bottom: 2opx;
   
+}
+
+.grafico {
+  max-width: 75vw;
+  height: 35vh;
+}
+
   /* Estilo para o cabeçalho */
   header {
-    background-color: #333;
+    background-color: #018820;
     color: #fff;
     padding: 10px 0;
-    text-align: center;
+    text-align: center-20px;
   }
   
   /* Estilo para a navegação dentro do cabeçalho */
@@ -49,11 +114,11 @@
   
   /* Estilo para o rodapé */
   footer {
+    margin-top: 20px;
     background-color: #333;
     color: #fff;
     text-align: center;
     padding: 10px 0;
-    position: fixed;
     bottom: 0;
     width: 100%;
   }
