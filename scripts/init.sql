@@ -1,44 +1,56 @@
--- init.sql
+-- Criação do schema
+CREATE DATABASE IF NOT EXISTS bd_pcr_labor;
+USE bd_pcr_labor;
 
--- Criar extensão para suportar UUIDs, se ainda não estiver ativada
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- Criar tabela de usuários com UUID como chave primária
-CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  name VARCHAR(100) NOT NULL,
-  email VARCHAR(100) UNIQUE NOT NULL
+-- Tabela de empresas
+CREATE TABLE Empresa (
+    id_empresa INT PRIMARY KEY AUTO_INCREMENT,
+    nome_fantasia VARCHAR(100) NOT NULL,
+    cnpj VARCHAR(18) UNIQUE NOT NULL
 );
 
--- Inserir 20 usuários com nomes e emails aleatórios
-INSERT INTO users (name, email)
-VALUES 
-  ('Alice Smith', 'alice.smith@example.com'),
-  ('Bob Johnson', 'bob.johnson@example.com'),
-  ('Carol Williams', 'carol.williams@example.com'),
-  ('David Jones', 'david.jones@example.com'),
-  ('Emma Brown', 'emma.brown@example.com'),
-  ('Frank Davis', 'frank.davis@example.com'),
-  ('Grace Wilson', 'grace.wilson@example.com'),
-  ('Henry Moore', 'henry.moore@example.com'),
-  ('Isabella Taylor', 'isabella.taylor@example.com'),
-  ('Jack Lee', 'jack.lee@example.com'),
-  ('Kate Clark', 'kate.clark@example.com'),
-  ('Liam Martinez', 'liam.martinez@example.com'),
-  ('Mia Rodriguez', 'mia.rodriguez@example.com'),
-  ('Noah Garcia', 'noah.garcia@example.com'),
-  ('Olivia Hernandez', 'olivia.hernandez@example.com'),
-  ('Patrick Martinez', 'patrick.martinez@example.com'),
-  ('Quinn Lopez', 'quinn.lopez@example.com'),
-  ('Rose Thompson', 'rose.thompson@example.com'),
-  ('Samuel Perez', 'samuel.perez@example.com'),
-  ('Tara Scott', 'tara.scott@example.com');
-
-  CREATE TABLE IF NOT EXISTS aluno (
-  id SERIAL PRIMARY KEY,
-  nome TEXT NOT NULL,
-  email TEXT NOT NULL,
-  criado_em TIMESTAMP DEFAULT NOW()
+-- Tabela de usuários (ligados à empresa)
+CREATE TABLE Usuario (
+    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL,
+    id_empresa INT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa)
 );
 
-CREATE INDEX IF NOT EXISTS idx_aluno_email ON aluno (email);
+-- Tabela de plataformas (ex: Shopee, Mercado Livre)
+CREATE TABLE Plataforma (
+    id_plataforma INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(50) NOT NULL
+);
+
+-- Tabela de produtos (ligados à empresa)
+CREATE TABLE Produto (
+    id_produto INT PRIMARY KEY AUTO_INCREMENT,
+    id_empresa INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    sku VARCHAR(50) UNIQUE NOT NULL,
+    preco DECIMAL(10,2) NOT NULL,
+    estoque_atual INT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa)
+);
+
+-- Tabela de vendas
+CREATE TABLE Venda (
+    id_venda INT PRIMARY KEY AUTO_INCREMENT,
+    id_produto INT NOT NULL,
+    id_plataforma INT NOT NULL,
+    quantidade INT NOT NULL,
+    data DATE NOT NULL,
+    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto),
+    FOREIGN KEY (id_plataforma) REFERENCES Plataforma(id_plataforma)
+);
+
+-- Tabela de sugestões de compra
+CREATE TABLE SugestaoCompra (
+    id_sugestao INT PRIMARY KEY AUTO_INCREMENT,
+    id_produto INT NOT NULL,
+    quantidade_sugerida INT NOT NULL,
+    data_gerada DATE NOT NULL,
+    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto)
