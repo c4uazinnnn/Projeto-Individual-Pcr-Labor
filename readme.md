@@ -1,19 +1,25 @@
-<h1>Pcr Labor</h1>
+<h1>PCR Labor</h1>
 <p>O projeto consiste no desenvolvimento de uma aplicação web para a empresa PCR Labor, com o objetivo de melhorar a integração entre plataformas de e-commerce (como Mercado Livre e Shopee). A aplicação vai consolidar informações de vendas, sugerir quantidades ideais de compra de produtos e fornecer relatórios de desempenho para facilitar o gerenciamento do estoque e a tomada de decisões comerciais.
 </p>
 
-<h2> Funcionalidades</h2>
+<h2>Funcionalidades</h2>
 <ul>
-  <li>Flitro de vendas organizadas por categorias, por períodos específicos </li>
-  <li>Centralizar informacoes de vendas e estoque</li>
-  <li>Autenticação de usuários com Supabase</li>
+  <li>Dashboard com métricas em tempo real</li>
+  <li>Filtro de vendas organizadas por categorias e períodos específicos</li>
+  <li>Centralizar informações de vendas e estoque</li>
+  <li>Integração com Mercado Livre e Shopee</li>
+  <li>Gestão de pedidos e fornecedores</li>
+  <li>Relatórios e gráficos interativos</li>
+  <li>Sistema de alertas de estoque baixo</li>
+  <li>Autenticação de usuários</li>
 </ul>
 
-<h2> Tecnologias Utilizadas</h2>
+<h2>Tecnologias Utilizadas</h2>
 <ul>
-  <li><strong>Frontend:</strong> HTML, CSS, JavaScript</li>
+  <li><strong>Frontend:</strong> HTML, CSS, JavaScript, EJS, Chart.js</li>
   <li><strong>Backend:</strong> Node.js (Express)</li>
   <li><strong>Banco de Dados:</strong> PostgreSQL (via <a href="https://supabase.io" target="_blank">Supabase</a>)</li>
+  <li><strong>Arquitetura:</strong> MVC (Model-View-Controller)</li>
   <li><strong>Hospedagem/Serviços:</strong> Supabase Auth e Supabase DB</li>
 </ul>
 
@@ -22,15 +28,35 @@
 <pre><code>Projeto-Individual/
 ├── assets/              # Arquivos estáticos como imagens, CSS, JS
 ├── config/              # Configurações da aplicação
-├── controllers/         # Controladores da aplicação
+├── controllers/         # Controladores da aplicação (nomes em português)
+│   ├── controladorDashboard.js
+│   ├── controladorProdutos.js
+│   ├── controladorVendas.js
+│   ├── controladorPedidos.js
+│   └── controladorUsuarios.js
 ├── documentos/          # Documentação adicional ou arquivos auxiliares
-├── models/              # Modelos de dados
+├── models/              # Modelos de dados (nomes em português)
+│   ├── modeloProdutos.js
+│   ├── modeloVendas.js
+│   ├── modeloPedidos.js
+│   ├── modeloUsuarios.js
+│   ├── modeloPlataformas.js
+│   └── modeloEmpresa.js
 ├── node_modules/        # Dependências instaladas via npm
-├── routes/              # Definições de rotas
+├── routes/              # Definições de rotas (nomes em português)
+│   ├── rotasPrincipais.js
+│   ├── rotasPaginas.js
+│   ├── rotasProdutos.js
+│   └── rotasVendas.js
 ├── scripts/             # Scripts auxiliares
-├── services/            # Lógica de serviços (ex: comunicação com APIs)
+├── services/            # Lógica de serviços (nomes em português)
+│   ├── servicoIntegracaoDados.js
+│   └── servicoIntegracaoPlataformas.js
 ├── tests/               # Testes automatizados
 ├── views/               # Templates da interface do usuário
+│   ├── pages/           # Páginas principais
+│   ├── components/      # Componentes reutilizáveis (nomes em português)
+│   └── css/             # Estilos (estilos.css)
 ├── .env                 # Variáveis de ambiente
 ├── .gitignore           # Arquivos e pastas ignorados pelo Git
 ├── jest.config.js       # Configuração do Jest para testes
@@ -68,14 +94,30 @@ PORT=3000</code></pre>
   </li>
 
   <li><strong>Inicie o servidor:</strong>
-    <pre><code>npm start</code></pre>
+    <pre><code># Modo produção
+npm start
+
+# Modo desenvolvimento (com nodemon)
+npm run dev</code></pre>
   </li>
 
   <li><strong>Acesse a aplicação:</strong>
-    <pre><code>http://localhost:3000</code></pre>
+    <pre><code>http://localhost:3000
+
+# Credenciais de login:
+Email: admin@pcrlabor.com
+Senha: admin123</code></pre>
   </li>
 
-  <li><strong>Testes (opcional):</strong> Para rodar os testes:
-    <pre><code>npm test</code></pre>
-  </li>
+
 </ol>
+
+<h2>Organização dos Arquivos</h2>
+<p>O projeto foi organizado com nomes em português para facilitar a manutenção:</p>
+<ul>
+  <li><strong>Controllers:</strong> Todos os controladores têm nomes em português (ex: controladorDashboard.js)</li>
+  <li><strong>Models:</strong> Todos os modelos têm nomes em português (ex: modeloProdutos.js)</li>
+  <li><strong>Routes:</strong> Todas as rotas têm nomes em português (ex: rotasPaginas.js)</li>
+  <li><strong>Services:</strong> Todos os serviços têm nomes em português (ex: servicoIntegracaoDados.js)</li>
+  <li><strong>Components:</strong> Todos os componentes têm nomes em português (ex: cabecalho.ejs)</li>
+</ul>

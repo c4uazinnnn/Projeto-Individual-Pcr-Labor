@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/css/estilos.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Header horizontal (Topo) com logo e menu -->
+  <%- include('../components/cabecalho') %>
+
+  <!-- Layout principal -->
+  <div class="main-layout">
+    <!-- Área central para o conteúdo principal -->
+    <main class="content-area">
+      <!-- 4️⃣ Tela de Vendas -->
+      <h1 class="page-title">Vendas</h1>
+
+      <!-- Cards de métricas rápidas - DINÂMICOS -->
+      <div id="cardsMetricas" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <div class="summary-card">
+          <div class="card-icon">💰</div>
+          <div class="card-title">Total de Vendas</div>
+          <div class="card-value" id="totalVendasCard">R$ <%= vendas.reduce((total, v) => total + parseFloat(v.valor_total || 0), 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".") %></div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon" style="background: #3b82f6;">📊</div>
+          <div class="card-title">Vendas Hoje</div>
+          <div class="card-value" id="vendasHojeCard"><%= vendas.filter(v => new Date(v.data).toDateString() === new Date().toDateString()).length %></div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon" style="background: #f59e0b;">📈</div>
+          <div class="card-title">Quantidade Total</div>
+          <div class="card-value" id="quantidadeTotalCard"><%= vendas.reduce((total, v) => total + parseInt(v.quantidade || 0), 0) %></div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon" style="background: #8b5cf6;">🎯</div>
+          <div class="card-title">Ticket Médio</div>
+          <div class="card-value" id="ticketMedioCard">R$ <%= vendas.length > 0 ? (vendas.reduce((total, v) => total + parseFloat(v.valor_total || 0), 0) / vendas.length).toFixed(2) : '0.00' %></div>
+        </div>
+      </div>
+
+      <!-- Botões de filtro funcionais -->
+      <div style="display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
+        <!-- Filtros de Período -->
+        <button id="filtroMes" class="btn btn-primary" onclick="filtrarPeriodo('mes')">Este mês</button>
+        <button id="filtroSemana" class="btn btn-secondary" onclick="filtrarPeriodo('semana')">Últimos 7 dias</button>
+        <button id="filtroHoje" class="btn btn-secondary" onclick="filtrarPeriodo('hoje')">Hoje</button>
+        <button id="filtroTodos" class="btn btn-secondary" onclick="filtrarPeriodo('todos')">Todos</button>
+
+        <!-- Separador -->
+        <div style="border-left: 2px solid #e0e0e0; height: 40px; margin: 0 10px;"></div>
+
+        <!-- Filtros de Plataforma -->
+        <button id="filtroTodasPlataformas" class="btn btn-primary" onclick="filtrarPlataforma('todas')">🛒 Todas</button>
+        <button id="filtroShopee" class="btn btn-secondary" onclick="filtrarPlataforma('shopee')">🟠 Shopee</button>
+        <button id="filtroMercadoLivre" class="btn btn-secondary" onclick="filtrarPlataforma('mercadolivre')">🟡 Mercado Livre</button>
+        <button id="filtroPCRLabor" class="btn btn-secondary" onclick="filtrarPlataforma('pcrlabor')">🟢 PCR Labor</button>
+
+        <!-- Ações -->
+        <button class="btn btn-secondary" onclick="abrirFiltroAvancado()">🔍 Filtros</button>
+        <button class="btn btn-secondary" onclick="sincronizarPlataformas()">🔄 Sincronizar</button>
+      </div>
+
+      <!-- Gráfico de vendas: Gráfico de linha ou barra -->
+      <div class="content-section">
+        <div class="section-header">
+          <h3 class="section-title">📈 Gráfico de Vendas</h3>
+        </div>
+        <div class="section-content">
+          <div class="chart-container">
+            <canvas id="vendasChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Vendas com Design Melhorado (MANTENDO O DESIGN ANTERIOR QUE ESTAVA BOM) -->
+      <div class="content-section">
+        <div class="section-header">
+          <h3 class="section-title">📋 Histórico de Vendas</h3>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary" onclick="exportarVendas()">📄 Exportar</button>
+            <button class="btn btn-primary" onclick="novaVenda()">+ Nova Venda</button>
+          </div>
+        </div>
+        <div class="section-content">
+          <% if (vendas && vendas.length > 0) { %>
+            <div style="display: grid; gap: 15px;">
+              <% vendas.forEach((venda, index) => { %>
+                <div style="background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                      <div style="width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(135deg, #018820, #02a025); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: bold;">
+                        #<%= index + 1 %>
+                      </div>
+                      <div>
+                        <h4 style="margin: 0; color: #333; font-size: 16px;"><%= venda.produto_nome || 'Produto N/A' %></h4>
+                        <p style="margin: 0; color: #666; font-size: 14px;">
+                          <%= new Date(venda.data).toLocaleDateString('pt-BR') %> •
+                          <%= venda.plataforma_nome || 'Plataforma N/A' %>
+                        </p>
+                      </div>
+                    </div>
+                    <div style="text-align: right;">
+                      <div style="font-size: 20px; font-weight: bold; color: #018820; margin-bottom: 5px;">
+                        R$ <%= parseFloat(venda.valor_total || 0).toFixed(2) %>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="background: #dcfce7; color: #16a34a; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                          ✅ Concluída
+                        </span>
+                        <button class="btn btn-secondary" onclick="verDetalhesVenda(<%= venda.id_venda || index %>)" style="padding: 6px 12px; font-size: 12px;">
+                          👁️ Ver
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                    <div>
+                      <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Quantidade</label>
+                      <div style="font-size: 16px; font-weight: bold; color: #333;"><%= venda.quantidade %> unidades</div>
+                    </div>
+                    <div>
+                      <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Valor Unitário</label>
+                      <div style="font-size: 16px; font-weight: bold; color: #333;">R$ <%= (parseFloat(venda.valor_total || 0) / venda.quantidade).toFixed(2) %></div>
+                    </div>
+                    <div>
+                      <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Comissão</label>
+                      <div style="font-size: 16px; font-weight: bold; color: #f59e0b;">R$ <%= (parseFloat(venda.valor_total || 0) * 0.05).toFixed(2) %></div>
+                    </div>
+                    <div>
+                      <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Lucro</label>
+                      <div style="font-size: 16px; font-weight: bold; color: #16a34a;">R$ <%= (parseFloat(venda.valor_total || 0) * 0.3).toFixed(2) %></div>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+
+            <!-- Paginação -->
+            <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+              <button class="btn btn-secondary" onclick="paginaAnterior()" style="padding: 8px 16px;">
+                ← Anterior
+              </button>
+              <span style="color: #666; font-size: 14px;">
+                Página 1 de 1 • <%= vendas.length %> vendas
+              </span>
+              <button class="btn btn-secondary" onclick="proximaPagina()" style="padding: 8px 16px;">
+                Próxima →
+              </button>
+            </div>
+          <% } else { %>
+            <div style="text-align: center; color: #666; padding: 60px 20px;">
+              <div style="font-size: 64px; margin-bottom: 20px;">💰</div>
+              <h3 style="margin: 0 0 10px; color: #333;">Nenhuma venda encontrada</h3>
+              <p style="margin: 0 0 30px;">Suas vendas aparecerão aqui após a sincronização com as plataformas</p>
+              <button class="btn btn-primary" onclick="sincronizarPlataformas()">
+                🔄 Sincronizar Agora
+              </button>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Projeção de vendas (próxima semana): Bloco com gráfico ou tabela -->
+      <div class="content-section">
+        <div class="section-header">
+          <h3 class="section-title">🔮 Projeção de Vendas (Próxima Semana)</h3>
+        </div>
+        <div class="section-content">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+              <div style="font-size: 24px; font-weight: bold; color: #018820;">R$ 15.500</div>
+              <div style="color: #666; font-size: 14px;">Vendas Previstas</div>
+            </div>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+              <div style="font-size: 24px; font-weight: bold; color: #3b82f6;">45</div>
+              <div style="color: #666; font-size: 14px;">Pedidos Esperados</div>
+            </div>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+              <div style="font-size: 24px; font-weight: bold; color: #f59e0b;">+12%</div>
+              <div style="color: #666; font-size: 14px;">Crescimento</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Lateral direita com Tarefas, Calendário e Pergunte para IA -->
+    <%- include('../components/barraLateral') %>
+  </div>
+
+  <script>
+    // Gráfico de vendas - GLOBAL para poder atualizar
+    const vendasCtx = document.getElementById('vendasChart').getContext('2d');
+
+    window.vendasChart = new Chart(vendasCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
+        datasets: [{
+          label: 'Vendas (R$)',
+          data: [12000, 19000, 8000, 15000, 22000, 18000, 25000],
+          borderColor: '#018820',
+          backgroundColor: 'rgba(1, 136, 32, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: '#f0f0f0'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+
+    // Funções para a listagem melhorada (MANTENDO AS FUNÇÕES QUE ESTAVAM BOAS)
+    function exportarVendas() {
+      abrirModalExportar();
+    }
+
+    // ===== MODAL EXPORTAR RELATÓRIOS =====
+    function abrirModalExportar() {
+      const modal = document.createElement('div');
+      modal.id = 'modalExportar';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 500px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0; color: #333;">📄 Exportar Relatórios</h2>
+            <button onclick="fecharModalExportar()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+          </div>
+
+          <div style="display: grid; gap: 15px;">
+
+            <!-- Tipo de Relatório -->
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📊 Tipo de Relatório</label>
+              <select id="tipoRelatorio" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                <option value="vendas">📈 Relatório de Vendas</option>
+                <option value="produtos">📦 Relatório de Produtos</option>
+                <option value="estoque">📋 Relatório de Estoque</option>
+                <option value="plataformas">🛒 Performance por Plataforma</option>
+                <option value="completo">📊 Relatório Completo</option>
+              </select>
+            </div>
+
+            <!-- Período -->
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📅 Período</label>
+              <select id="periodoRelatorio" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                <option value="hoje">Hoje</option>
+                <option value="semana">Esta Semana</option>
+                <option value="mes" selected>Este Mês</option>
+                <option value="trimestre">Este Trimestre</option>
+                <option value="ano">Este Ano</option>
+                <option value="personalizado">Período Personalizado</option>
+              </select>
+            </div>
+
+            <!-- Datas personalizadas (oculto inicialmente) -->
+            <div id="datasPersonalizadas" style="display: none;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Data Início</label>
+                  <input type="date" id="dataInicio" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                </div>
+                <div>
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Data Fim</label>
+                  <input type="date" id="dataFim" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                </div>
+              </div>
+            </div>
+
+            <!-- Formato -->
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📁 Formato</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;" onclick="selecionarFormato('excel')">
+                  <input type="radio" name="formato" value="excel" checked style="margin: 0;">
+                  <span>📊 Excel (.xlsx)</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;" onclick="selecionarFormato('pdf')">
+                  <input type="radio" name="formato" value="pdf" style="margin: 0;">
+                  <span>📄 PDF</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 2px solid #e0e0e0;">
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📋 Preview</label>
+              <div id="previewRelatorio" style="font-size: 14px; color: #666;">
+                Relatório de Vendas - Este Mês - Formato Excel
+              </div>
+            </div>
+
+          </div>
+
+          <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button type="button" onclick="fecharModalExportar()"
+                    style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+              Cancelar
+            </button>
+            <button onclick="gerarRelatorio()"
+                    style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+              📄 Gerar Relatório
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Event listeners
+      document.getElementById('periodoRelatorio').addEventListener('change', function() {
+        const datasDiv = document.getElementById('datasPersonalizadas');
+        if (this.value === 'personalizado') {
+          datasDiv.style.display = 'block';
+        } else {
+          datasDiv.style.display = 'none';
+        }
+        atualizarPreview();
+      });
+
+      document.getElementById('tipoRelatorio').addEventListener('change', atualizarPreview);
+      atualizarPreview();
+    }
+
+    function fecharModalExportar() {
+      const modal = document.getElementById('modalExportar');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    function selecionarFormato(formato) {
+      const radios = document.querySelectorAll('input[name="formato"]');
+      radios.forEach(radio => {
+        radio.checked = radio.value === formato;
+        radio.parentElement.style.borderColor = radio.checked ? '#018820' : '#e0e0e0';
+        radio.parentElement.style.background = radio.checked ? '#f0fdf4' : 'white';
+      });
+      atualizarPreview();
+    }
+
+    function atualizarPreview() {
+      const tipo = document.getElementById('tipoRelatorio')?.value || 'vendas';
+      const periodo = document.getElementById('periodoRelatorio')?.value || 'mes';
+      const formato = document.querySelector('input[name="formato"]:checked')?.value || 'excel';
+
+      const tipoTexto = {
+        'vendas': 'Relatório de Vendas',
+        'produtos': 'Relatório de Produtos',
+        'estoque': 'Relatório de Estoque',
+        'plataformas': 'Performance por Plataforma',
+        'completo': 'Relatório Completo'
+      };
+
+      const periodoTexto = {
+        'hoje': 'Hoje',
+        'semana': 'Esta Semana',
+        'mes': 'Este Mês',
+        'trimestre': 'Este Trimestre',
+        'ano': 'Este Ano',
+        'personalizado': 'Período Personalizado'
+      };
+
+      const formatoTexto = formato === 'excel' ? 'Excel' : 'PDF';
+
+      const preview = document.getElementById('previewRelatorio');
+      if (preview) {
+        preview.textContent = `${tipoTexto[tipo]} - ${periodoTexto[periodo]} - Formato ${formatoTexto}`;
+      }
+    }
+
+    async function gerarRelatorio() {
+      const tipo = document.getElementById('tipoRelatorio').value;
+      const periodo = document.getElementById('periodoRelatorio').value;
+      const formato = document.querySelector('input[name="formato"]:checked').value;
+
+      // Mostrar loading
+      const button = event.target;
+      const originalText = button.textContent;
+      button.textContent = '⏳ Gerando...';
+      button.disabled = true;
+
+      try {
+        // Simular geração do relatório
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+        // Simular download
+        const nomeArquivo = `relatorio_${tipo}_${periodo}.${formato === 'excel' ? 'xlsx' : 'pdf'}`;
+
+        alert(`✅ Relatório gerado com sucesso!\n\n📁 Arquivo: ${nomeArquivo}\n📊 Tipo: ${tipo}\n📅 Período: ${periodo}\n📄 Formato: ${formato.toUpperCase()}\n\nO download iniciará automaticamente.`);
+
+        fecharModalExportar();
+
+      } catch (error) {
+        alert('❌ Erro ao gerar relatório. Tente novamente.');
+      } finally {
+        button.textContent = originalText;
+        button.disabled = false;
+      }
+    }
+
+    function novaVenda() {
+      abrirModalNovaVenda();
+    }
+
+    // ===== FILTROS FUNCIONAIS COMPLETOS =====
+    let filtroAtual = 'mes';
+    let plataformaAtual = 'todas';
+    let vendasOriginais = <%- JSON.stringify(vendas) %>;
+
+    function filtrarPeriodo(periodo) {
+      filtroAtual = periodo;
+
+      // Atualizar botões visuais
+      document.querySelectorAll('[id^="filtro"]').forEach(btn => {
+        btn.className = 'btn btn-secondary';
+      });
+
+      // Corrigir IDs dos botões
+      const botaoMap = {
+        'mes': 'filtroMes',
+        'semana': 'filtroSemana',
+        'hoje': 'filtroHoje',
+        'todos': 'filtroTodos'
+      };
+
+      if (botaoMap[periodo]) {
+        document.getElementById(botaoMap[periodo]).className = 'btn btn-primary';
+      }
+
+      // Aplicar filtros combinados
+      aplicarFiltrosCombinados();
+
+      // Feedback visual
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #018820;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+        font-size: 14px;
+      `;
+      toast.textContent = `✅ ${vendasFiltradas.length} vendas encontradas - ${periodo === 'mes' ? 'Este mês' : periodo === 'semana' ? 'Últimos 7 dias' : periodo === 'hoje' ? 'Hoje' : 'Todas'}`;
+      document.body.appendChild(toast);
+
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ===== FILTROS DE PLATAFORMA FUNCIONAIS =====
+    function filtrarPlataforma(plataforma) {
+      plataformaAtual = plataforma;
+
+      // Atualizar botões visuais de plataforma
+      document.querySelectorAll('[id^="filtro"][id*="lataforma"], [id^="filtroShopee"], [id^="filtroMercado"], [id^="filtroPCR"]').forEach(btn => {
+        btn.className = 'btn btn-secondary';
+      });
+
+      const botaoMapPlataforma = {
+        'todas': 'filtroTodasPlataformas',
+        'shopee': 'filtroShopee',
+        'mercadolivre': 'filtroMercadoLivre',
+        'pcrlabor': 'filtroPCRLabor'
+      };
+
+      if (botaoMapPlataforma[plataforma]) {
+        document.getElementById(botaoMapPlataforma[plataforma]).className = 'btn btn-primary';
+      }
+
+      // Aplicar filtros combinados (período + plataforma)
+      aplicarFiltrosCombinados();
+
+      // Feedback visual
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #018820;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+        font-size: 14px;
+      `;
+
+      const plataformaTexto = {
+        'todas': 'Todas as plataformas',
+        'shopee': 'Shopee',
+        'mercadolivre': 'Mercado Livre',
+        'pcrlabor': 'PCR Labor'
+      };
+
+      toast.textContent = `🛒 Filtro aplicado: ${plataformaTexto[plataforma]}`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    function aplicarFiltrosCombinados() {
+      let vendasFiltradas = [...vendasOriginais];
+
+      // Aplicar filtro de período
+      const agora = new Date();
+      switch(filtroAtual) {
+        case 'hoje':
+          const hoje = agora.toISOString().split('T')[0];
+          vendasFiltradas = vendasFiltradas.filter(venda => {
+            const dataVenda = new Date(venda.data).toISOString().split('T')[0];
+            return dataVenda === hoje;
+          });
+          break;
+
+        case 'semana':
+          const semanaAtras = new Date(agora.getTime() - 7 * 24 * 60 * 60 * 1000);
+          vendasFiltradas = vendasFiltradas.filter(venda => {
+            const dataVenda = new Date(venda.data);
+            return dataVenda >= semanaAtras;
+          });
+          break;
+
+        case 'mes':
+          const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
+          vendasFiltradas = vendasFiltradas.filter(venda => {
+            const dataVenda = new Date(venda.data);
+            return dataVenda >= inicioMes;
+          });
+          break;
+      }
+
+      // Aplicar filtro de plataforma
+      if (plataformaAtual !== 'todas') {
+        vendasFiltradas = vendasFiltradas.filter(venda => {
+          const plataformaNome = (venda.plataforma_nome || '').toLowerCase();
+          switch(plataformaAtual) {
+            case 'shopee':
+              return plataformaNome.includes('shopee');
+            case 'mercadolivre':
+              return plataformaNome.includes('mercado') || plataformaNome.includes('livre');
+            case 'pcrlabor':
+              return plataformaNome.includes('pcr') || plataformaNome.includes('labor');
+            default:
+              return true;
+          }
+        });
+      }
+
+      console.log(`🔍 Filtros aplicados - Período: ${filtroAtual}, Plataforma: ${plataformaAtual}`);
+      console.log(`📊 Vendas encontradas: ${vendasFiltradas.length}`);
+
+      // Atualizar a exibição
+      atualizarListaVendas(vendasFiltradas);
+      atualizarMetricas(vendasFiltradas);
+    }
+
+    function atualizarListaVendas(vendas) {
+      // Seletor mais específico para o container das vendas
+      const container = document.querySelector('.content-section .section-content > div[style*="display: grid"]');
+      if (!container) {
+        console.error('❌ Container de vendas não encontrado');
+        return;
+      }
+
+      console.log(`🔄 Atualizando lista com ${vendas.length} vendas`);
+
+      if (vendas.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; color: #666; padding: 60px 20px;">
+            <div style="font-size: 64px; margin-bottom: 20px;">🔍</div>
+            <h3 style="margin: 0 0 10px; color: #333;">Nenhuma venda encontrada</h3>
+            <p style="margin: 0 0 30px;">Tente ajustar os filtros ou período selecionado</p>
+            <button class="btn btn-secondary" onclick="filtrarPeriodo('todos')">
+              📋 Ver Todas as Vendas
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = vendas.map((venda, index) => `
+        <div style="background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <div style="width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(135deg, #018820, #02a025); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: bold;">
+                #${index + 1}
+              </div>
+              <div>
+                <h4 style="margin: 0; color: #333; font-size: 16px;">${venda.produto_nome || 'Produto N/A'}</h4>
+                <p style="margin: 0; color: #666; font-size: 14px;">
+                  ${new Date(venda.data).toLocaleDateString('pt-BR')} •
+                  ${venda.plataforma_nome || 'Plataforma N/A'}
+                </p>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 20px; font-weight: bold; color: #018820; margin-bottom: 5px;">
+                R$ ${parseFloat(venda.valor_total || 0).toFixed(2)}
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="background: #dcfce7; color: #16a34a; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                  ✅ Concluída
+                </span>
+                <button class="btn btn-secondary" onclick="verDetalhesVenda(${venda.id_venda || index})" style="padding: 6px 12px; font-size: 12px;">
+                  👁️ Ver
+                </button>
+                <button class="btn btn-secondary" onclick="editarVenda(${venda.id_venda || index})" style="padding: 6px 12px; font-size: 12px;">
+                  ✏️ Editar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+            <div>
+              <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Quantidade</label>
+              <div style="font-size: 16px; font-weight: bold; color: #333;">${venda.quantidade} unidades</div>
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Valor Unitário</label>
+              <div style="font-size: 16px; font-weight: bold; color: #333;">R$ ${(parseFloat(venda.valor_total || 0) / venda.quantidade).toFixed(2)}</div>
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Comissão</label>
+              <div style="font-size: 16px; font-weight: bold; color: #f59e0b;">R$ ${(parseFloat(venda.valor_total || 0) * 0.05).toFixed(2)}</div>
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Lucro</label>
+              <div style="font-size: 16px; font-weight: bold; color: #16a34a;">R$ ${(parseFloat(venda.valor_total || 0) * 0.3).toFixed(2)}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function atualizarMetricas(vendas) {
+      console.log(`📊 Atualizando métricas para ${vendas.length} vendas`);
+
+      // Calcular métricas
+      const totalVendas = vendas.reduce((total, v) => total + parseFloat(v.valor_total || 0), 0);
+      const vendasHoje = vendas.filter(v => {
+        const hoje = new Date().toISOString().split('T')[0];
+        const dataVenda = new Date(v.data).toISOString().split('T')[0];
+        return dataVenda === hoje;
+      }).length;
+      const quantidadeTotal = vendas.reduce((total, v) => total + parseInt(v.quantidade || 0), 0);
+      const ticketMedio = vendas.length > 0 ? totalVendas / vendas.length : 0;
+
+      // Atualizar TODOS os cards
+      const totalVendasCard = document.getElementById('totalVendasCard');
+      if (totalVendasCard) {
+        totalVendasCard.textContent = `R$ ${totalVendas.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+      }
+
+      const vendasHojeCard = document.getElementById('vendasHojeCard');
+      if (vendasHojeCard) {
+        vendasHojeCard.textContent = vendasHoje.toString();
+      }
+
+      const quantidadeTotalCard = document.getElementById('quantidadeTotalCard');
+      if (quantidadeTotalCard) {
+        quantidadeTotalCard.textContent = quantidadeTotal.toString();
+      }
+
+      const ticketMedioCard = document.getElementById('ticketMedioCard');
+      if (ticketMedioCard) {
+        ticketMedioCard.textContent = `R$ ${ticketMedio.toFixed(2)}`;
+      }
+
+      // Atualizar gráfico
+      atualizarGraficoVendas(vendas);
+
+      // Atualizar projeções
+      atualizarProjecoes(vendas);
+    }
+
+    function atualizarGraficoVendas(vendas) {
+      // Agrupar vendas por dia da semana
+      const vendasPorDia = {
+        'Dom': 0, 'Seg': 0, 'Ter': 0, 'Qua': 0, 'Qui': 0, 'Sex': 0, 'Sáb': 0
+      };
+
+      vendas.forEach(venda => {
+        const data = new Date(venda.data);
+        const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        const diaSemana = diasSemana[data.getDay()];
+        vendasPorDia[diaSemana] += parseFloat(venda.valor_total || 0);
+      });
+
+      // Atualizar dados do gráfico
+      if (window.vendasChart) {
+        window.vendasChart.data.datasets[0].data = Object.values(vendasPorDia);
+        window.vendasChart.update();
+      }
+    }
+
+    function atualizarProjecoes(vendas) {
+      // Calcular projeções baseadas nos dados filtrados
+      const totalVendas = vendas.reduce((total, v) => total + parseFloat(v.valor_total || 0), 0);
+      const mediaVendas = vendas.length > 0 ? totalVendas / vendas.length : 0;
+
+      // Projeção para próxima semana (baseada na média)
+      const projecaoSemana = mediaVendas * 7 * 1.15; // 15% de crescimento estimado
+      const pedidosEsperados = Math.ceil(vendas.length * 1.2); // 20% mais pedidos
+      const crescimentoEstimado = vendas.length > 0 ? 15 : 0;
+
+      // Atualizar elementos de projeção
+      const projecaoElements = document.querySelectorAll('.content-section:last-child .section-content > div > div');
+      if (projecaoElements.length >= 3) {
+        projecaoElements[0].querySelector('div').textContent = `R$ ${projecaoSemana.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+        projecaoElements[1].querySelector('div').textContent = pedidosEsperados.toString();
+        projecaoElements[2].querySelector('div').textContent = `+${crescimentoEstimado}%`;
+      }
+    }
+
+    // ===== FILTRO AVANÇADO =====
+    function abrirFiltroAvancado() {
+      const modal = document.createElement('div');
+      modal.id = 'modalFiltroAvancado';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 500px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0; color: #333;">🔍 Filtros Avançados</h2>
+            <button onclick="fecharFiltroAvancado()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+          </div>
+
+          <div style="display: grid; gap: 20px;">
+
+            <!-- Período personalizado -->
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📅 Período</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <input type="date" id="filtroDataInicio" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                <input type="date" id="filtroDataFim" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;">
+              </div>
+            </div>
+
+            <!-- Plataforma -->
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">🛒 Plataforma</label>
+              <select id="filtroPlataforma" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                <option value="">Todas as plataformas</option>
+                <option value="1">Shopee</option>
+                <option value="2">Mercado Livre</option>
+                <option value="3">PCR Labor (Direto)</option>
+              </select>
+            </div>
+
+            <!-- Valor mínimo/máximo -->
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">💰 Valor</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <input type="number" id="filtroValorMin" placeholder="Valor mínimo" step="0.01" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                <input type="number" id="filtroValorMax" placeholder="Valor máximo" step="0.01" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;">
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📊 Status</label>
+              <select id="filtroStatus" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                <option value="">Todos os status</option>
+                <option value="confirmada">Confirmada</option>
+                <option value="pendente">Pendente</option>
+                <option value="cancelada">Cancelada</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button onclick="limparFiltros()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer;">
+              🗑️ Limpar
+            </button>
+            <button onclick="aplicarFiltroAvancado()" style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; cursor: pointer;">
+              🔍 Aplicar Filtros
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    function fecharFiltroAvancado() {
+      const modal = document.getElementById('modalFiltroAvancado');
+      if (modal) modal.remove();
+    }
+
+    function aplicarFiltroAvancado() {
+      const filtros = {
+        dataInicio: document.getElementById('filtroDataInicio').value,
+        dataFim: document.getElementById('filtroDataFim').value,
+        plataforma: document.getElementById('filtroPlataforma').value,
+        valorMin: document.getElementById('filtroValorMin').value,
+        valorMax: document.getElementById('filtroValorMax').value,
+        status: document.getElementById('filtroStatus').value
+      };
+
+      console.log('🔍 Aplicando filtros avançados:', filtros);
+
+      // Em produção, fazer requisição à API com os filtros
+      alert(`🔍 Filtros aplicados!\n\n${Object.entries(filtros).filter(([k,v]) => v).map(([k,v]) => `${k}: ${v}`).join('\n') || 'Nenhum filtro específico'}`);
+
+      fecharFiltroAvancado();
+    }
+
+    function limparFiltros() {
+      document.getElementById('filtroDataInicio').value = '';
+      document.getElementById('filtroDataFim').value = '';
+      document.getElementById('filtroPlataforma').value = '';
+      document.getElementById('filtroValorMin').value = '';
+      document.getElementById('filtroValorMax').value = '';
+      document.getElementById('filtroStatus').value = '';
+
+      console.log('🗑️ Filtros limpos');
+    }
+
+    // ===== DETALHES DA VENDA =====
+    function verDetalhesVenda(id) {
+      const modal = document.createElement('div');
+      modal.id = 'modalDetalhesVenda';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0; color: #333;">👁️ Detalhes da Venda #${id}</h2>
+            <button onclick="fecharDetalhesVenda()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+          </div>
+
+          <div style="display: grid; gap: 20px;">
+
+            <!-- Informações principais -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <h3 style="margin: 0 0 15px; color: #333;">📦 Produto</h3>
+              <div style="font-size: 18px; font-weight: bold; color: #333; margin-bottom: 5px;">Kit PCR COVID-19</div>
+              <div style="color: #666;">SKU: PCR-COVID-001</div>
+            </div>
+
+            <!-- Detalhes financeiros -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+              <div style="background: #f0fff4; padding: 15px; border-radius: 8px; border-left: 4px solid #16a34a;">
+                <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Quantidade</div>
+                <div style="font-size: 24px; font-weight: bold; color: #16a34a;">5 unidades</div>
+              </div>
+              <div style="background: #f0fff4; padding: 15px; border-radius: 8px; border-left: 4px solid #16a34a;">
+                <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Valor Total</div>
+                <div style="font-size: 24px; font-weight: bold; color: #16a34a;">R$ 449,50</div>
+              </div>
+            </div>
+
+            <!-- Informações da plataforma -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <h3 style="margin: 0 0 15px; color: #333;">🛒 Plataforma</h3>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <span style="background: #ff6600; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">Shopee</span>
+                <span style="color: #666;">ID da Venda: SH-2024-001234</span>
+              </div>
+              <div style="color: #666; font-size: 14px;">Taxa da plataforma: R$ 22,48 (5%)</div>
+              <div style="color: #16a34a; font-size: 14px; font-weight: 600;">Valor líquido: R$ 427,02</div>
+            </div>
+
+            <!-- Timeline -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <h3 style="margin: 0 0 15px; color: #333;">📅 Timeline</h3>
+              <div style="display: grid; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 8px; height: 8px; background: #16a34a; border-radius: 50%;"></div>
+                  <span style="color: #666; font-size: 14px;">15/12/2024 14:30 - Venda confirmada</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 8px; height: 8px; background: #3b82f6; border-radius: 50%;"></div>
+                  <span style="color: #666; font-size: 14px;">15/12/2024 14:35 - Estoque atualizado</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%;"></div>
+                  <span style="color: #666; font-size: 14px;">15/12/2024 15:00 - Produto enviado</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button onclick="fecharDetalhesVenda()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer;">
+              Fechar
+            </button>
+            <button onclick="editarVenda(${id})" style="flex: 1; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">
+              ✏️ Editar
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    function fecharDetalhesVenda() {
+      const modal = document.getElementById('modalDetalhesVenda');
+      if (modal) modal.remove();
+    }
+
+    function editarVenda(id) {
+      fecharDetalhesVenda();
+
+      const modal = document.createElement('div');
+      modal.id = 'modalEditarVenda';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0; color: #333;">✏️ Editar Venda #${id}</h2>
+            <button onclick="fecharModalEditarVenda()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+          </div>
+
+          <form id="formEditarVenda" onsubmit="salvarEdicaoVenda(event, ${id})">
+            <div style="display: grid; gap: 20px;">
+
+              <!-- Produto -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📦 Produto</label>
+                <select id="produtoEditVenda" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                  <option value="1" selected>Kit PCR COVID-19 - R$ 89,90</option>
+                  <option value="2">Kit PCR Influenza - R$ 75,50</option>
+                  <option value="3">Kit PCR Hepatite B - R$ 120,00</option>
+                  <option value="4">Kit PCR Dengue - R$ 95,00</option>
+                </select>
+              </div>
+
+              <!-- Quantidade -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📊 Quantidade</label>
+                <input type="number" id="quantidadeEditVenda" min="1" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="5">
+              </div>
+
+              <!-- Preço unitário -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">💰 Preço Unitário (R$)</label>
+                <input type="number" id="precoEditVenda" step="0.01" min="0" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="89.90">
+              </div>
+
+              <!-- Plataforma -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">🛒 Plataforma</label>
+                <select id="plataformaEditVenda" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                  <option value="1" selected>Shopee</option>
+                  <option value="2">Mercado Livre</option>
+                  <option value="3">PCR Labor (Direto)</option>
+                </select>
+              </div>
+
+              <!-- Status -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📊 Status</label>
+                <select id="statusEditVenda" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                  <option value="confirmada" selected>✅ Confirmada</option>
+                  <option value="pendente">⏳ Pendente</option>
+                  <option value="cancelada">❌ Cancelada</option>
+                  <option value="enviada">📦 Enviada</option>
+                  <option value="entregue">🎯 Entregue</option>
+                </select>
+              </div>
+
+              <!-- Data da venda -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📅 Data da Venda</label>
+                <input type="datetime-local" id="dataEditVenda" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="2024-12-15T14:30">
+              </div>
+
+              <!-- Observações -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">💬 Observações</label>
+                <textarea id="observacoesEditVenda" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; min-height: 80px;" placeholder="Observações sobre a venda...">Venda realizada via Shopee com desconto promocional.</textarea>
+              </div>
+
+              <!-- Preview do valor total -->
+              <div id="previewEditVenda" style="background: #f0fff4; padding: 15px; border-radius: 8px; border: 2px solid #16a34a;">
+                <div style="font-weight: 600; color: #333; margin-bottom: 5px;">💰 Valor Total:</div>
+                <div style="color: #16a34a; font-size: 18px; font-weight: bold;">R$ 449,50</div>
+              </div>
+
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+              <button type="button" onclick="fecharModalEditarVenda()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                Cancelar
+              </button>
+              <button type="submit" style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                ✅ Salvar Alterações
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Event listeners para calcular valor total
+      document.getElementById('quantidadeEditVenda').addEventListener('input', atualizarPreviewEditVenda);
+      document.getElementById('precoEditVenda').addEventListener('input', atualizarPreviewEditVenda);
+    }
+
+    function fecharModalEditarVenda() {
+      const modal = document.getElementById('modalEditarVenda');
+      if (modal) modal.remove();
+    }
+
+    function atualizarPreviewEditVenda() {
+      const quantidade = parseInt(document.getElementById('quantidadeEditVenda').value) || 0;
+      const preco = parseFloat(document.getElementById('precoEditVenda').value) || 0;
+      const valorTotal = quantidade * preco;
+
+      const preview = document.getElementById('previewEditVenda');
+      preview.querySelector('div:last-child').textContent = `R$ ${valorTotal.toFixed(2).replace('.', ',')}`;
+    }
+
+    async function salvarEdicaoVenda(event, id) {
+      event.preventDefault();
+
+      const formData = {
+        produto_id: document.getElementById('produtoEditVenda').value,
+        quantidade: parseInt(document.getElementById('quantidadeEditVenda').value),
+        preco_unitario: parseFloat(document.getElementById('precoEditVenda').value),
+        plataforma_id: document.getElementById('plataformaEditVenda').value,
+        status: document.getElementById('statusEditVenda').value,
+        data_venda: document.getElementById('dataEditVenda').value,
+        observacoes: document.getElementById('observacoesEditVenda').value
+      };
+
+      try {
+        console.log('✏️ Editando venda:', id, formData);
+
+        const response = await fetch(`/api/vendas/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('✅ Venda editada com sucesso!\n\nTodas as alterações foram salvas.');
+          fecharModalEditarVenda();
+          location.reload();
+        } else {
+          alert('❌ Erro ao editar venda: ' + (result.error || 'Erro desconhecido'));
+        }
+      } catch (error) {
+        console.error('❌ Erro ao editar venda:', error);
+        alert('❌ Erro ao editar venda. Tente novamente.');
+      }
+    }
+
+    // ===== PAGINAÇÃO =====
+    let paginaAtual = 1;
+    const itensPorPagina = 10;
+
+    function paginaAnterior() {
+      if (paginaAtual > 1) {
+        paginaAtual--;
+        console.log(`📄 Página anterior: ${paginaAtual}`);
+
+        // Em produção, fazer nova requisição
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+          position: fixed;
+          top: 100px;
+          right: 20px;
+          background: #3b82f6;
+          color: white;
+          padding: 12px 20px;
+          border-radius: 8px;
+          z-index: 1000;
+        `;
+        toast.textContent = `📄 Página ${paginaAtual}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+      } else {
+        alert('📄 Você já está na primeira página.');
+      }
+    }
+
+    function proximaPagina() {
+      // Em produção, verificar se há mais páginas
+      paginaAtual++;
+      console.log(`📄 Próxima página: ${paginaAtual}`);
+
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #3b82f6;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+      `;
+      toast.textContent = `📄 Página ${paginaAtual}`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    }
+
+    function sincronizarPlataformas() {
+      alert('🔄 Sincronizando plataformas...\n\nBuscando novas vendas do Mercado Livre e Shopee.');
+      // Simular sincronização
+      setTimeout(() => {
+        alert('✅ Sincronização concluída!\n\n3 novas vendas encontradas.');
+        location.reload();
+      }, 2000);
+    }
+
+    console.log('📊 Página de vendas carregada com design melhorado');
+
+    // ===== MODAL NOVA VENDA =====
+    function abrirModalNovaVenda() {
+      // Criar modal dinamicamente
+      const modal = document.createElement('div');
+      modal.id = 'modalNovaVenda';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0; color: #333;">💰 Nova Venda</h2>
+            <button onclick="fecharModalNovaVenda()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+          </div>
+
+          <form id="formNovaVenda" onsubmit="criarNovaVenda(event)">
+            <div style="display: grid; gap: 20px;">
+
+              <!-- Produto -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📦 Produto</label>
+                <select id="produtoSelect" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                  <option value="">Selecione um produto...</option>
+                </select>
+              </div>
+
+              <!-- Quantidade -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📊 Quantidade</label>
+                <input type="number" id="quantidadeInput" min="1" required
+                       style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;"
+                       placeholder="Ex: 5">
+              </div>
+
+              <!-- Preço Unitário -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">💵 Preço Unitário (R$)</label>
+                <input type="number" id="precoInput" step="0.01" min="0" required
+                       style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;"
+                       placeholder="Ex: 89.90">
+              </div>
+
+              <!-- Plataforma -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">🛒 Plataforma</label>
+                <select id="plataformaSelect" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                  <option value="">Selecione uma plataforma...</option>
+                  <option value="1">Shopee</option>
+                  <option value="2">Mercado Livre</option>
+                  <option value="3">PCR Labor (Direto)</option>
+                </select>
+              </div>
+
+              <!-- Data da Venda -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📅 Data da Venda</label>
+                <input type="date" id="dataInput" required
+                       style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;"
+                       value="${new Date().toISOString().split('T')[0]}">
+              </div>
+
+              <!-- Total (calculado automaticamente) -->
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">💰 Total da Venda</label>
+                <div id="totalVenda" style="font-size: 24px; font-weight: bold; color: #018820;">R$ 0,00</div>
+              </div>
+
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+              <button type="button" onclick="fecharModalNovaVenda()"
+                      style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                Cancelar
+              </button>
+              <button type="submit"
+                      style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                💰 Criar Venda
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+      carregarProdutos();
+
+      // Calcular total automaticamente
+      document.getElementById('quantidadeInput').addEventListener('input', calcularTotal);
+      document.getElementById('precoInput').addEventListener('input', calcularTotal);
+    }
+
+    function fecharModalNovaVenda() {
+      const modal = document.getElementById('modalNovaVenda');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    function calcularTotal() {
+      const quantidade = parseFloat(document.getElementById('quantidadeInput').value) || 0;
+      const preco = parseFloat(document.getElementById('precoInput').value) || 0;
+      const total = quantidade * preco;
+
+      document.getElementById('totalVenda').textContent =
+        'R$ ' + total.toFixed(2).replace('.', ',');
+    }
+
+    async function carregarProdutos() {
+      try {
+        const response = await fetch('/api/produtos');
+        const data = await response.json();
+
+        if (data.success && data.data) {
+          const select = document.getElementById('produtoSelect');
+          select.innerHTML = '<option value="">Selecione um produto...</option>';
+
+          data.data.forEach(produto => {
+            const option = document.createElement('option');
+            option.value = produto.id_produto;
+            option.textContent = `${produto.nome} (${produto.sku}) - Estoque: ${produto.estoque_atual}`;
+            option.dataset.preco = produto.preco;
+            select.appendChild(option);
+          });
+
+          // Auto-preencher preço quando selecionar produto
+          select.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.dataset.preco) {
+              document.getElementById('precoInput').value = selectedOption.dataset.preco;
+              calcularTotal();
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao carregar produtos:', error);
+        alert('Erro ao carregar produtos. Tente novamente.');
+      }
+    }
+
+    async function criarNovaVenda(event) {
+      event.preventDefault();
+
+      const formData = {
+        id_produto: document.getElementById('produtoSelect').value,
+        quantidade: parseInt(document.getElementById('quantidadeInput').value),
+        preco_unitario: parseFloat(document.getElementById('precoInput').value),
+        id_plataforma: document.getElementById('plataformaSelect').value,
+        data: document.getElementById('dataInput').value
+      };
+
+      // Validações
+      if (!formData.id_produto) {
+        alert('Por favor, selecione um produto.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/vendas', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('✅ Venda criada com sucesso!');
+          fecharModalNovaVenda();
+          location.reload(); // Recarregar página para mostrar nova venda
+        } else {
+          alert('❌ Erro ao criar venda: ' + (result.error || 'Erro desconhecido'));
+        }
+      } catch (error) {
+        console.error('Erro ao criar venda:', error);
+        alert('❌ Erro ao criar venda. Tente novamente.');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/css/estilos.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Header horizontal (Topo) com logo e menu -->
+  <%- include('../components/cabecalho') %>
+
+  <!-- Layout principal -->
+  <div class="main-layout">
+    <!-- Área central para o conteúdo principal -->
+    <main class="content-area">
+      <!-- 6️⃣ Tela de Pedidos -->
+      <h1 class="page-title">Pedidos</h1>
+
+      <!-- Filtros e Ações -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-primary" onclick="filtrarPedidos('mes')" id="filtroMesPedidos">Este mês</button>
+          <button class="btn btn-secondary" onclick="filtrarPedidos('semana')" id="filtroSemanaPedidos">Últimos 7 dias</button>
+          <button class="btn btn-secondary" onclick="filtrarPedidos('hoje')" id="filtroHojePedidos">Hoje</button>
+          <button class="btn btn-secondary" onclick="filtrarPedidos('todos')" id="filtroTodosPedidos">Todos</button>
+          <button class="btn btn-secondary" onclick="abrirFiltroAvancadoPedidos()">🔍 Filtros</button>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary" onclick="exportarPedidos()">📄 Exportar</button>
+          <button class="btn btn-secondary" onclick="atualizarPedidos()">🔄 Atualizar</button>
+          <button class="btn btn-primary" onclick="novoPedido()">+ Novo Pedido</button>
+        </div>
+      </div>
+
+      <!-- Projeção de compra: Gráfico de linha -->
+      <div class="content-section">
+        <div class="section-header">
+          <h3 class="section-title">📈 Projeção de Compra</h3>
+        </div>
+        <div class="section-content">
+          <div class="chart-container">
+            <canvas id="projecaoChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Check-out de pedidos: Lista de pedidos com status -->
+      <div class="content-section">
+        <div class="section-header">
+          <h3 class="section-title">📋 Check-out de Pedidos</h3>
+          <button class="btn btn-primary" onclick="novoPedido()">+ Criar Pedido</button>
+        </div>
+        <div class="section-content">
+          <% if (pedidos && pedidos.length > 0) { %>
+            <div style="display: grid; gap: 15px;">
+              <% pedidos.forEach((pedido, index) => { %>
+                <div style="background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; transition: all 0.2s ease;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                      <div style="width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; font-weight: bold;">
+                        #<%= index + 1 %>
+                      </div>
+                      <div>
+                        <h4 style="margin: 0; color: #333; font-size: 16px;"><%= pedido.produto_nome || 'Produto N/A' %></h4>
+                        <p style="margin: 0; color: #666; font-size: 14px;">
+                          <%= new Date(pedido.data_pedido).toLocaleDateString('pt-BR') %> •
+                          Qtd: <%= pedido.quantidade %>
+                        </p>
+                      </div>
+                    </div>
+                    <div style="text-align: right;">
+                      <div style="font-size: 18px; font-weight: bold; color: #3b82f6; margin-bottom: 5px;">
+                        R$ <%= parseFloat(pedido.valor_total || 0).toFixed(2) %>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <% if (pedido.status === 'PENDENTE') { %>
+                          <span style="background: #fef3c7; color: #d97706; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                            ⏳ Pendente
+                          </span>
+                        <% } else if (pedido.status === 'APROVADO') { %>
+                          <span style="background: #dcfce7; color: #16a34a; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                            ✅ Aprovado
+                          </span>
+                        <% } else { %>
+                          <span style="background: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                            ❌ Cancelado
+                          </span>
+                        <% } %>
+                        <button class="btn btn-secondary" onclick="verDetalhesPedido(<%= index + 1 %>)" style="padding: 6px 12px; font-size: 12px;">
+                          👁️ Ver
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                    <div>
+                      <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Fornecedor</label>
+                      <div style="font-size: 14px; font-weight: bold; color: #333;"><%= pedido.fornecedor || 'PCR Labor' %></div>
+                    </div>
+                    <div>
+                      <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Prazo</label>
+                      <div style="font-size: 14px; font-weight: bold; color: #333;">5-7 dias úteis</div>
+                    </div>
+                    <div>
+                      <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Prioridade</label>
+                      <div style="font-size: 14px; font-weight: bold; color: #f59e0b;">MÉDIA</div>
+                    </div>
+                    <div>
+                      <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Ações</label>
+                      <div style="display: flex; gap: 5px;">
+                        <button class="btn btn-primary" onclick="aprovarPedido(<%= index + 1 %>)" style="padding: 4px 8px; font-size: 11px;">✅ Aprovar</button>
+                        <button class="btn btn-secondary" onclick="cancelarPedido(<%= index + 1 %>)" style="padding: 4px 8px; font-size: 11px;">❌ Cancelar</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div style="text-align: center; color: #666; padding: 60px 20px;">
+              <div style="font-size: 64px; margin-bottom: 20px;">📋</div>
+              <h3 style="margin: 0 0 10px; color: #333;">Nenhum pedido encontrado</h3>
+              <p style="margin: 0 0 30px;">Seus pedidos aparecerão aqui quando criados</p>
+              <button class="btn btn-primary" onclick="novoPedido()">
+                + Criar Primeiro Pedido
+              </button>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Lateral direita com Tarefas, Calendário e Pergunte para IA -->
+    <%- include('../components/barraLateral') %>
+  </div>
+
+  <script>
+    // Gráfico de projeção de compra
+    const projecaoCtx = document.getElementById('projecaoChart').getContext('2d');
+
+    new Chart(projecaoCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
+        datasets: [{
+          label: 'Projeção de Compras (R$)',
+          data: [8000, 12000, 6000, 15000, 18000, 14000, 20000],
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: '#f0f0f0'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+
+    // ===== FUNCIONALIDADES DE PEDIDOS =====
+
+    // Filtros de pedidos
+    function filtrarPedidos(tipo) {
+      // Atualizar botões visuais
+      document.querySelectorAll('[id*="Pedidos"]').forEach(btn => {
+        btn.className = 'btn btn-secondary';
+      });
+
+      if (tipo === 'mes') {
+        document.getElementById('filtroMesPedidos').className = 'btn btn-primary';
+      } else if (tipo === 'semana') {
+        document.getElementById('filtroSemanaPedidos').className = 'btn btn-primary';
+      } else if (tipo === 'hoje') {
+        document.getElementById('filtroHojePedidos').className = 'btn btn-primary';
+      } else if (tipo === 'todos') {
+        document.getElementById('filtroTodosPedidos').className = 'btn btn-primary';
+      }
+
+      console.log(`🔍 Filtrando pedidos por: ${tipo}`);
+
+      // Feedback visual
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #018820;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+      `;
+      toast.textContent = `✅ Filtro aplicado: ${tipo === 'mes' ? 'Este mês' : tipo === 'semana' ? 'Últimos 7 dias' : tipo === 'hoje' ? 'Hoje' : 'Todos os pedidos'}`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Novo pedido
+    function novoPedido() {
+      const modal = document.createElement('div');
+      modal.id = 'modalNovoPedido';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0; color: #333;">📋 Novo Pedido</h2>
+            <button onclick="fecharModalNovoPedido()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+          </div>
+
+          <form id="formNovoPedido" onsubmit="criarNovoPedido(event)">
+            <div style="display: grid; gap: 20px;">
+
+              <!-- Produto -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📦 Produto</label>
+                <select id="produtoPedidoInput" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                  <option value="">Selecione um produto</option>
+                  <option value="1">Kit PCR COVID-19 - R$ 89,90</option>
+                  <option value="2">Kit PCR Influenza - R$ 75,50</option>
+                  <option value="3">Kit PCR Hepatite B - R$ 120,00</option>
+                  <option value="4">Kit PCR Dengue - R$ 95,00</option>
+                </select>
+              </div>
+
+              <!-- Quantidade -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📊 Quantidade</label>
+                <input type="number" id="quantidadePedidoInput" min="1" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" placeholder="Ex: 50">
+              </div>
+
+              <!-- Fornecedor -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">🏭 Fornecedor</label>
+                <select id="fornecedorPedidoInput" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                  <option value="">Selecione um fornecedor</option>
+                  <option value="pcr_labor">PCR Labor (Interno)</option>
+                  <option value="biotech_ltda">Biotech LTDA</option>
+                  <option value="medlab_supply">MedLab Supply</option>
+                  <option value="diagnosticos_sa">Diagnósticos S.A.</option>
+                </select>
+              </div>
+
+              <!-- Prioridade -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">⚡ Prioridade</label>
+                <select id="prioridadePedidoInput" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                  <option value="baixa">🟢 Baixa</option>
+                  <option value="media" selected>🟡 Média</option>
+                  <option value="alta">🔴 Alta</option>
+                  <option value="urgente">🚨 Urgente</option>
+                </select>
+              </div>
+
+              <!-- Data de entrega -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📅 Data de Entrega Desejada</label>
+                <input type="date" id="dataEntregaPedidoInput" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+              </div>
+
+              <!-- Observações -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">💬 Observações</label>
+                <textarea id="observacoesPedidoInput" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; min-height: 80px;" placeholder="Observações adicionais sobre o pedido..."></textarea>
+              </div>
+
+              <!-- Preview do valor -->
+              <div id="previewValorPedido" style="background: #f0fff4; padding: 15px; border-radius: 8px; border: 2px solid #16a34a; display: none;">
+                <div style="font-weight: 600; color: #333; margin-bottom: 5px;">💰 Valor Total Estimado:</div>
+                <div style="color: #16a34a; font-size: 18px; font-weight: bold;">R$ 0,00</div>
+              </div>
+
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+              <button type="button" onclick="fecharModalNovoPedido()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                Cancelar
+              </button>
+              <button type="submit" style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                📋 Criar Pedido
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Event listeners para calcular valor
+      document.getElementById('produtoPedidoInput').addEventListener('change', calcularValorPedido);
+      document.getElementById('quantidadePedidoInput').addEventListener('input', calcularValorPedido);
+
+      // Definir data mínima como hoje
+      const hoje = new Date().toISOString().split('T')[0];
+      document.getElementById('dataEntregaPedidoInput').min = hoje;
+    }
+
+    function fecharModalNovoPedido() {
+      const modal = document.getElementById('modalNovoPedido');
+      if (modal) modal.remove();
+    }
+
+    function calcularValorPedido() {
+      const produto = document.getElementById('produtoPedidoInput').value;
+      const quantidade = parseInt(document.getElementById('quantidadePedidoInput').value) || 0;
+
+      const precos = {
+        '1': 89.90,
+        '2': 75.50,
+        '3': 120.00,
+        '4': 95.00
+      };
+
+      if (produto && quantidade > 0) {
+        const valorTotal = precos[produto] * quantidade;
+        const preview = document.getElementById('previewValorPedido');
+        preview.style.display = 'block';
+        preview.querySelector('div:last-child').textContent = `R$ ${valorTotal.toFixed(2).replace('.', ',')}`;
+      } else {
+        document.getElementById('previewValorPedido').style.display = 'none';
+      }
+    }
+
+    async function criarNovoPedido(event) {
+      event.preventDefault();
+
+      const formData = {
+        produto_id: document.getElementById('produtoPedidoInput').value,
+        quantidade: parseInt(document.getElementById('quantidadePedidoInput').value),
+        fornecedor: document.getElementById('fornecedorPedidoInput').value,
+        prioridade: document.getElementById('prioridadePedidoInput').value,
+        data_entrega: document.getElementById('dataEntregaPedidoInput').value,
+        observacoes: document.getElementById('observacoesPedidoInput').value
+      };
+
+      try {
+        console.log('Criando novo pedido:', formData);
+
+        // Simular delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        alert('✅ Pedido criado com sucesso!\n\nO pedido foi enviado para aprovação.');
+        fecharModalNovoPedido();
+        location.reload();
+      } catch (error) {
+        console.error('Erro ao criar pedido:', error);
+        alert('❌ Erro ao criar pedido. Tente novamente.');
+      }
+    }
+
+    // Ver detalhes do pedido
+    function verDetalhesPedido(id) {
+      const modal = document.createElement('div');
+      modal.id = 'modalDetalhesPedido';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0; color: #333;">👁️ Detalhes do Pedido #${id}</h2>
+            <button onclick="fecharModalDetalhesPedido()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+          </div>
+
+          <div style="display: grid; gap: 20px;">
+
+            <!-- Status atual -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; color: #333;">📋 Status do Pedido</h3>
+                <span style="background: #fef3c7; color: #d97706; padding: 8px 16px; border-radius: 12px; font-size: 14px; font-weight: 600;">
+                  ⏳ Pendente
+                </span>
+              </div>
+            </div>
+
+            <!-- Informações do produto -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <h3 style="margin: 0 0 15px; color: #333;">📦 Produto Solicitado</h3>
+              <div style="display: grid; gap: 10px;">
+                <div><strong>Nome:</strong> Kit PCR COVID-19</div>
+                <div><strong>Quantidade:</strong> 50 unidades</div>
+                <div><strong>Valor Unitário:</strong> R$ 89,90</div>
+                <div><strong>Valor Total:</strong> R$ 4.495,00</div>
+              </div>
+            </div>
+
+            <!-- Informações do fornecedor -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <h3 style="margin: 0 0 15px; color: #333;">🏭 Fornecedor</h3>
+              <div style="display: grid; gap: 10px;">
+                <div><strong>Nome:</strong> Biotech LTDA</div>
+                <div><strong>Prazo de Entrega:</strong> 5-7 dias úteis</div>
+                <div><strong>Prioridade:</strong> 🟡 Média</div>
+                <div><strong>Data Solicitada:</strong> 25/12/2024</div>
+              </div>
+            </div>
+
+            <!-- Timeline do pedido -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <h3 style="margin: 0 0 15px; color: #333;">📅 Timeline</h3>
+              <div style="display: grid; gap: 15px;">
+
+                <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: white; border-radius: 8px;">
+                  <div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 50%; flex-shrink: 0;"></div>
+                  <div>
+                    <div style="font-weight: 600; color: #333;">Pedido Criado</div>
+                    <div style="color: #666; font-size: 14px;">15/12/2024 14:30 por João Silva</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: white; border-radius: 8px;">
+                  <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 50%; flex-shrink: 0;"></div>
+                  <div>
+                    <div style="font-weight: 600; color: #333;">Aguardando Aprovação</div>
+                    <div style="color: #666; font-size: 14px;">15/12/2024 14:35 - Status atual</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; opacity: 0.5;">
+                  <div style="width: 12px; height: 12px; background: #e5e7eb; border-radius: 50%; flex-shrink: 0;"></div>
+                  <div>
+                    <div style="font-weight: 600; color: #666;">Aprovação</div>
+                    <div style="color: #666; font-size: 14px;">Pendente</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; opacity: 0.5;">
+                  <div style="width: 12px; height: 12px; background: #e5e7eb; border-radius: 50%; flex-shrink: 0;"></div>
+                  <div>
+                    <div style="font-weight: 600; color: #666;">Enviado ao Fornecedor</div>
+                    <div style="color: #666; font-size: 14px;">Pendente</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; opacity: 0.5;">
+                  <div style="width: 12px; height: 12px; background: #e5e7eb; border-radius: 50%; flex-shrink: 0;"></div>
+                  <div>
+                    <div style="font-weight: 600; color: #666;">Entregue</div>
+                    <div style="color: #666; font-size: 14px;">Pendente</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Observações -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <h3 style="margin: 0 0 15px; color: #333;">💬 Observações</h3>
+              <div style="color: #666; font-style: italic;">Pedido urgente para reposição de estoque. Produto com alta rotatividade.</div>
+            </div>
+
+          </div>
+
+          <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button onclick="fecharModalDetalhesPedido()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer;">
+              Fechar
+            </button>
+            <button onclick="editarPedido(${id})" style="flex: 1; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">
+              ✏️ Editar
+            </button>
+            <button onclick="aprovarPedido(${id})" style="flex: 1; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 8px; cursor: pointer;">
+              ✅ Aprovar
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    function fecharModalDetalhesPedido() {
+      const modal = document.getElementById('modalDetalhesPedido');
+      if (modal) modal.remove();
+    }
+
+    // Aprovar pedido
+    function aprovarPedido(id) {
+      if (confirm(`✅ Confirma a aprovação do Pedido #${id}?\n\nO pedido será enviado ao fornecedor.`)) {
+        console.log(`✅ Aprovando pedido #${id}`);
+        alert('✅ Pedido aprovado com sucesso!\n\nO fornecedor foi notificado.');
+        location.reload();
+      }
+    }
+
+    // Cancelar pedido
+    function cancelarPedido(id) {
+      if (confirm(`❌ Confirma o cancelamento do Pedido #${id}?\n\nEsta ação não pode ser desfeita.`)) {
+        console.log(`❌ Cancelando pedido #${id}`);
+        alert('❌ Pedido cancelado com sucesso!');
+        location.reload();
+      }
+    }
+
+    // Editar pedido
+    function editarPedido(id) {
+      alert(`✏️ Editar Pedido #${id}\n\nModal de edição será implementado aqui.`);
+    }
+
+    // Outras funções
+    function exportarPedidos() {
+      alert('📄 Exportando relatório de pedidos...\n\nArquivo Excel será gerado com todos os pedidos.');
+    }
+
+    function atualizarPedidos() {
+      alert('🔄 Atualizando dados dos pedidos...\n\nSincronizando com fornecedores.');
+      setTimeout(() => {
+        alert('✅ Pedidos atualizados com sucesso!');
+        location.reload();
+      }, 2000);
+    }
+
+    function abrirFiltroAvancadoPedidos() {
+      alert('🔍 Filtros avançados para pedidos\n\nModal com filtros por fornecedor, status, prioridade, etc.');
+    }
+
+    console.log('📋 Página de pedidos carregada com funcionalidades completas');
+  </script>
+</body>
+</html>

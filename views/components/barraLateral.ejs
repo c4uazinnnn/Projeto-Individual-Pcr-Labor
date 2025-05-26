@@ -1,0 +1,815 @@
+<!-- LATERAL DIREITA (SEMPRE PRESENTE) -->
+<aside class="sidebar-right">
+  <!-- Tarefas: Lista de tarefas rápidas (DESIGN MELHORADO) -->
+  <div class="tasks-section">
+    <h3 class="section-title">
+      <span>✅</span>
+      Tarefas
+    </h3>
+
+    <!-- Caixa das tarefas com design melhorado -->
+    <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <span style="font-size: 14px; font-weight: 600; color: #333;">Pendentes</span>
+        <span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">4</span>
+      </div>
+
+      <div style="display: grid; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
+          <input type="checkbox" id="task1" style="margin: 0; cursor: pointer;" onchange="toggleTask(this)">
+          <label for="task1" style="flex: 1; font-size: 13px; color: #333; cursor: pointer; margin: 0;">Revisar pedidos pendentes</label>
+          <span style="color: #f59e0b; font-size: 11px;">🔥 Urgente</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: #dcfce7; border-radius: 8px; opacity: 0.7;">
+          <input type="checkbox" id="task2" checked style="margin: 0; cursor: pointer;" onchange="toggleTask(this)">
+          <label for="task2" style="flex: 1; font-size: 13px; color: #333; cursor: pointer; margin: 0; text-decoration: line-through;">Sincronizar Mercado Livre</label>
+          <span style="color: #16a34a; font-size: 11px;">✅ Feito</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
+          <input type="checkbox" id="task3" style="margin: 0; cursor: pointer;" onchange="toggleTask(this)">
+          <label for="task3" style="flex: 1; font-size: 13px; color: #333; cursor: pointer; margin: 0;">Atualizar preços Shopee</label>
+          <span style="color: #3b82f6; font-size: 11px;">📅 Hoje</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
+          <input type="checkbox" id="task4" style="margin: 0; cursor: pointer;" onchange="toggleTask(this)">
+          <label for="task4" style="flex: 1; font-size: 13px; color: #333; cursor: pointer; margin: 0;">Verificar estoque baixo</label>
+          <span style="color: #f59e0b; font-size: 11px;">⚠️ Alerta</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
+          <input type="checkbox" id="task5" style="margin: 0; cursor: pointer;" onchange="toggleTask(this)">
+          <label for="task5" style="flex: 1; font-size: 13px; color: #333; cursor: pointer; margin: 0;">Enviar relatório mensal</label>
+          <span style="color: #8b5cf6; font-size: 11px;">📊 Relatório</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0; display: grid; gap: 8px;">
+        <button onclick="adicionarTarefa()" style="width: 100%; padding: 8px; background: #f8f9fa; border: 1px dashed #ccc; border-radius: 6px; color: #666; font-size: 12px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
+          + Adicionar tarefa
+        </button>
+        <button onclick="verTodasTarefas()" style="width: 100%; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+          📋 Ver todas
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendário: Pequeno calendário mensal -->
+  <div class="calendar-section">
+    <h3 class="section-title">
+      <span>📅</span>
+      Calendário
+    </h3>
+
+    <div class="mini-calendar">
+      <div class="calendar-header" id="currentMonth">
+        Janeiro 2024
+      </div>
+
+      <div class="calendar-grid" id="calendarGrid">
+        <!-- Cabeçalho dos dias -->
+        <div style="font-weight: bold; color: #666; text-align: center;">D</div>
+        <div style="font-weight: bold; color: #666; text-align: center;">S</div>
+        <div style="font-weight: bold; color: #666; text-align: center;">T</div>
+        <div style="font-weight: bold; color: #666; text-align: center;">Q</div>
+        <div style="font-weight: bold; color: #666; text-align: center;">Q</div>
+        <div style="font-weight: bold; color: #666; text-align: center;">S</div>
+        <div style="font-weight: bold; color: #666; text-align: center;">S</div>
+
+        <!-- Dias do mês serão inseridos aqui via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Botão "Pergunte para IA" -->
+  <div class="ai-section">
+    <h3 class="section-title">
+      <span>🤖</span>
+      Assistente IA
+    </h3>
+
+    <button class="ai-button" onclick="perguntarIA()">
+      Pergunte para IA
+    </button>
+
+    <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px; color: #666;">
+      <strong>💡 Dica do dia:</strong><br>
+      <span id="aiTip">Considere reabastecer o estoque de Kit PCR COVID-19. Vendas aumentaram 15% esta semana.</span>
+    </div>
+  </div>
+</aside>
+
+<script>
+  // Gerar calendário (CORRIGIDO)
+  function generateCalendar() {
+    const now = new Date();
+    const currentMonth = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    document.getElementById('currentMonth').textContent = currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1);
+
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    // Calcular o primeiro dia da semana a ser mostrado
+    const startDate = new Date(firstDay);
+    const dayOfWeek = firstDay.getDay(); // 0 = domingo, 1 = segunda, etc.
+    startDate.setDate(firstDay.getDate() - dayOfWeek);
+
+    const calendarGrid = document.getElementById('calendarGrid');
+    if (!calendarGrid) return;
+
+    // Remover apenas os dias, mantendo o cabeçalho
+    const dayElements = calendarGrid.querySelectorAll('.calendar-day');
+    dayElements.forEach(el => el.remove());
+
+    // Gerar 42 dias (6 semanas x 7 dias)
+    for (let i = 0; i < 42; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+
+      const dayElement = document.createElement('div');
+      dayElement.className = 'calendar-day';
+      dayElement.textContent = currentDate.getDate();
+      dayElement.style.textAlign = 'center';
+      dayElement.style.cursor = 'pointer';
+
+      // Verificar se é do mês atual
+      if (currentDate.getMonth() === now.getMonth() && currentDate.getFullYear() === now.getFullYear()) {
+        // Verificar se é hoje
+        if (currentDate.getDate() === now.getDate()) {
+          dayElement.classList.add('today');
+        }
+        dayElement.style.color = '#333';
+      } else {
+        // Dias de outros meses ficam mais claros
+        dayElement.style.opacity = '0.4';
+        dayElement.style.color = '#999';
+      }
+
+      calendarGrid.appendChild(dayElement);
+    }
+  }
+
+  // Função para perguntar à IA
+  function perguntarIA() {
+    abrirChatIA();
+  }
+
+  // ===== CHAT IA FUNCIONAL =====
+  function abrirChatIA() {
+    // Criar modal de chat
+    const modal = document.createElement('div');
+    modal.id = 'modalChatIA';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    `;
+
+    modal.innerHTML = `
+      <div style="background: white; border-radius: 12px; width: 90%; max-width: 500px; height: 600px; display: flex; flex-direction: column;">
+        <!-- Header do Chat -->
+        <div style="padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #8b5cf6, #3b82f6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px;">🤖</div>
+            <div>
+              <h3 style="margin: 0; color: #333;">IA PCR Labor</h3>
+              <p style="margin: 0; color: #666; font-size: 12px;">Assistente Inteligente</p>
+            </div>
+          </div>
+          <button onclick="fecharChatIA()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+        </div>
+
+        <!-- Área de mensagens -->
+        <div id="chatMessages" style="flex: 1; padding: 20px; overflow-y: auto; background: #f8f9fa;">
+          <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 15px;">
+            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #8b5cf6, #3b82f6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">🤖</div>
+            <div style="background: white; padding: 12px 16px; border-radius: 12px; border-top-left-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 80%;">
+              <p style="margin: 0; color: #333; font-size: 14px;">Olá! Sou a IA do PCR Labor. Como posso ajudar você hoje? Posso responder sobre vendas, estoque, relatórios e muito mais!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input de mensagem -->
+        <div style="padding: 20px; border-top: 1px solid #e0e0e0;">
+          <div style="display: flex; gap: 12px;">
+            <input type="text" id="chatInput" placeholder="Digite sua pergunta..."
+                   style="flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;"
+                   onkeypress="if(event.key==='Enter') enviarMensagem()">
+            <button onclick="enviarMensagem()"
+                    style="padding: 12px 20px; background: #8b5cf6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
+              Enviar
+            </button>
+          </div>
+
+          <!-- Sugestões rápidas -->
+          <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <button onclick="perguntaRapida('Como estão as vendas hoje?')" style="padding: 6px 12px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 16px; font-size: 12px; cursor: pointer;">📊 Vendas hoje</button>
+            <button onclick="perguntaRapida('Quais produtos estão com estoque baixo?')" style="padding: 6px 12px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 16px; font-size: 12px; cursor: pointer;">📦 Estoque baixo</button>
+            <button onclick="perguntaRapida('Gerar relatório de vendas')" style="padding: 6px 12px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 16px; font-size: 12px; cursor: pointer;">📄 Relatório</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    document.getElementById('chatInput').focus();
+  }
+
+  function fecharChatIA() {
+    const modal = document.getElementById('modalChatIA');
+    if (modal) {
+      modal.remove();
+    }
+  }
+
+  function perguntaRapida(pergunta) {
+    document.getElementById('chatInput').value = pergunta;
+    enviarMensagem();
+  }
+
+  function enviarMensagem() {
+    const input = document.getElementById('chatInput');
+    const mensagem = input.value.trim();
+
+    if (!mensagem) return;
+
+    // Adicionar mensagem do usuário
+    adicionarMensagem(mensagem, 'usuario');
+    input.value = '';
+
+    // Simular "digitando..."
+    setTimeout(() => {
+      adicionarMensagem('digitando...', 'ia', true);
+
+      // Resposta da IA após 2 segundos
+      setTimeout(() => {
+        removerDigitando();
+        const resposta = gerarRespostaIA(mensagem);
+        adicionarMensagem(resposta, 'ia');
+      }, 2000);
+    }, 500);
+  }
+
+  function adicionarMensagem(texto, tipo, digitando = false) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+
+    if (tipo === 'usuario') {
+      messageDiv.innerHTML = `
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+          <div style="background: #8b5cf6; color: white; padding: 12px 16px; border-radius: 12px; border-top-right-radius: 4px; max-width: 80%;">
+            <p style="margin: 0; font-size: 14px;">${texto}</p>
+          </div>
+        </div>
+      `;
+    } else {
+      messageDiv.innerHTML = `
+        <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 15px;" ${digitando ? 'id="digitandoMsg"' : ''}>
+          <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #8b5cf6, #3b82f6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">🤖</div>
+          <div style="background: white; padding: 12px 16px; border-radius: 12px; border-top-left-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 80%;">
+            <p style="margin: 0; color: #333; font-size: 14px; ${digitando ? 'font-style: italic; opacity: 0.7;' : ''}">${texto}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function removerDigitando() {
+    const digitandoMsg = document.getElementById('digitandoMsg');
+    if (digitandoMsg) {
+      digitandoMsg.remove();
+    }
+  }
+
+  function gerarRespostaIA(pergunta) {
+    const perguntaLower = pergunta.toLowerCase();
+
+    // Respostas baseadas em palavras-chave
+    if (perguntaLower.includes('venda') || perguntaLower.includes('vendas')) {
+      return `📊 **Análise de Vendas:**\n\n• Total hoje: R$ 2.450,00\n• Crescimento: +15% vs ontem\n• Melhor produto: Kit PCR COVID-19\n• Plataforma líder: Mercado Livre (60%)\n\nRecomendo focar na promoção dos kits de Hepatite B que estão com baixa rotatividade.`;
+    }
+
+    if (perguntaLower.includes('estoque')) {
+      return `📦 **Status do Estoque:**\n\n⚠️ **Produtos com estoque baixo:**\n• Kit PCR Dengue: 5 unidades\n• Kit PCR Zika: 8 unidades\n\n✅ **Estoque adequado:**\n• Kit PCR COVID-19: 150 unidades\n• Kit PCR Influenza: 200 unidades\n\nSugestão: Reabastecer os produtos em alerta.`;
+    }
+
+    if (perguntaLower.includes('relatório') || perguntaLower.includes('relatorio')) {
+      return `📄 **Relatórios Disponíveis:**\n\n1. **Vendas Mensais** - Análise completa\n2. **Estoque Atual** - Status detalhado\n3. **Performance por Plataforma**\n4. **Produtos Mais Vendidos**\n\nPosso gerar qualquer um desses relatórios. Qual você gostaria?`;
+    }
+
+    if (perguntaLower.includes('plataforma')) {
+      return `🛒 **Performance das Plataformas:**\n\n• **Mercado Livre**: R$ 15.200 (60%)\n• **Shopee**: R$ 8.500 (33%)\n• **PCR Labor Direto**: R$ 1.800 (7%)\n\nO Mercado Livre está performando muito bem! Considere aumentar o investimento em anúncios lá.`;
+    }
+
+    if (perguntaLower.includes('produto') || perguntaLower.includes('produtos')) {
+      return `📦 **Análise de Produtos:**\n\n🏆 **Top 3 Mais Vendidos:**\n1. Kit PCR COVID-19 (45 vendas)\n2. Kit PCR Influenza (32 vendas)\n3. Kit PCR Hepatite B (18 vendas)\n\n💡 **Oportunidade:** Kit PCR Zika tem baixa rotatividade. Que tal uma promoção?`;
+    }
+
+    // Respostas genéricas inteligentes
+    const respostasGenericas = [
+      `🤖 Entendi sua pergunta sobre "${pergunta}". Com base nos dados atuais:\n\n• Suas vendas estão 12% acima da média\n• Estoque geral está adequado\n• Recomendo focar no Mercado Livre\n\nPrecisa de mais detalhes sobre algum aspecto específico?`,
+
+      `📊 Analisando "${pergunta}"...\n\n• Performance geral: Excelente\n• Tendência: Crescimento sustentável\n• Próximos passos: Expandir produtos de alta rotatividade\n\nQuer que eu detalhe alguma métrica específica?`,
+
+      `💡 Sobre "${pergunta}", posso ajudar!\n\n• Dados atualizados em tempo real\n• Análise preditiva disponível\n• Sugestões personalizadas prontas\n\nQual aspecto você gostaria de explorar mais?`
+    ];
+
+    return respostasGenericas[Math.floor(Math.random() * respostasGenericas.length)];
+  }
+
+  // Função para toggle de tarefas (NOVA)
+  function toggleTask(checkbox) {
+    const label = checkbox.nextElementSibling;
+    const container = checkbox.parentElement;
+
+    if (checkbox.checked) {
+      label.style.textDecoration = 'line-through';
+      container.style.background = '#dcfce7';
+      container.style.opacity = '0.7';
+
+      // Atualizar contador
+      const counter = document.querySelector('[style*="background: #f59e0b"]');
+      const currentCount = parseInt(counter.textContent);
+      counter.textContent = Math.max(0, currentCount - 1);
+
+      // Feedback visual
+      setTimeout(() => {
+        alert('✅ Tarefa concluída!\n\nParabéns por manter a produtividade!');
+      }, 100);
+    } else {
+      label.style.textDecoration = 'none';
+      container.style.background = '#f8f9fa';
+      container.style.opacity = '1';
+
+      // Atualizar contador
+      const counter = document.querySelector('[style*="background: #f59e0b"]');
+      const currentCount = parseInt(counter.textContent);
+      counter.textContent = currentCount + 1;
+    }
+  }
+
+  // ===== SISTEMA DE TAREFAS DEFINITIVO =====
+  // Armazenamento global de tarefas
+  if (!window.tarefasGlobais) {
+    window.tarefasGlobais = [
+      { id: 1, texto: 'Revisar pedidos pendentes', prioridade: 'urgente', concluida: false },
+      { id: 2, texto: 'Sincronizar Mercado Livre', prioridade: 'normal', concluida: true },
+      { id: 3, texto: 'Atualizar preços Shopee', prioridade: 'normal', concluida: false },
+      { id: 4, texto: 'Verificar estoque baixo', prioridade: 'alta', concluida: false },
+      { id: 5, texto: 'Enviar relatório mensal', prioridade: 'baixa', concluida: false }
+    ];
+  }
+
+  let tarefas = window.tarefasGlobais;
+
+  // Função para atualizar a exibição das tarefas na barra lateral
+  function atualizarExibicaoTarefas() {
+    const tarefasPendentes = tarefas.filter(t => !t.concluida);
+
+    // Seletor mais específico para evitar conflitos com gráficos
+    const containerTarefas = document.querySelector('.sidebar .content-section:first-child .section-content');
+
+    if (containerTarefas) {
+      // Limpar tarefas existentes
+      const tarefasExistentes = containerTarefas.querySelectorAll('[data-tarefa-id]');
+      tarefasExistentes.forEach(t => t.remove());
+
+      // Adicionar tarefas pendentes (máximo 3 na barra lateral)
+      tarefasPendentes.slice(0, 3).forEach(tarefa => {
+        const tarefaElement = document.createElement('div');
+        tarefaElement.setAttribute('data-tarefa-id', tarefa.id);
+        tarefaElement.style.cssText = `
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px;
+          background: #f8f9fa;
+          border-radius: 6px;
+          margin-bottom: 8px;
+          border-left: 3px solid ${getPrioridadeCor(tarefa.prioridade)};
+        `;
+
+        tarefaElement.innerHTML = `
+          <input type="checkbox" onchange="marcarTarefaConcluida(${tarefa.id}, this)" style="margin: 0; cursor: pointer;">
+          <span style="flex: 1; font-size: 12px; color: #333;">${tarefa.texto}</span>
+          <span style="font-size: 10px; color: #666;">${getPrioridadeTexto(tarefa.prioridade).split(' ')[0]}</span>
+        `;
+
+        // Inserir antes dos botões de tarefas
+        const botoesTarefas = containerTarefas.querySelector('[style*="border-top"][style*="gap: 8px"]');
+        if (botoesTarefas) {
+          containerTarefas.insertBefore(tarefaElement, botoesTarefas);
+        } else {
+          containerTarefas.appendChild(tarefaElement);
+        }
+      });
+    }
+
+    atualizarContadorTarefas();
+  }
+
+  function marcarTarefaConcluida(id, checkbox) {
+    const tarefa = window.tarefasGlobais.find(t => t.id === id);
+    if (tarefa) {
+      tarefa.concluida = checkbox.checked;
+      tarefas = window.tarefasGlobais; // Sincronizar
+
+      // Feedback visual
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #16a34a;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+        font-size: 14px;
+      `;
+      toast.textContent = checkbox.checked ? '✅ Tarefa concluída!' : '🔄 Tarefa reativada!';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+
+      // Atualizar exibição
+      setTimeout(() => {
+        atualizarExibicaoTarefas();
+      }, 500);
+    }
+  }
+
+  function adicionarTarefa() {
+    abrirModalTarefa();
+  }
+
+  function abrirModalTarefa(editarId = null) {
+    const tarefa = editarId ? tarefas.find(t => t.id === editarId) : null;
+    const titulo = editarId ? 'Editar Tarefa' : 'Nova Tarefa';
+
+    const modal = document.createElement('div');
+    modal.id = 'modalTarefa';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    `;
+
+    modal.innerHTML = `
+      <div style="background: white; border-radius: 12px; padding: 25px; width: 95%; max-width: 500px; max-height: 85vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0; color: #333; font-size: 18px;">📝 ${titulo}</h2>
+          <button onclick="fecharModalTarefa()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+        </div>
+
+        <form id="formTarefa" onsubmit="salvarTarefa(event, ${editarId})">
+          <div style="display: grid; gap: 20px;">
+
+            <!-- Descrição -->
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📝 Descrição da Tarefa</label>
+              <textarea id="descricaoTarefa" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; min-height: 80px; resize: vertical;" placeholder="Ex: Revisar pedidos pendentes de aprovação...">${tarefa ? tarefa.texto : ''}</textarea>
+            </div>
+
+            <!-- Prioridade -->
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">⚡ Prioridade</label>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; ${tarefa?.prioridade === 'baixa' ? 'border-color: #16a34a; background: #f0fff4;' : ''}" onclick="selecionarPrioridade('baixa')">
+                  <input type="radio" name="prioridade" value="baixa" ${tarefa?.prioridade === 'baixa' ? 'checked' : ''} style="margin: 0;">
+                  <span>🟢 Baixa</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; ${tarefa?.prioridade === 'normal' ? 'border-color: #3b82f6; background: #f0f8ff;' : ''}" onclick="selecionarPrioridade('normal')">
+                  <input type="radio" name="prioridade" value="normal" ${tarefa?.prioridade === 'normal' || !tarefa ? 'checked' : ''} style="margin: 0;">
+                  <span>🔵 Normal</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; ${tarefa?.prioridade === 'alta' ? 'border-color: #f59e0b; background: #fff8e1;' : ''}" onclick="selecionarPrioridade('alta')">
+                  <input type="radio" name="prioridade" value="alta" ${tarefa?.prioridade === 'alta' ? 'checked' : ''} style="margin: 0;">
+                  <span>🟡 Alta</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; ${tarefa?.prioridade === 'urgente' ? 'border-color: #ef4444; background: #fef2f2;' : ''}" onclick="selecionarPrioridade('urgente')">
+                  <input type="radio" name="prioridade" value="urgente" ${tarefa?.prioridade === 'urgente' ? 'checked' : ''} style="margin: 0;">
+                  <span>🔴 Urgente</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Data de vencimento -->
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📅 Data de Vencimento (Opcional)</label>
+              <input type="date" id="dataVencimento" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+            </div>
+
+            <!-- Categoria -->
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">🏷️ Categoria</label>
+              <select id="categoriaTarefa" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                <option value="geral">📋 Geral</option>
+                <option value="vendas">💰 Vendas</option>
+                <option value="estoque">📦 Estoque</option>
+                <option value="pedidos">📋 Pedidos</option>
+                <option value="plataformas">🛒 Plataformas</option>
+                <option value="financeiro">💳 Financeiro</option>
+                <option value="administrativo">🏢 Administrativo</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div style="display: flex; gap: 15px; margin-top: 25px;">
+            <button type="button" onclick="fecharModalTarefa()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+              Cancelar
+            </button>
+            <button type="submit" style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+              ${editarId ? '✅ Salvar' : '📝 Criar Tarefa'}
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    document.getElementById('descricaoTarefa').focus();
+  }
+
+  function fecharModalTarefa() {
+    const modal = document.getElementById('modalTarefa');
+    if (modal) modal.remove();
+  }
+
+  function selecionarPrioridade(prioridade) {
+    const radios = document.querySelectorAll('input[name="prioridade"]');
+    const labels = document.querySelectorAll('label[onclick*="selecionarPrioridade"]');
+
+    radios.forEach(radio => radio.checked = radio.value === prioridade);
+
+    labels.forEach(label => {
+      label.style.borderColor = '#e0e0e0';
+      label.style.background = 'white';
+    });
+
+    const cores = {
+      'baixa': { border: '#16a34a', bg: '#f0fff4' },
+      'normal': { border: '#3b82f6', bg: '#f0f8ff' },
+      'alta': { border: '#f59e0b', bg: '#fff8e1' },
+      'urgente': { border: '#ef4444', bg: '#fef2f2' }
+    };
+
+    const labelSelecionada = document.querySelector(`label[onclick="selecionarPrioridade('${prioridade}')"]`);
+    if (labelSelecionada && cores[prioridade]) {
+      labelSelecionada.style.borderColor = cores[prioridade].border;
+      labelSelecionada.style.background = cores[prioridade].bg;
+    }
+  }
+
+  function salvarTarefa(event, editarId) {
+    event.preventDefault();
+
+    const descricao = document.getElementById('descricaoTarefa').value.trim();
+    const prioridade = document.querySelector('input[name="prioridade"]:checked').value;
+    const dataVencimento = document.getElementById('dataVencimento').value;
+    const categoria = document.getElementById('categoriaTarefa').value;
+
+    if (!descricao) {
+      alert('❌ Por favor, digite a descrição da tarefa.');
+      return;
+    }
+
+    if (editarId) {
+      // Editar tarefa existente
+      const tarefa = window.tarefasGlobais.find(t => t.id === editarId);
+      if (tarefa) {
+        tarefa.texto = descricao;
+        tarefa.prioridade = prioridade;
+        tarefa.dataVencimento = dataVencimento;
+        tarefa.categoria = categoria;
+      }
+      alert('✅ Tarefa editada com sucesso!');
+    } else {
+      // Criar nova tarefa
+      const novaTarefa = {
+        id: Date.now(),
+        texto: descricao,
+        prioridade,
+        dataVencimento,
+        categoria,
+        concluida: false,
+        criadaEm: new Date()
+      };
+      window.tarefasGlobais.push(novaTarefa);
+      alert('✅ Tarefa criada com sucesso!');
+    }
+
+    // Sincronizar variável local
+    tarefas = window.tarefasGlobais;
+
+    fecharModalTarefa();
+    atualizarExibicaoTarefas(); // Atualizar barra lateral
+  }
+
+  function atualizarContadorTarefas() {
+    const tarefasPendentes = tarefas.filter(t => !t.concluida).length;
+    const counter = document.querySelector('[style*="background: #f59e0b"]');
+    if (counter) {
+      counter.textContent = tarefasPendentes;
+    }
+  }
+
+  // Função para ver todas as tarefas
+  function verTodasTarefas() {
+    abrirModalListaTarefas();
+  }
+
+  function abrirModalListaTarefas() {
+    const modal = document.createElement('div');
+    modal.id = 'modalListaTarefas';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    `;
+
+    const tarefasPendentes = tarefas.filter(t => !t.concluida);
+    const tarefasConcluidas = tarefas.filter(t => t.concluida);
+
+    modal.innerHTML = `
+      <div style="background: white; border-radius: 12px; padding: 25px; width: 95%; max-width: 700px; max-height: 85vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0; color: #333; font-size: 18px;">📋 Todas as Tarefas</h2>
+          <button onclick="fecharModalListaTarefas()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+        </div>
+
+        <!-- Estatísticas -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px;">
+          <div style="text-align: center; padding: 15px; background: #f0fff4; border-radius: 8px; border-left: 4px solid #16a34a;">
+            <div style="font-size: 24px; font-weight: bold; color: #16a34a;">${tarefasConcluidas.length}</div>
+            <div style="font-size: 12px; color: #666;">Concluídas</div>
+          </div>
+          <div style="text-align: center; padding: 15px; background: #fff8e1; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <div style="font-size: 24px; font-weight: bold; color: #f59e0b;">${tarefasPendentes.length}</div>
+            <div style="font-size: 12px; color: #666;">Pendentes</div>
+          </div>
+          <div style="text-align: center; padding: 15px; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <div style="font-size: 24px; font-weight: bold; color: #3b82f6;">${tarefas.length}</div>
+            <div style="font-size: 12px; color: #666;">Total</div>
+          </div>
+        </div>
+
+        <!-- Tarefas Pendentes -->
+        <div style="margin-bottom: 25px;">
+          <h3 style="margin: 0 0 15px; color: #333; font-size: 16px;">⏳ Pendentes (${tarefasPendentes.length})</h3>
+          <div style="display: grid; gap: 10px;">
+            ${tarefasPendentes.map(tarefa => `
+              <div style="display: flex; align-items: center; gap: 12px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid ${getPrioridadeCor(tarefa.prioridade)};">
+                <input type="checkbox" onchange="toggleTarefaModal(${tarefa.id}, this)" style="margin: 0; cursor: pointer;">
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; color: #333; margin-bottom: 4px;">${tarefa.texto}</div>
+                  <div style="display: flex; gap: 10px; font-size: 12px; color: #666;">
+                    <span>${getPrioridadeTexto(tarefa.prioridade)}</span>
+                    ${tarefa.categoria ? `<span>• ${getCategoriaTexto(tarefa.categoria)}</span>` : ''}
+                    ${tarefa.dataVencimento ? `<span>• 📅 ${new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}</span>` : ''}
+                  </div>
+                </div>
+                <button onclick="abrirModalTarefa(${tarefa.id})" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">✏️ Editar</button>
+                <button onclick="excluirTarefa(${tarefa.id})" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">🗑️</button>
+              </div>
+            `).join('')}
+            ${tarefasPendentes.length === 0 ? '<div style="text-align: center; padding: 20px; color: #666;">🎉 Nenhuma tarefa pendente!</div>' : ''}
+          </div>
+        </div>
+
+        <!-- Tarefas Concluídas -->
+        <div>
+          <h3 style="margin: 0 0 15px; color: #333; font-size: 16px;">✅ Concluídas (${tarefasConcluidas.length})</h3>
+          <div style="display: grid; gap: 10px;">
+            ${tarefasConcluidas.map(tarefa => `
+              <div style="display: flex; align-items: center; gap: 12px; padding: 15px; background: #dcfce7; border-radius: 8px; opacity: 0.7;">
+                <input type="checkbox" checked onchange="toggleTarefaModal(${tarefa.id}, this)" style="margin: 0; cursor: pointer;">
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; color: #333; margin-bottom: 4px; text-decoration: line-through;">${tarefa.texto}</div>
+                  <div style="display: flex; gap: 10px; font-size: 12px; color: #666;">
+                    <span>${getPrioridadeTexto(tarefa.prioridade)}</span>
+                    ${tarefa.categoria ? `<span>• ${getCategoriaTexto(tarefa.categoria)}</span>` : ''}
+                  </div>
+                </div>
+                <button onclick="excluirTarefa(${tarefa.id})" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">🗑️</button>
+              </div>
+            `).join('')}
+            ${tarefasConcluidas.length === 0 ? '<div style="text-align: center; padding: 20px; color: #666;">Nenhuma tarefa concluída ainda.</div>' : ''}
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-top: 25px;">
+          <button onclick="fecharModalListaTarefas()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer;">
+            Fechar
+          </button>
+          <button onclick="fecharModalListaTarefas(); abrirModalTarefa();" style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; cursor: pointer;">
+            📝 Nova Tarefa
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+  }
+
+  function fecharModalListaTarefas() {
+    const modal = document.getElementById('modalListaTarefas');
+    if (modal) modal.remove();
+  }
+
+  function toggleTarefaModal(id, checkbox) {
+    const tarefa = tarefas.find(t => t.id === id);
+    if (tarefa) {
+      tarefa.concluida = checkbox.checked;
+      atualizarContadorTarefas();
+
+      // Reabrir modal para atualizar a lista
+      setTimeout(() => {
+        fecharModalListaTarefas();
+        abrirModalListaTarefas();
+      }, 100);
+    }
+  }
+
+  function excluirTarefa(id) {
+    if (confirm('🗑️ Tem certeza que deseja excluir esta tarefa?')) {
+      window.tarefasGlobais = window.tarefasGlobais.filter(t => t.id !== id);
+      tarefas = window.tarefasGlobais; // Sincronizar
+      atualizarExibicaoTarefas(); // Atualizar barra lateral
+
+      // Reabrir modal para atualizar a lista
+      setTimeout(() => {
+        fecharModalListaTarefas();
+        abrirModalListaTarefas();
+      }, 100);
+    }
+  }
+
+  function getPrioridadeCor(prioridade) {
+    const cores = {
+      'baixa': '#16a34a',
+      'normal': '#3b82f6',
+      'alta': '#f59e0b',
+      'urgente': '#ef4444'
+    };
+    return cores[prioridade] || '#6b7280';
+  }
+
+  function getPrioridadeTexto(prioridade) {
+    const textos = {
+      'baixa': '🟢 Baixa',
+      'normal': '🔵 Normal',
+      'alta': '🟡 Alta',
+      'urgente': '🔴 Urgente'
+    };
+    return textos[prioridade] || '🔵 Normal';
+  }
+
+  function getCategoriaTexto(categoria) {
+    const textos = {
+      'geral': '📋 Geral',
+      'vendas': '💰 Vendas',
+      'estoque': '📦 Estoque',
+      'pedidos': '📋 Pedidos',
+      'plataformas': '🛒 Plataformas',
+      'financeiro': '💳 Financeiro',
+      'administrativo': '🏢 Administrativo'
+    };
+    return textos[categoria] || '📋 Geral';
+  }
+
+  // Inicializar calendário e tarefas quando a página carregar
+  document.addEventListener('DOMContentLoaded', function() {
+    generateCalendar();
+    setTimeout(() => {
+      atualizarExibicaoTarefas();
+    }, 500);
+  });
+</script>

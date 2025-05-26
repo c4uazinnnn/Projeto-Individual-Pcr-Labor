@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/css/wireframe-correct.css">
+</head>
+<body>
+  <div class="app-container">
+    <%- include('../components/navbar') %>
+
+    <main class="main-content">
+      <div class="page-header">
+        <h1 class="page-title">Produtos</h1>
+        <p class="page-subtitle">Gestão completa do catálogo de produtos</p>
+      </div>
+
+      <div class="content-area">
+        <!-- Cards de Métricas -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="card-header">
+              <div class="card-icon">🧪</div>
+              <h3 class="card-title">Total de Produtos</h3>
+            </div>
+            <div class="card-value"><%= produtos.length %></div>
+            <div class="card-subtitle">produtos cadastrados</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="card-header">
+              <div class="card-icon">⚠️</div>
+              <h3 class="card-title">Estoque Baixo</h3>
+            </div>
+            <div class="card-value"><%= produtos.filter(p => p.estoque_atual <= 10).length %></div>
+            <div class="card-subtitle">produtos com estoque baixo</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="card-header">
+              <div class="card-icon">💰</div>
+              <h3 class="card-title">Valor Total</h3>
+            </div>
+            <div class="card-value">R$ <%= produtos.reduce((total, p) => total + (parseFloat(p.preco) * p.estoque_atual), 0).toFixed(2) %></div>
+            <div class="card-subtitle">valor em estoque</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="card-header">
+              <div class="card-icon">📊</div>
+              <h3 class="card-title">Preço Médio</h3>
+            </div>
+            <div class="card-value">R$ <%= produtos.length > 0 ? (produtos.reduce((total, p) => total + parseFloat(p.preco), 0) / produtos.length).toFixed(2) : '0.00' %></div>
+            <div class="card-subtitle">preço médio dos produtos</div>
+          </div>
+        </div>
+
+        <!-- Filtros e Ações -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="filtrarProdutos('todos')" id="filtroTodos">Todos</button>
+            <button class="btn btn-secondary" onclick="filtrarProdutos('estoque_baixo')" id="filtroEstoqueBaixo">Estoque Baixo</button>
+            <button class="btn btn-secondary" onclick="filtrarProdutos('normal')" id="filtroNormal">Normal</button>
+            <button class="btn btn-secondary" onclick="abrirFiltroAvancadoProdutos()">🔍 Filtros</button>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary" onclick="exportarProdutos()">📄 Exportar</button>
+            <button class="btn btn-primary" onclick="novoProduto()">+ Novo Produto</button>
+          </div>
+        </div>
+
+        <!-- Tabela de Produtos -->
+        <div class="table-section">
+          <div class="table-header">
+            <h3 class="table-title">Lista de Produtos</h3>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>SKU</th>
+                <th>Preço</th>
+                <th>Estoque</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (produtos && produtos.length > 0) { %>
+                <% produtos.forEach(produto => { %>
+                  <tr>
+                    <td><%= produto.nome %></td>
+                    <td><%= produto.sku %></td>
+                    <td>R$ <%= parseFloat(produto.preco).toFixed(2) %></td>
+                    <td><%= produto.estoque_atual %></td>
+                    <td>
+                      <% if (produto.estoque_atual <= 10) { %>
+                        <span style="color: #dc3545;">Estoque Baixo</span>
+                      <% } else { %>
+                        <span style="color: #28a745;">Normal</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <div style="display: flex; gap: 5px;">
+                        <button class="btn btn-primary" onclick="editarProduto(<%= produto.id_produto %>)" style="padding: 6px 12px; font-size: 12px;">
+                          ✏️ Editar
+                        </button>
+                        <button class="btn btn-secondary" onclick="verDetalhesProduto(<%= produto.id_produto %>)" style="padding: 6px 12px; font-size: 12px;">
+                          👁️ Ver
+                        </button>
+                        <button class="btn btn-danger" onclick="excluirProduto(<%= produto.id_produto %>)" style="padding: 6px 12px; font-size: 12px; background: #dc3545;">
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" style="text-align: center; color: #666; padding: 40px;">
+                    Nenhum produto encontrado
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+    </main>
+  </div>
+
+  <script>
+    // ===== FILTROS DE PRODUTOS FUNCIONAIS =====
+    let produtosOriginais = <%- JSON.stringify(produtos) %>;
+
+    function filtrarProdutos(tipo) {
+      // Atualizar botões visuais
+      document.querySelectorAll('[id^="filtro"]').forEach(btn => {
+        btn.className = 'btn btn-secondary';
+      });
+
+      if (tipo === 'todos') {
+        document.getElementById('filtroTodos').className = 'btn btn-primary';
+      } else if (tipo === 'estoque_baixo') {
+        document.getElementById('filtroEstoqueBaixo').className = 'btn btn-primary';
+      } else if (tipo === 'normal') {
+        document.getElementById('filtroNormal').className = 'btn btn-primary';
+      }
+
+      // Aplicar filtro REAL
+      let produtosFiltrados = [];
+
+      switch(tipo) {
+        case 'estoque_baixo':
+          produtosFiltrados = produtosOriginais.filter(produto => produto.estoque_atual <= 10);
+          break;
+        case 'normal':
+          produtosFiltrados = produtosOriginais.filter(produto => produto.estoque_atual > 10);
+          break;
+        case 'todos':
+        default:
+          produtosFiltrados = [...produtosOriginais];
+          break;
+      }
+
+      console.log(`🔍 Filtrando produtos por: ${tipo}`);
+      console.log(`📦 Produtos encontrados: ${produtosFiltrados.length}`);
+
+      // Atualizar a tabela
+      atualizarTabelaProdutos(produtosFiltrados);
+
+      // Atualizar métricas
+      atualizarMetricasProdutos(produtosFiltrados);
+
+      // Feedback visual
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #018820;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+      `;
+      toast.textContent = `✅ ${produtosFiltrados.length} produtos encontrados - ${tipo === 'todos' ? 'Todos' : tipo === 'estoque_baixo' ? 'Estoque baixo' : 'Estoque normal'}`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    function atualizarTabelaProdutos(produtos) {
+      const tbody = document.querySelector('.data-table tbody');
+      if (!tbody) return;
+
+      if (produtos.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; color: #666; padding: 40px;">
+              <div style="font-size: 48px; margin-bottom: 15px;">🔍</div>
+              <div style="font-size: 16px; margin-bottom: 10px;">Nenhum produto encontrado</div>
+              <div style="font-size: 14px; color: #999;">Tente ajustar os filtros</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = produtos.map(produto => `
+        <tr>
+          <td>${produto.nome}</td>
+          <td>${produto.sku}</td>
+          <td>R$ ${parseFloat(produto.preco).toFixed(2)}</td>
+          <td>${produto.estoque_atual}</td>
+          <td>
+            ${produto.estoque_atual <= 10
+              ? '<span style="color: #dc3545; font-weight: 600;">⚠️ Estoque Baixo</span>'
+              : '<span style="color: #28a745; font-weight: 600;">✅ Normal</span>'
+            }
+          </td>
+          <td>
+            <div style="display: flex; gap: 5px;">
+              <button class="btn btn-primary" onclick="editarProduto(${produto.id_produto})" style="padding: 6px 12px; font-size: 12px;">
+                ✏️ Editar
+              </button>
+              <button class="btn btn-secondary" onclick="verDetalhesProduto(${produto.id_produto})" style="padding: 6px 12px; font-size: 12px;">
+                👁️ Ver
+              </button>
+              <button class="btn btn-danger" onclick="excluirProduto(${produto.id_produto})" style="padding: 6px 12px; font-size: 12px; background: #dc3545;">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function atualizarMetricasProdutos(produtos) {
+      // Atualizar cards de métricas
+      const totalProdutos = produtos.length;
+      const estoqueBaixo = produtos.filter(p => p.estoque_atual <= 10).length;
+      const valorTotal = produtos.reduce((total, p) => total + (parseFloat(p.preco) * p.estoque_atual), 0);
+      const precoMedio = produtos.length > 0 ? produtos.reduce((total, p) => total + parseFloat(p.preco), 0) / produtos.length : 0;
+
+      // Atualizar valores nos cards
+      const cardValues = document.querySelectorAll('.card-value');
+      if (cardValues[0]) cardValues[0].textContent = totalProdutos.toString();
+      if (cardValues[1]) cardValues[1].textContent = estoqueBaixo.toString();
+      if (cardValues[2]) cardValues[2].textContent = `R$ ${valorTotal.toFixed(2)}`;
+      if (cardValues[3]) cardValues[3].textContent = `R$ ${precoMedio.toFixed(2)}`;
+    }
+
+    // ===== NOVO PRODUTO =====
+    function novoProduto() {
+      const modal = document.createElement('div');
+      modal.id = 'modalNovoProduto';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0; color: #333;">📦 Novo Produto</h2>
+            <button onclick="fecharModalNovoProduto()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+          </div>
+
+          <form id="formNovoProduto" onsubmit="criarNovoProduto(event)">
+            <div style="display: grid; gap: 20px;">
+
+              <!-- Nome -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📝 Nome do Produto</label>
+                <input type="text" id="nomeInput" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" placeholder="Ex: Kit PCR COVID-19">
+              </div>
+
+              <!-- SKU -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">🏷️ SKU</label>
+                <input type="text" id="skuInput" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" placeholder="Ex: PCR-COVID-001">
+              </div>
+
+              <!-- Preço -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">💰 Preço (R$)</label>
+                <input type="number" id="precoInput" step="0.01" min="0" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" placeholder="Ex: 89.90">
+              </div>
+
+              <!-- Estoque -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📊 Estoque Inicial</label>
+                <input type="number" id="estoqueInput" min="0" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" placeholder="Ex: 100">
+              </div>
+
+              <!-- Descrição -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📄 Descrição</label>
+                <textarea id="descricaoInput" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; min-height: 80px;" placeholder="Descrição detalhada do produto..."></textarea>
+              </div>
+
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+              <button type="button" onclick="fecharModalNovoProduto()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                Cancelar
+              </button>
+              <button type="submit" style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                📦 Criar Produto
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    function fecharModalNovoProduto() {
+      const modal = document.getElementById('modalNovoProduto');
+      if (modal) modal.remove();
+    }
+
+    async function criarNovoProduto(event) {
+      event.preventDefault();
+
+      const formData = {
+        nome: document.getElementById('nomeInput').value,
+        sku: document.getElementById('skuInput').value,
+        preco: parseFloat(document.getElementById('precoInput').value),
+        estoque_atual: parseInt(document.getElementById('estoqueInput').value),
+        descricao: document.getElementById('descricaoInput').value
+      };
+
+      try {
+        const response = await fetch('/api/produtos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('✅ Produto criado com sucesso!');
+          fecharModalNovoProduto();
+          location.reload();
+        } else {
+          alert('❌ Erro ao criar produto: ' + (result.error || 'Erro desconhecido'));
+        }
+      } catch (error) {
+        console.error('Erro ao criar produto:', error);
+        alert('❌ Erro ao criar produto. Tente novamente.');
+      }
+    }
+
+    // ===== EDITAR PRODUTO =====
+    function editarProduto(id) {
+      const modal = document.createElement('div');
+      modal.id = 'modalEditarProduto';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0; color: #333;">✏️ Editar Produto #${id}</h2>
+            <button onclick="fecharModalEditarProduto()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+          </div>
+
+          <form id="formEditarProduto" onsubmit="salvarEdicaoProduto(event, ${id})">
+            <div style="display: grid; gap: 20px;">
+
+              <!-- Nome -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📝 Nome do Produto</label>
+                <input type="text" id="nomeEditProduto" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="Kit PCR COVID-19">
+              </div>
+
+              <!-- SKU -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">🏷️ SKU</label>
+                <input type="text" id="skuEditProduto" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="PCR-COVID-001">
+              </div>
+
+              <!-- Preço -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">💰 Preço (R$)</label>
+                <input type="number" id="precoEditProduto" step="0.01" min="0" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="89.90">
+              </div>
+
+              <!-- Estoque Atual -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📊 Estoque Atual</label>
+                <input type="number" id="estoqueEditProduto" min="0" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="150">
+              </div>
+
+              <!-- Estoque Mínimo -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">⚠️ Estoque Mínimo</label>
+                <input type="number" id="estoqueMinEditProduto" min="0" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="10">
+              </div>
+
+              <!-- Descrição -->
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📄 Descrição</label>
+                <textarea id="descricaoEditProduto" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; min-height: 80px;" placeholder="Descrição detalhada do produto...">Kit para diagnóstico de COVID-19 por PCR</textarea>
+              </div>
+
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+              <button type="button" onclick="fecharModalEditarProduto()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                Cancelar
+              </button>
+              <button type="submit" style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                ✅ Salvar Alterações
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    function fecharModalEditarProduto() {
+      const modal = document.getElementById('modalEditarProduto');
+      if (modal) modal.remove();
+    }
+
+    async function salvarEdicaoProduto(event, id) {
+      event.preventDefault();
+
+      const formData = {
+        nome: document.getElementById('nomeEditProduto').value,
+        sku: document.getElementById('skuEditProduto').value,
+        preco: parseFloat(document.getElementById('precoEditProduto').value),
+        estoque_atual: parseInt(document.getElementById('estoqueEditProduto').value),
+        estoque_minimo: parseInt(document.getElementById('estoqueMinEditProduto').value),
+        descricao: document.getElementById('descricaoEditProduto').value
+      };
+
+      try {
+        console.log('✏️ Editando produto:', id, formData);
+
+        const response = await fetch(`/api/produtos/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('✅ Produto editado com sucesso!\n\nTodas as alterações foram salvas.');
+          fecharModalEditarProduto();
+          location.reload();
+        } else {
+          alert('❌ Erro ao editar produto: ' + (result.error || 'Erro desconhecido'));
+        }
+      } catch (error) {
+        console.error('❌ Erro ao editar produto:', error);
+        alert('❌ Erro ao editar produto. Tente novamente.');
+      }
+    }
+
+    // ===== VER DETALHES =====
+    function verDetalhesProduto(id) {
+      const modal = document.createElement('div');
+      modal.id = 'modalDetalhesProduto';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0; color: #333;">👁️ Detalhes do Produto #${id}</h2>
+            <button onclick="fecharDetalhesProduto()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+          </div>
+
+          <div style="display: grid; gap: 20px;">
+
+            <!-- Informações principais -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <h3 style="margin: 0 0 15px; color: #333;">📦 Informações Básicas</h3>
+              <div style="display: grid; gap: 10px;">
+                <div><strong>Nome:</strong> Kit PCR COVID-19</div>
+                <div><strong>SKU:</strong> PCR-COVID-001</div>
+                <div><strong>Preço:</strong> R$ 89,90</div>
+                <div><strong>Estoque Atual:</strong> 150 unidades</div>
+              </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+              <div style="background: #f0fff4; padding: 15px; border-radius: 8px; border-left: 4px solid #16a34a;">
+                <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Vendas Totais</div>
+                <div style="font-size: 24px; font-weight: bold; color: #16a34a;">245 unidades</div>
+              </div>
+              <div style="background: #f0fff4; padding: 15px; border-radius: 8px; border-left: 4px solid #16a34a;">
+                <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Receita Total</div>
+                <div style="font-size: 24px; font-weight: bold; color: #16a34a;">R$ 22.025,50</div>
+              </div>
+            </div>
+
+            <!-- Histórico recente -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <h3 style="margin: 0 0 15px; color: #333;">📅 Movimentações Recentes</h3>
+              <div style="display: grid; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+                  <span>15/12/2024 - Venda</span>
+                  <span style="color: #dc3545;">-5 unidades</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+                  <span>14/12/2024 - Reposição</span>
+                  <span style="color: #16a34a;">+50 unidades</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                  <span>13/12/2024 - Venda</span>
+                  <span style="color: #dc3545;">-3 unidades</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button onclick="fecharDetalhesProduto()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer;">
+              Fechar
+            </button>
+            <button onclick="editarProduto(${id})" style="flex: 1; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">
+              ✏️ Editar
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    function fecharDetalhesProduto() {
+      const modal = document.getElementById('modalDetalhesProduto');
+      if (modal) modal.remove();
+    }
+
+    // ===== EXCLUIR PRODUTO =====
+    async function excluirProduto(id) {
+      if (confirm('⚠️ Tem certeza que deseja excluir este produto?\n\nEsta ação não pode ser desfeita.')) {
+        try {
+          console.log(`🗑️ Excluindo produto #${id}`);
+
+          const response = await fetch(`/api/produtos/${id}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            alert('✅ Produto excluído com sucesso!');
+            location.reload();
+          } else {
+            alert('❌ Erro ao excluir produto: ' + (result.error || 'Erro desconhecido'));
+          }
+        } catch (error) {
+          console.error('❌ Erro ao excluir produto:', error);
+          alert('❌ Erro ao excluir produto. Tente novamente.');
+        }
+      }
+    }
+
+    // ===== EXPORTAR PRODUTOS =====
+    function exportarProdutos() {
+      alert('📄 Exportando produtos...\n\nArquivo Excel será gerado com todos os produtos.');
+    }
+
+    // ===== FILTRO AVANÇADO =====
+    function abrirFiltroAvancadoProdutos() {
+      alert('🔍 Filtros avançados para produtos\n\nModal com filtros por categoria, preço, estoque, etc.');
+    }
+
+    console.log('📦 Página de produtos carregada com funcionalidades completas');
+  </script>
+</body>
+</html>

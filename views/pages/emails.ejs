@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+  <!-- Header horizontal (Topo) com logo e menu -->
+  <%- include('../components/cabecalho') %>
+
+  <!-- Layout principal -->
+  <div class="main-layout">
+    <!-- Área central para o conteúdo principal -->
+    <main class="content-area">
+      <!-- Página de Emails -->
+      <h1 class="page-title">Emails</h1>
+
+      <!-- Cards de métricas de email -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <div class="summary-card">
+          <div class="card-icon">📧</div>
+          <div class="card-title">Total de Emails</div>
+          <div class="card-value">247</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon" style="background: #16a34a;">✅</div>
+          <div class="card-title">Lidos</div>
+          <div class="card-value">189</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon" style="background: #f59e0b;">📬</div>
+          <div class="card-title">Não Lidos</div>
+          <div class="card-value">58</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon" style="background: #ef4444;">🗑️</div>
+          <div class="card-title">Spam</div>
+          <div class="card-value">12</div>
+        </div>
+      </div>
+
+      <!-- Botões de ação -->
+      <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+        <button class="btn btn-primary" onclick="novoEmail()">✉️ Novo Email</button>
+        <button class="btn btn-secondary" onclick="marcarTodosLidos()">✅ Marcar Todos como Lidos</button>
+        <button class="btn btn-secondary" onclick="limparSpam()">🗑️ Limpar Spam</button>
+        <button class="btn btn-secondary" onclick="sincronizarEmails()">🔄 Sincronizar</button>
+      </div>
+
+      <!-- Lista de emails -->
+      <div class="content-section">
+        <div class="section-header">
+          <h3 class="section-title">📬 Caixa de Entrada</h3>
+          <div style="display: flex; gap: 10px;">
+            <select class="btn btn-secondary" style="padding: 8px 12px;">
+              <option>Todos</option>
+              <option>Não lidos</option>
+              <option>Importantes</option>
+              <option>Spam</option>
+            </select>
+          </div>
+        </div>
+        <div class="section-content">
+          <div style="display: grid; gap: 12px;">
+
+            <!-- Email 1 -->
+            <div style="background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; transition: all 0.2s ease; cursor: pointer;" onclick="abrirEmail(1)" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 8px; height: 8px; background: #3b82f6; border-radius: 50%;"></div>
+                  <div style="font-weight: bold; color: #333;">Mercado Livre</div>
+                  <span style="background: #dcfce7; color: #16a34a; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">VENDAS</span>
+                </div>
+                <div style="color: #666; font-size: 14px;">Hoje, 14:30</div>
+              </div>
+              <div style="font-weight: 600; color: #333; margin-bottom: 5px;">Nova venda realizada - Kit PCR COVID-19</div>
+              <div style="color: #666; font-size: 14px;">Parabéns! Você vendeu 1 unidade do Kit PCR COVID-19 por R$ 89,90. O pagamento foi aprovado...</div>
+            </div>
+
+            <!-- Email 2 -->
+            <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; transition: all 0.2s ease; cursor: pointer;" onclick="abrirEmail(2)" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%;"></div>
+                  <div style="font-weight: bold; color: #333;">Shopee</div>
+                  <span style="background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">ESTOQUE</span>
+                </div>
+                <div style="color: #666; font-size: 14px;">Hoje, 12:15</div>
+              </div>
+              <div style="font-weight: 600; color: #333; margin-bottom: 5px;">Alerta de estoque baixo - Kit PCR Dengue</div>
+              <div style="color: #666; font-size: 14px;">Atenção! O estoque do produto Kit PCR Dengue está baixo (5 unidades restantes)...</div>
+            </div>
+
+            <!-- Email 3 -->
+            <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; transition: all 0.2s ease; cursor: pointer;" onclick="abrirEmail(3)" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 8px; height: 8px; background: #16a34a; border-radius: 50%;"></div>
+                  <div style="font-weight: bold; color: #333;">PCR Labor</div>
+                  <span style="background: #dbeafe; color: #2563eb; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">SISTEMA</span>
+                </div>
+                <div style="color: #666; font-size: 14px;">Ontem, 18:45</div>
+              </div>
+              <div style="font-weight: 600; color: #333; margin-bottom: 5px;">Relatório mensal de vendas disponível</div>
+              <div style="color: #666; font-size: 14px;">Seu relatório mensal de janeiro está pronto para download. Vendas totais: R$ 45.230,00...</div>
+            </div>
+
+            <!-- Email 4 -->
+            <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; transition: all 0.2s ease; cursor: pointer;" onclick="abrirEmail(4)" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 8px; height: 8px; background: #8b5cf6; border-radius: 50%;"></div>
+                  <div style="font-weight: bold; color: #333;">Fornecedor BioTech</div>
+                  <span style="background: #f3e8ff; color: #7c3aed; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">PEDIDO</span>
+                </div>
+                <div style="color: #666; font-size: 14px;">Ontem, 15:20</div>
+              </div>
+              <div style="font-weight: 600; color: #333; margin-bottom: 5px;">Pedido #1234 foi enviado</div>
+              <div style="color: #666; font-size: 14px;">Seu pedido de 50 unidades do Kit PCR COVID-19 foi enviado. Código de rastreamento: BR123456789...</div>
+            </div>
+
+            <!-- Email 5 -->
+            <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; transition: all 0.2s ease; cursor: pointer;" onclick="abrirEmail(5)" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></div>
+                  <div style="font-weight: bold; color: #333;">Suporte Técnico</div>
+                  <span style="background: #fee2e2; color: #dc2626; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">URGENTE</span>
+                </div>
+                <div style="color: #666; font-size: 14px;">2 dias atrás</div>
+              </div>
+              <div style="font-weight: 600; color: #333; margin-bottom: 5px;">Manutenção programada do sistema</div>
+              <div style="color: #666; font-size: 14px;">Informamos que haverá manutenção programada no sistema no dia 15/01 das 02:00 às 04:00...</div>
+            </div>
+
+          </div>
+
+          <!-- Paginação -->
+          <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+            <button class="btn btn-secondary" style="padding: 8px 16px;">← Anterior</button>
+            <span style="color: #666; font-size: 14px;">Página 1 de 5 • 247 emails</span>
+            <button class="btn btn-secondary" style="padding: 8px 16px;">Próxima →</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Lateral direita com Tarefas, Calendário e Pergunte para IA -->
+    <%- include('../components/barraLateral') %>
+  </div>
+
+  <script>
+    function novoEmail() {
+      alert('✉️ Novo Email\n\nFuncionalidade em desenvolvimento.\nEm breve você poderá enviar emails diretamente do sistema.');
+    }
+
+    function marcarTodosLidos() {
+      alert('✅ Todos os emails foram marcados como lidos!');
+      // Simular marcação
+      document.querySelectorAll('[style*="background: #f8f9fa"]').forEach(el => {
+        el.style.background = '#fff';
+      });
+    }
+
+    function limparSpam() {
+      alert('🗑️ Spam limpo!\n\n12 emails de spam foram removidos.');
+    }
+
+    function sincronizarEmails() {
+      alert('🔄 Sincronizando emails...\n\nBuscando novos emails de todas as plataformas.');
+      setTimeout(() => {
+        alert('✅ Sincronização concluída!\n\n3 novos emails encontrados.');
+        location.reload();
+      }, 2000);
+    }
+
+    function abrirEmail(id) {
+      alert(`📧 Abrindo Email #${id}\n\nEsta funcionalidade abrirá o email completo em uma modal ou nova página.`);
+    }
+
+    console.log('📧 Página de emails carregada');
+  </script>
+</body>
+</html>
