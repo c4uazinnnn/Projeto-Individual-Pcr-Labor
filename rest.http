@@ -1,37 +1,117 @@
-# Teste da rota GET /users
-GET http://localhost:3000/users
+### Página Principal (redireciona para login)
+GET http://localhost:3000/
+
+###
+
+### Página de Login
+GET http://localhost:3000/login
+
+###
+
+### Login (POST)
+POST http://localhost:3000/login
+Content-Type: application/x-www-form-urlencoded
+
+email=admin@pcrlabor.com&senha=admin123
+
+###
+
+### Dashboard
+GET http://localhost:3000/dashboard
+
+###
+
+### Página de Produtos
+GET http://localhost:3000/produtos
+
+###
+
+### Página de Estoque
+GET http://localhost:3000/estoque
+
+###
+
+### Página de Vendas
+GET http://localhost:3000/vendas
+
+###
+
+### Página de Plataformas
+GET http://localhost:3000/plataformas
+
+###
+
+### API - Buscar todos os usuários
+GET http://localhost:3000/api/users
 Accept: application/json
 
 ###
 
-# Teste da rota GET /users/:id
-GET http://localhost:3000/users/39602f41-b43e-4fa8-b7f7-34c7a516740b
+### API - Buscar usuário por ID
+GET http://localhost:3000/api/users/1
 Accept: application/json
 
 ###
 
-# Teste da rota POST /users
-POST http://localhost:3000/users
+### API - Criar novo usuário
+POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
-  "name": "John Doe",
-  "email": "john@example.com"
+  "nome": "João Silva",
+  "email": "joao@example.com",
+  "senha": "123456",
+  "id_empresa": 1
 }
 
 ###
 
-# Teste da rota PUT /users/:id
-PUT http://localhost:3000/users/39602f41-b43e-4fa8-b7f7-34c7a516740b
+### API - Buscar todos os produtos
+GET http://localhost:3000/api/produtos
+Accept: application/json
+
+###
+
+### API - Criar novo produto
+POST http://localhost:3000/api/produtos
 Content-Type: application/json
 
 {
-  "name": "Jane Doe",
-  "email": "jane@example.com"
+  "id_empresa": 1,
+  "nome": "Kit PCR Teste",
+  "sku": "PCR-TEST-001",
+  "preco": 99.90,
+  "estoque_atual": 50
 }
 
 ###
 
-# Teste da rota DELETE /users/:id
-DELETE http://localhost:3000/users/39602f41-b43e-4fa8-b7f7-34c7a516740b
+### API - Buscar todas as vendas
+GET http://localhost:3000/api/vendas
+Accept: application/json
+
+###
+
+### API - Criar nova venda
+POST http://localhost:3000/api/vendas
+Content-Type: application/json
+
+{
+  "id_produto": 1,
+  "id_plataforma": 1,
+  "quantidade": 5,
+  "data": "2025-01-15",
+  "valor_total": 449.50
+}
+
+###
+
+### API - Relatório de vendas
+GET http://localhost:3000/api/vendas/relatorio
+Accept: application/json
+
+###
+
+### API - Vendas por período
+GET http://localhost:3000/api/vendas/periodo?dataInicio=2025-01-01&dataFim=2025-01-31
 Accept: application/json

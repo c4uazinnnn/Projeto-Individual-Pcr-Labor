@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/css/estilos.css?v=<%= Date.now() %>">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Header horizontal (Topo) com logo e menu -->
+  <%- include('../components/cabecalho') %>
+
+  <!-- Layout principal -->
+  <div class="main-layout">
+    <!-- Área central para o conteúdo principal -->
+    <main class="content-area">
+      <h1 class="page-title">Plataformas</h1>
+
+      <!-- Cards de métricas das plataformas (seguindo padrão das outras telas) -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <div class="summary-card">
+          <div class="card-icon">💰</div>
+          <div class="card-title">Total Geral</div>
+          <div class="card-value">R$ <%= (18500 + 22300 + 12800).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".") %></div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon" style="background: #3b82f6;">🌐</div>
+          <div class="card-title">Plataformas Ativas</div>
+          <div class="card-value">3</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon" style="background: #f59e0b;">📈</div>
+          <div class="card-title">Crescimento Médio</div>
+          <div class="card-value">+15%</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon" style="background: #16a34a;">🎯</div>
+          <div class="card-title">Meta Mensal</div>
+          <div class="card-value">85%</div>
+        </div>
+      </div>
+
+      <!-- Botões de ação -->
+      <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+        <button class="btn btn-primary" onclick="sincronizarTodasPlataformas()">🔄 Sincronizar Todas</button>
+        <button class="btn btn-secondary" onclick="exportarRelatorio()">📄 Exportar Relatório</button>
+        <button class="btn btn-secondary" onclick="configurarPlataformas()">⚙️ Configurações</button>
+        <button class="btn btn-secondary" onclick="analisarPerformance()">📊 Análise Detalhada</button>
+      </div>
+
+      <!-- Seção individual de cada plataforma -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; margin-bottom: 40px;">
+
+        <!-- SHOPEE -->
+        <div class="content-section">
+          <div class="section-header">
+            <h3 class="section-title" style="color: #ff6600;">🛍️ Shopee</h3>
+            <button class="btn btn-secondary" onclick="sincronizarShopee()">🔄 Sync</button>
+          </div>
+          <div class="section-content">
+            <div style="display: grid; gap: 15px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #fff5f0; border-left: 4px solid #ff6600; border-radius: 8px;">
+                <div>
+                  <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Vendas do Mês</div>
+                  <div style="font-size: 24px; font-weight: bold; color: #ff6600;">R$ 18.500</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 12px; color: #666;">Crescimento</div>
+                  <div style="font-size: 16px; font-weight: bold; color: #16a34a;">+15%</div>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                  <div style="font-size: 18px; font-weight: bold; color: #333;">42</div>
+                  <div style="font-size: 12px; color: #666;">Vendas</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                  <div style="font-size: 18px; font-weight: bold; color: #333;">R$ 440</div>
+                  <div style="font-size: 12px; color: #666;">Ticket Médio</div>
+                </div>
+              </div>
+
+              <div style="height: 120px;">
+                <canvas id="shopeeChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MERCADO LIVRE -->
+        <div class="content-section">
+          <div class="section-header">
+            <h3 class="section-title" style="color: #3483fa;">🛒 Mercado Livre</h3>
+            <button class="btn btn-secondary" onclick="sincronizarMercadoLivre()">🔄 Sync</button>
+          </div>
+          <div class="section-content">
+            <div style="display: grid; gap: 15px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f0f8ff; border-left: 4px solid #3483fa; border-radius: 8px;">
+                <div>
+                  <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Vendas do Mês</div>
+                  <div style="font-size: 24px; font-weight: bold; color: #3483fa;">R$ 22.300</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 12px; color: #666;">Crescimento</div>
+                  <div style="font-size: 16px; font-weight: bold; color: #16a34a;">+8%</div>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                  <div style="font-size: 18px; font-weight: bold; color: #333;">38</div>
+                  <div style="font-size: 12px; color: #666;">Vendas</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                  <div style="font-size: 18px; font-weight: bold; color: #333;">R$ 587</div>
+                  <div style="font-size: 12px; color: #666;">Ticket Médio</div>
+                </div>
+              </div>
+
+              <div style="height: 120px;">
+                <canvas id="mercadoLivreChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PCR LABOR -->
+        <div class="content-section">
+          <div class="section-header">
+            <h3 class="section-title" style="color: #018820;">🌐 PCR Labor</h3>
+            <button class="btn btn-secondary" onclick="sincronizarPCRLabor()">🔄 Sync</button>
+          </div>
+          <div class="section-content">
+            <div style="display: grid; gap: 15px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f0fff4; border-left: 4px solid #018820; border-radius: 8px;">
+                <div>
+                  <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Vendas do Mês</div>
+                  <div style="font-size: 24px; font-weight: bold; color: #018820;">R$ 12.800</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 12px; color: #666;">Crescimento</div>
+                  <div style="font-size: 16px; font-weight: bold; color: #16a34a;">+25%</div>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                  <div style="font-size: 18px; font-weight: bold; color: #333;">28</div>
+                  <div style="font-size: 12px; color: #666;">Vendas</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                  <div style="font-size: 18px; font-weight: bold; color: #333;">R$ 457</div>
+                  <div style="font-size: 12px; color: #666;">Ticket Médio</div>
+                </div>
+              </div>
+
+              <div style="height: 120px;">
+                <canvas id="pcrLaborChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bloco consolidado: Vendas totais + Estimativa de compras -->
+      <div class="content-section">
+        <div class="section-header">
+          <h3 class="section-title">📊 Consolidado Geral + Estimativa de Compras</h3>
+          <button class="btn btn-primary" onclick="calcularEstimativas()">🔄 Recalcular</button>
+        </div>
+        <div class="section-content">
+          <!-- Resumo consolidado das vendas -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #018820, #02a025); color: white; border-radius: 12px;">
+              <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; font-weight: 600;">Total Consolidado</div>
+              <div style="font-size: 32px; font-weight: bold; margin: 10px 0;">R$ 53.600</div>
+              <div style="font-size: 14px; opacity: 0.9;">Todas as plataformas</div>
+            </div>
+
+            <div style="text-align: center; padding: 20px; background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px;">
+              <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Total de Vendas</div>
+              <div style="font-size: 32px; font-weight: bold; color: #333; margin: 10px 0;">108</div>
+              <div style="font-size: 14px; color: #666;">Unidades vendidas</div>
+            </div>
+
+            <div style="text-align: center; padding: 20px; background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px;">
+              <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Ticket Médio Geral</div>
+              <div style="font-size: 32px; font-weight: bold; color: #333; margin: 10px 0;">R$ 496</div>
+              <div style="font-size: 14px; color: #666;">Por venda</div>
+            </div>
+
+            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border-radius: 12px;">
+              <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; font-weight: 600;">Crescimento</div>
+              <div style="font-size: 32px; font-weight: bold; margin: 10px 0;">+16%</div>
+              <div style="font-size: 14px; opacity: 0.9;">vs mês anterior</div>
+            </div>
+          </div>
+
+          <!-- Estimativa de compras necessárias -->
+          <div style="background: #fff8e1; border: 2px solid #f59e0b; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 20px; color: #f59e0b; font-size: 18px; display: flex; align-items: center; gap: 10px;">
+              🛒 Estimativa de Compras Necessárias
+            </h4>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+              <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                  <div>
+                    <div style="font-size: 14px; color: #666; font-weight: 600;">Kit PCR COVID-19</div>
+                    <div style="font-size: 12px; color: #999;">Estoque atual: 0 unidades</div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 20px; font-weight: bold; color: #f59e0b;">150</div>
+                    <div style="font-size: 12px; color: #666;">unidades</div>
+                  </div>
+                </div>
+                <div style="font-size: 12px; color: #666;">
+                  💰 Investimento: <strong>R$ 7.500</strong> • 📈 Demanda alta
+                </div>
+              </div>
+
+              <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                  <div>
+                    <div style="font-size: 14px; color: #666; font-weight: 600;">Kit PCR Influenza</div>
+                    <div style="font-size: 12px; color: #999;">Estoque atual: 2 unidades</div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 20px; font-weight: bold; color: #3b82f6;">100</div>
+                    <div style="font-size: 12px; color: #666;">unidades</div>
+                  </div>
+                </div>
+                <div style="font-size: 12px; color: #666;">
+                  💰 Investimento: <strong>R$ 4.800</strong> • 📊 Demanda média
+                </div>
+              </div>
+
+              <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #16a34a;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                  <div>
+                    <div style="font-size: 14px; color: #666; font-weight: 600;">Kit PCR Hepatite B</div>
+                    <div style="font-size: 12px; color: #999;">Estoque atual: 0 unidades</div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 20px; font-weight: bold; color: #16a34a;">80</div>
+                    <div style="font-size: 12px; color: #666;">unidades</div>
+                  </div>
+                </div>
+                <div style="font-size: 12px; color: #666;">
+                  💰 Investimento: <strong>R$ 4.400</strong> • 📉 Demanda baixa
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumo do investimento total -->
+            <div style="background: #f59e0b; color: white; padding: 20px; border-radius: 8px; margin-top: 20px; text-align: center;">
+              <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">💰 INVESTIMENTO TOTAL ESTIMADO</div>
+              <div style="font-size: 28px; font-weight: bold;">R$ 16.700</div>
+              <div style="font-size: 12px; opacity: 0.9; margin-top: 5px;">Para 330 unidades • Cobertura para 2-3 meses</div>
+            </div>
+          </div>
+
+          <!-- Gráfico de performance comparativa -->
+          <div style="height: 300px; margin-top: 20px;">
+            <canvas id="performanceChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Lateral direita com Tarefas, Calendário e Pergunte para IA -->
+    <%- include('../components/barraLateral') %>
+  </div>
+
+  <script>
+    // GRÁFICO 1: Shopee (linha)
+    const shopeeCtx = document.getElementById('shopeeChart').getContext('2d');
+    new Chart(shopeeCtx, {
+      type: 'line',
+      data: {
+        labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+        datasets: [{
+          data: [4200, 4800, 4600, 4900],
+          borderColor: '#ff6600',
+          backgroundColor: 'rgba(255, 102, 0, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, display: false },
+          x: { display: false }
+        }
+      }
+    });
+
+    // GRÁFICO 2: Mercado Livre (barras)
+    const mercadoLivreCtx = document.getElementById('mercadoLivreChart').getContext('2d');
+    new Chart(mercadoLivreCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+        datasets: [{
+          data: [5200, 5800, 5400, 6300],
+          backgroundColor: '#3483fa',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, display: false },
+          x: { display: false }
+        }
+      }
+    });
+
+    // GRÁFICO 3: PCR Labor (área)
+    const pcrLaborCtx = document.getElementById('pcrLaborChart').getContext('2d');
+    new Chart(pcrLaborCtx, {
+      type: 'line',
+      data: {
+        labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+        datasets: [{
+          data: [2800, 3200, 3400, 3400],
+          borderColor: '#018820',
+          backgroundColor: 'rgba(1, 136, 32, 0.2)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, display: false },
+          x: { display: false }
+        }
+      }
+    });
+
+    // GRÁFICO 4: Performance comparativa (barras agrupadas)
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    new Chart(performanceCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio'],
+        datasets: [
+          {
+            label: 'Shopee',
+            data: [15000, 16500, 17200, 18000, 18500],
+            backgroundColor: '#ff6600',
+            borderRadius: 4
+          },
+          {
+            label: 'Mercado Livre',
+            data: [18000, 19500, 20800, 21500, 22300],
+            backgroundColor: '#3483fa',
+            borderRadius: 4
+          },
+          {
+            label: 'PCR Labor',
+            data: [8000, 9200, 10500, 11800, 12800],
+            backgroundColor: '#018820',
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              padding: 20
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: '#f0f0f0'
+            },
+            ticks: {
+              callback: function(value) {
+                return 'R$ ' + value.toLocaleString();
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+
+    // FUNÇÕES INTERATIVAS
+    function sincronizarTodasPlataformas() {
+      alert('🔄 Sincronizando todas as plataformas...\n\n• Shopee\n• Mercado Livre\n• PCR Labor\n\nEsta operação pode levar alguns minutos.');
+
+      setTimeout(() => {
+        alert('✅ Sincronização concluída!\n\n• 12 novas vendas encontradas\n• 3 produtos atualizados\n• Performance atualizada');
+        location.reload();
+      }, 3000);
+    }
+
+    function sincronizarShopee() {
+      alert('🛍️ Sincronizando Shopee...\n\nBuscando novas vendas e atualizações de produtos.');
+      setTimeout(() => {
+        alert('✅ Shopee sincronizada!\n\n• 5 novas vendas\n• 2 produtos atualizados');
+      }, 2000);
+    }
+
+    function sincronizarMercadoLivre() {
+      alert('🛒 Sincronizando Mercado Livre...\n\nBuscando novas vendas e atualizações de produtos.');
+      setTimeout(() => {
+        alert('✅ Mercado Livre sincronizado!\n\n• 4 novas vendas\n• 1 produto atualizado');
+      }, 2000);
+    }
+
+    function sincronizarPCRLabor() {
+      alert('🌐 Sincronizando PCR Labor...\n\nAtualizando vendas diretas e estoque.');
+      setTimeout(() => {
+        alert('✅ PCR Labor sincronizada!\n\n• 3 novas vendas\n• Estoque atualizado');
+      }, 2000);
+    }
+
+    function exportarRelatorio() {
+      alert('📄 Exportando relatório de plataformas...\n\nEm breve você receberá um arquivo Excel com:\n• Performance por plataforma\n• Vendas detalhadas\n• Análise comparativa');
+    }
+
+    function configurarPlataformas() {
+      alert('⚙️ Configurações de Plataformas\n\nEm breve você poderá:\n• Configurar APIs\n• Definir comissões\n• Ajustar sincronização');
+    }
+
+    function analisarPerformance() {
+      alert('📊 Análise Detalhada de Performance\n\nEm breve você terá acesso a:\n• Relatórios avançados\n• Comparativos mensais\n• Projeções de crescimento');
+    }
+
+    function calcularEstimativas() {
+      alert('🔄 Recalculando estimativas...\n\nAnalisando:\n• Histórico de vendas\n• Sazonalidade\n• Estoque atual\n• Demanda projetada');
+
+      setTimeout(() => {
+        alert('✅ Estimativas atualizadas!\n\n• Demanda recalculada\n• Investimento otimizado\n• Cobertura ajustada');
+        location.reload();
+      }, 2500);
+    }
+
+    console.log('🌐 Página de plataformas carregada com design padronizado');
+  </script>
+</body>
+</html>
