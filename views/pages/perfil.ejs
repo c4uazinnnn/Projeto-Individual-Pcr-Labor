@@ -18,7 +18,11 @@
       <h1 class="page-title">Perfil</h1>
 
       <!-- Seletor de período financeiro -->
-      <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+      <div style="
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+      ">
         <button class="btn btn-primary" onclick="filtrarPeriodoFinanceiro('mes')" id="filtroMesPerfil">Este mês</button>
         <button class="btn btn-secondary" onclick="filtrarPeriodoFinanceiro('ultimo')" id="filtroUltimoPerfil">Último mês</button>
         <button class="btn btn-secondary" onclick="filtrarPeriodoFinanceiro('trimestre')" id="filtroTrimestre">Últimos 3 meses</button>
@@ -27,89 +31,156 @@
 
       <!-- Campos principais: "A pagar", "A receber", "Saldo" -->
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
+        <!-- DADOS REAIS DO PERFIL -->
+        <%
+          const valorTotalVendas = stats.valorTotalVendas || 0;
+          const valorTotalPedidos = stats.valorTotalPedidos || 0;
+          const saldoAtual = valorTotalVendas - valorTotalPedidos;
+        %>
         <div class="summary-card">
           <div class="card-icon" style="background: #ef4444;">💸</div>
-          <div class="card-title">A pagar</div>
-          <div class="card-value">R$ 12.450</div>
+          <div class="card-title">Pedidos Pendentes</div>
+          <div class="card-value">R$ <%= valorTotalPedidos.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".") %></div>
         </div>
 
         <div class="summary-card">
           <div class="card-icon" style="background: #16a34a;">💰</div>
-          <div class="card-title">A receber</div>
-          <div class="card-value">R$ 28.900</div>
+          <div class="card-title">Total Vendas</div>
+          <div class="card-value">R$ <%= valorTotalVendas.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".") %></div>
         </div>
 
         <div class="summary-card">
           <div class="card-icon" style="background: #3b82f6;">💳</div>
-          <div class="card-title">Saldo</div>
-          <div class="card-value">R$ 16.450</div>
+          <div class="card-title">Saldo Líquido</div>
+          <div class="card-value" style="color: <%= saldoAtual >= 0 ? '#16a34a' : '#ef4444' %>;">R$ <%= Math.abs(saldoAtual).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".") %></div>
         </div>
       </div>
 
       <!-- Blocos de meios de pagamento -->
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 40px;">
 
-        <!-- Pagamento via boleto -->
+        <!-- Pagamento via boleto - DADOS REAIS -->
         <div class="content-section">
           <div class="section-header">
             <h3 class="section-title">🧾 Pagamento via boleto</h3>
           </div>
           <div class="section-content">
             <div style="display: grid; gap: 15px;">
-              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                <div style="font-weight: bold; color: #333; margin-bottom: 5px;">Banco do Brasil</div>
-                <div style="color: #666; font-size: 14px;">Agência: 1234-5</div>
-                <div style="color: #666; font-size: 14px;">Conta: 67890-1</div>
-              </div>
-              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                <div style="font-weight: bold; color: #333; margin-bottom: 5px;">Itaú</div>
-                <div style="color: #666; font-size: 14px;">Agência: 5678-9</div>
-                <div style="color: #666; font-size: 14px;">Conta: 12345-6</div>
-              </div>
+              <%
+                const metodosBoleto = metodosPagamento.filter(m => m.tipo === 'boleto');
+                if (metodosBoleto.length > 0) {
+                  metodosBoleto.forEach(metodo => {
+              %>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                  <div style="font-weight: bold; color: #333; margin-bottom: 5px;"><%= metodo.descricao %></div>
+                  <% if (metodo.dados_pagamento && metodo.dados_pagamento.banco) { %>
+                    <div style="color: #666; font-size: 14px;">Banco: <%= metodo.dados_pagamento.banco %></div>
+                    <% if (metodo.dados_pagamento.agencia) { %>
+                      <div style="color: #666; font-size: 14px;">Agência: <%= metodo.dados_pagamento.agencia %></div>
+                    <% } %>
+                    <% if (metodo.dados_pagamento.conta) { %>
+                      <div style="color: #666; font-size: 14px;">Conta: <%= metodo.dados_pagamento.conta %></div>
+                    <% } %>
+                  <% } %>
+                  <div style="color: <%= metodo.ativo ? '#16a34a' : '#ef4444' %>; font-size: 12px; font-weight: bold; margin-top: 5px;">
+                    <%= metodo.ativo ? '✅ Ativo' : '❌ Inativo' %>
+                  </div>
+                </div>
+              <%
+                  });
+                } else {
+              %>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; color: #666;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">🏦</div>
+                  <div>Nenhuma conta bancária cadastrada</div>
+                </div>
+              <% } %>
               <button class="btn btn-primary" onclick="adicionarContaBancaria()" style="width: 100%;">+ Adicionar Conta</button>
             </div>
           </div>
         </div>
 
-        <!-- Transferência bancária -->
+        <!-- Transferência bancária - DADOS REAIS -->
         <div class="content-section">
           <div class="section-header">
             <h3 class="section-title">🏦 Transferência bancária</h3>
           </div>
           <div class="section-content">
             <div style="display: grid; gap: 15px;">
-              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                <div style="font-weight: bold; color: #333; margin-bottom: 5px;">PIX</div>
-                <div style="color: #666; font-size: 14px;">admin@pcrlabor.com</div>
-                <div style="color: #018820; font-size: 12px; font-weight: bold;">✅ Verificado</div>
-              </div>
-              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                <div style="font-weight: bold; color: #333; margin-bottom: 5px;">TED/DOC</div>
-                <div style="color: #666; font-size: 14px;">Banco: 001 - Banco do Brasil</div>
-                <div style="color: #666; font-size: 14px;">Ag: 1234-5 | CC: 67890-1</div>
-              </div>
+              <%
+                const metodosTransferencia = metodosPagamento.filter(m => m.tipo === 'transferencia');
+                if (metodosTransferencia.length > 0) {
+                  metodosTransferencia.forEach(metodo => {
+              %>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                  <div style="font-weight: bold; color: #333; margin-bottom: 5px;"><%= metodo.descricao %></div>
+                  <% if (metodo.dados_pagamento) { %>
+                    <% if (metodo.dados_pagamento.pix) { %>
+                      <div style="color: #666; font-size: 14px;">PIX: <%= metodo.dados_pagamento.pix %></div>
+                    <% } %>
+                    <% if (metodo.dados_pagamento.banco) { %>
+                      <div style="color: #666; font-size: 14px;">Banco: <%= metodo.dados_pagamento.banco %></div>
+                    <% } %>
+                    <% if (metodo.dados_pagamento.agencia && metodo.dados_pagamento.conta) { %>
+                      <div style="color: #666; font-size: 14px;">Ag: <%= metodo.dados_pagamento.agencia %> | CC: <%= metodo.dados_pagamento.conta %></div>
+                    <% } %>
+                  <% } %>
+                  <div style="color: <%= metodo.ativo ? '#16a34a' : '#ef4444' %>; font-size: 12px; font-weight: bold; margin-top: 5px;">
+                    <%= metodo.ativo ? '✅ Ativo' : '❌ Inativo' %>
+                  </div>
+                </div>
+              <%
+                  });
+                } else {
+              %>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; color: #666;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">💳</div>
+                  <div>Nenhum método de transferência cadastrado</div>
+                </div>
+              <% } %>
               <button class="btn btn-primary" onclick="adicionarMetodoTransferencia()" style="width: 100%;">+ Adicionar Método</button>
             </div>
           </div>
         </div>
 
-        <!-- Link de pagamento -->
+        <!-- Link de pagamento - DADOS REAIS -->
         <div class="content-section">
           <div class="section-header">
             <h3 class="section-title">🔗 Link de pagamento</h3>
           </div>
           <div class="section-content">
             <div style="display: grid; gap: 15px;">
-              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                <div style="font-weight: bold; color: #333; margin-bottom: 5px;">Mercado Pago</div>
-                <div style="color: #666; font-size: 14px;">Taxa: 4,99%</div>
-                <div style="color: #018820; font-size: 12px; font-weight: bold;">✅ Ativo</div>
-              </div>
-              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                <div style="font-weight: bold; color: #333; margin-bottom: 5px;">PagSeguro</div>
-                <div style="color: #666; font-size: 14px;">Taxa: 3,99%</div>
-                <div style="color: #f59e0b; font-size: 12px; font-weight: bold;">⏳ Pendente</div>
-              </div>
+              <%
+                const metodosLink = metodosPagamento.filter(m => m.tipo === 'link');
+                if (metodosLink.length > 0) {
+                  metodosLink.forEach(metodo => {
+              %>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                  <div style="font-weight: bold; color: #333; margin-bottom: 5px;"><%= metodo.descricao %></div>
+                  <% if (metodo.dados_pagamento) { %>
+                    <% if (metodo.dados_pagamento.gateway) { %>
+                      <div style="color: #666; font-size: 14px;">Gateway: <%= metodo.dados_pagamento.gateway %></div>
+                    <% } %>
+                    <% if (metodo.dados_pagamento.taxa) { %>
+                      <div style="color: #666; font-size: 14px;">Taxa: <%= metodo.dados_pagamento.taxa %></div>
+                    <% } %>
+                    <% if (metodo.dados_pagamento.link) { %>
+                      <div style="color: #666; font-size: 12px; word-break: break-all;">Link: <%= metodo.dados_pagamento.link.substring(0, 50) %>...</div>
+                    <% } %>
+                  <% } %>
+                  <div style="color: <%= metodo.ativo ? '#16a34a' : '#ef4444' %>; font-size: 12px; font-weight: bold; margin-top: 5px;">
+                    <%= metodo.ativo ? '✅ Ativo' : '❌ Inativo' %>
+                  </div>
+                </div>
+              <%
+                  });
+                } else {
+              %>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; color: #666;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">🔗</div>
+                  <div>Nenhum link de pagamento cadastrado</div>
+                </div>
+              <% } %>
               <button class="btn btn-primary" onclick="adicionarLinkPagamento()" style="width: 100%;">+ Novo Link</button>
             </div>
           </div>
@@ -136,17 +207,17 @@
               </div>
               <div style="margin-bottom: 20px;">
                 <label style="font-size: 14px; color: #666; font-weight: 600;">Telefone</label>
-                <div style="font-size: 16px; color: #333;"><%= usuario.telefone || '(11) 99999-9999' %></div>
+                <div style="font-size: 16px; color: #333;"><%= usuario.telefone || 'Não informado' %></div>
               </div>
             </div>
             <div>
               <div style="margin-bottom: 20px;">
-                <label style="font-size: 14px; color: #666; font-weight: 600;">CPF/CNPJ</label>
-                <div style="font-size: 16px; color: #333;"><%= usuario.documento || '123.456.789-00' %></div>
+                <label style="font-size: 14px; color: #666; font-weight: 600;">Empresa</label>
+                <div style="font-size: 16px; color: #333;"><%= usuario.empresa_nome || 'Não informado' %></div>
               </div>
               <div style="margin-bottom: 20px;">
                 <label style="font-size: 14px; color: #666; font-weight: 600;">Último Login</label>
-                <div style="font-size: 16px; color: #333;"><%= usuario.ultimoLogin %></div>
+                <div style="font-size: 16px; color: #333;"><%= stats.ultimoLogin || 'Não disponível' %></div>
               </div>
               <div style="margin-bottom: 20px;">
                 <label style="font-size: 14px; color: #666; font-weight: 600;">Status</label>
@@ -172,7 +243,10 @@
   <script>
     // ===== FUNCIONALIDADES DE PERFIL =====
 
-    // Filtros de período financeiro
+    /**
+     * Filtros de período financeiro
+     * Permite alternar entre diferentes períodos para visualização dos dados financeiros
+     */
     function filtrarPeriodoFinanceiro(periodo) {
       // Atualizar botões visuais
       document.querySelectorAll('[id*="filtro"]').forEach(btn => {
@@ -189,14 +263,14 @@
 
       console.log(`💰 Filtrando dados financeiros por: ${periodo}`);
 
-      // Simular atualização dos valores
+      // Simular atualização dos valores baseado no período
       const valores = {
         'mes': { pagar: 12450, receber: 28900, saldo: 16450 },
         'ultimo': { pagar: 8200, receber: 22100, saldo: 13900 },
         'trimestre': { pagar: 35600, receber: 78400, saldo: 42800 }
       };
 
-      // Feedback visual
+      // Feedback visual para o usuário
       const toast = document.createElement('div');
       toast.style.cssText = `
         position: fixed;

@@ -3,17 +3,24 @@
 const db = require('../config/db');
 
 class Venda {
-  static async getAll() {
+  static async getAll(id_empresa = null) {
     try {
-      const query = `
+      let query = `
         SELECT v.*, p.nome as produto_nome, p.sku, pl.nome as plataforma_nome
         FROM Venda v
         LEFT JOIN Produto p ON v.id_produto = p.id_produto
         LEFT JOIN Plataforma pl ON v.id_plataforma = pl.id_plataforma
-        ORDER BY v.data DESC, v.id_venda DESC
       `;
 
-      const result = await db.query(query);
+      const params = [];
+      if (id_empresa) {
+        query += ` WHERE v.id_empresa = $1`;
+        params.push(id_empresa);
+      }
+
+      query += ` ORDER BY v.data DESC, v.id_venda DESC`;
+
+      const result = await db.query(query, params);
       return result.rows;
     } catch (error) {
       throw new Error(`Erro ao buscar vendas: ${error.message}`);
@@ -35,32 +42,50 @@ class Venda {
     }
   }
 
-  static async getByPeriodo(dataInicio, dataFim) {
+  static async getByPeriodo(dataInicio, dataFim, id_empresa = null) {
     try {
-      const result = await db.query(`
+      let query = `
         SELECT v.*, p.nome as produto_nome, p.sku, pl.nome as plataforma_nome
         FROM Venda v
         LEFT JOIN Produto p ON v.id_produto = p.id_produto
         LEFT JOIN Plataforma pl ON v.id_plataforma = pl.id_plataforma
         WHERE v.data BETWEEN $1 AND $2
-        ORDER BY v.data DESC
-      `, [dataInicio, dataFim]);
+      `;
+
+      const params = [dataInicio, dataFim];
+      if (id_empresa) {
+        query += ` AND v.id_empresa = $3`;
+        params.push(id_empresa);
+      }
+
+      query += ` ORDER BY v.data DESC`;
+
+      const result = await db.query(query, params);
       return result.rows;
     } catch (error) {
       throw new Error(`Erro ao buscar vendas por período: ${error.message}`);
     }
   }
 
-  static async getByPlataforma(idPlataforma) {
+  static async getByPlataforma(idPlataforma, id_empresa = null) {
     try {
-      const result = await db.query(`
+      let query = `
         SELECT v.*, p.nome as produto_nome, p.sku, pl.nome as plataforma_nome
         FROM Venda v
         LEFT JOIN Produto p ON v.id_produto = p.id_produto
         LEFT JOIN Plataforma pl ON v.id_plataforma = pl.id_plataforma
         WHERE v.id_plataforma = $1
-        ORDER BY v.data DESC
-      `, [idPlataforma]);
+      `;
+
+      const params = [idPlataforma];
+      if (id_empresa) {
+        query += ` AND v.id_empresa = $2`;
+        params.push(id_empresa);
+      }
+
+      query += ` ORDER BY v.data DESC`;
+
+      const result = await db.query(query, params);
       return result.rows;
     } catch (error) {
       throw new Error(`Erro ao buscar vendas por plataforma: ${error.message}`);
@@ -69,10 +94,10 @@ class Venda {
 
   static async create(vendaData) {
     try {
-      const { id_produto, id_plataforma, quantidade, data, valor_total } = vendaData;
+      const { id_produto, id_empresa, id_plataforma, quantidade, data, valor_total, preco_unitario, status } = vendaData;
       const result = await db.query(
-        'INSERT INTO Venda (id_produto, id_plataforma, quantidade, data, valor_total) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [id_produto, id_plataforma, quantidade, data, valor_total]
+        'INSERT INTO Venda (id_produto, id_empresa, id_plataforma, quantidade, data, valor_total, preco_unitario, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+        [id_produto, id_empresa, id_plataforma, quantidade, data, valor_total, preco_unitario || (valor_total / quantidade), status || 'confirmada']
       );
       return result.rows[0];
     } catch (error) {

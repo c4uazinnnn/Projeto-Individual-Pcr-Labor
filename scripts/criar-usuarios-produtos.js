@@ -1,19 +1,25 @@
 #!/usr/bin/env node
 
 /**
+ * =====================================================
+ * PCR LABOR - CRIADOR DE USUÁRIOS E PRODUTOS
+ * =====================================================
+ * 
  * Script para criar novos usuários e produtos no sistema PCR Labor
  *
  * Uso:
- * node scripts/criarUsuarioProdutos.js
+ * node scripts/criar-usuarios-produtos.js
  *
  * Ou com parâmetros:
- * node scripts/criarUsuarioProdutos.js --nome "João Silva" --email "joao@exemplo.com"
+ * node scripts/criar-usuarios-produtos.js --nome "João Silva" --email "joao@exemplo.com"
+ * 
+ * =====================================================
  */
 
 const bcrypt = require('bcrypt');
 const db = require('../config/db');
 
-// Configurações padrão
+// ===== CONFIGURAÇÕES PADRÃO =====
 const CONFIG = {
   saltRounds: 10,
   senhasPadrao: 'usuario123',
@@ -235,7 +241,7 @@ async function criarUsuarioPersonalizado() {
 
   if (!params.nome || !params.email) {
     console.log('❌ Parâmetros obrigatórios: --nome e --email');
-    console.log('Exemplo: node scripts/criarUsuarioProdutos.js --nome "João Silva" --email "joao@exemplo.com"');
+    console.log('Exemplo: node scripts/criar-usuarios-produtos.js --nome "João Silva" --email "joao@exemplo.com"');
     return;
   }
 
@@ -258,7 +264,7 @@ async function criarUsuarioPersonalizado() {
   }
 }
 
-// Executar script
+// ===== EXECUÇÃO DO SCRIPT =====
 if (require.main === module) {
   const args = process.argv.slice(2);
 
@@ -271,6 +277,7 @@ if (require.main === module) {
   }
 }
 
+// ===== EXPORTAÇÕES =====
 module.exports = {
   criarEmpresa,
   criarUsuario,

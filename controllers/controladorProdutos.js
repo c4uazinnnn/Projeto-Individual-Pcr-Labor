@@ -1,6 +1,8 @@
 // controllers/produtoController.js
 
 const Produto = require('../models/modeloProdutos');
+const ServicoImportacaoExcel = require('../services/servicoImportacaoExcel');
+const fs = require('fs');
 
 const renderProdutos = async (req, res) => {
   try {
@@ -41,31 +43,47 @@ const renderEstoque = async (req, res) => {
   try {
     let produtos = [];
     let produtosEstoqueBaixo = [];
+    let pedidos = [];
+    let vendas = [];
+    const id_empresa = req.id_empresa; // Vem do middleware
+    const usuario = req.usuario; // Vem do middleware
 
     try {
-      const [produtosDB, produtosEstoqueBaixoDB] = await Promise.all([
-        Produto.getAll(),
-        Produto.getEstoqueBaixo(10)
+      // Buscar TODOS os dados necessários para os gráficos
+      const Venda = require('../models/modeloVendas');
+      const Pedido = require('../models/modeloPedidos');
+
+      const [produtosDB, produtosEstoqueBaixoDB, pedidosDB, vendasDB] = await Promise.all([
+        Produto.getAll(id_empresa),
+        Produto.getEstoqueBaixo(10, id_empresa),
+        Pedido.getAll(id_empresa).catch(() => []),
+        Venda.getAll(id_empresa).catch(() => [])
       ]);
+
       produtos = produtosDB;
       produtosEstoqueBaixo = produtosEstoqueBaixoDB;
+      pedidos = pedidosDB;
+      vendas = vendasDB;
+
+      console.log(`📦 Página Estoque - Carregados ${produtos.length} produtos para empresa ${usuario.empresa_nome}`);
+      console.log(`📋 Página Estoque - Carregados ${pedidos.length} pedidos para gráficos`);
+      console.log(`💰 Página Estoque - Carregadas ${vendas.length} vendas para gráficos`);
     } catch (dbError) {
-      console.log('Banco não disponível, usando dados de demonstração');
-      produtos = [
-        { id_produto: 1, nome: 'Kit PCR COVID-19', sku: 'PCR-COVID-001', preco: 89.90, estoque_atual: 150 },
-        { id_produto: 2, nome: 'Kit PCR Influenza', sku: 'PCR-FLU-001', preco: 79.90, estoque_atual: 200 },
-        { id_produto: 3, nome: 'Kit PCR Hepatite B', sku: 'PCR-HEP-001', preco: 95.50, estoque_atual: 100 },
-        { id_produto: 4, nome: 'Kit PCR Dengue', sku: 'PCR-DEN-001', preco: 85.00, estoque_atual: 5 },
-        { id_produto: 5, nome: 'Kit PCR Zika', sku: 'PCR-ZIK-001', preco: 92.50, estoque_atual: 75 }
-      ];
-      produtosEstoqueBaixo = produtos.filter(p => p.estoque_atual <= 10);
+      console.log('Banco não disponível, usando dados vazios:', dbError.message);
+      produtos = [];
+      produtosEstoqueBaixo = [];
+      pedidos = [];
+      vendas = [];
     }
 
     res.render('pages/estoque', {
-      pageTitle: 'Estoque - PCR Labor',
+      pageTitle: `Estoque - ${usuario.empresa_nome}`,
       currentPage: 'estoque',
       produtos,
-      produtosEstoqueBaixo
+      produtosEstoqueBaixo,
+      pedidos, // DADOS PARA GRÁFICO DE COMPRAS
+      vendas,  // DADOS PARA GRÁFICO DE ENVIOS
+      usuario
     });
   } catch (error) {
     console.error('Erro ao carregar estoque:', error);
@@ -128,18 +146,50 @@ const getProdutoById = async (req, res) => {
 const createProduto = async (req, res) => {
   try {
     const id_empresa = req.id_empresa; // Pegar do middleware
-    const { nome, sku, preco, estoque_atual, estoque_minimo } = req.body;
+    const {
+      nome,
+      sku,
+      preco,
+      preco_base,
+      custo_frete,
+      estoque_atual,
+      estoque_minimo,
+      categoria,
+      descricao
+    } = req.body;
 
     console.log(`📦 Criando produto para empresa ID: ${id_empresa}`);
-    console.log(`📋 Dados do produto:`, { nome, sku, preco, estoque_atual, estoque_minimo });
+    console.log(`📋 Dados do produto:`, { nome, sku, preco, preco_base, custo_frete, estoque_atual });
+
+    // Validações
+    if (!nome || !sku || !preco || estoque_atual === undefined) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nome, SKU, preço e estoque são obrigatórios'
+      });
+    }
+
+    // Verificar se SKU já existe na empresa
+    const produtos = await Produto.getAll(id_empresa);
+    const skuExistente = produtos.find(p => p.sku === sku);
+    if (skuExistente) {
+      return res.status(400).json({
+        success: false,
+        error: 'SKU já existe nesta empresa'
+      });
+    }
 
     const newProduto = await Produto.create({
       id_empresa,
       nome,
       sku,
-      preco,
-      estoque_atual,
-      estoque_minimo: estoque_minimo || 10
+      preco: parseFloat(preco),
+      preco_base: parseFloat(preco_base || 0),
+      custo_frete: parseFloat(custo_frete || 0),
+      estoque_atual: parseInt(estoque_atual),
+      estoque_minimo: parseInt(estoque_minimo || 10),
+      categoria: categoria || 'Geral',
+      descricao: descricao || ''
     });
 
     console.log(`✅ Produto criado com sucesso: ${newProduto.nome}`);
@@ -242,6 +292,85 @@ const updateEstoque = async (req, res) => {
   }
 };
 
+// Importar produtos via Excel
+const importarProdutosExcel = async (req, res) => {
+  try {
+    const id_empresa = req.id_empresa;
+
+    console.log('📥 Iniciando importação de produtos via Excel');
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nenhum arquivo foi enviado'
+      });
+    }
+
+    console.log('📄 Arquivo recebido:', req.file.filename);
+
+    // Validar estrutura do arquivo
+    try {
+      const validacao = ServicoImportacaoExcel.validarEstrutura(req.file.path);
+      console.log('✅ Arquivo válido:', validacao);
+    } catch (validationError) {
+      // Remover arquivo inválido
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({
+        success: false,
+        error: validationError.message
+      });
+    }
+
+    // Processar arquivo
+    const resultado = await ServicoImportacaoExcel.processarArquivo(req.file.path, id_empresa);
+
+    // Remover arquivo após processamento
+    fs.unlinkSync(req.file.path);
+
+    console.log('✅ Importação concluída:', resultado);
+
+    res.status(200).json({
+      success: true,
+      data: resultado,
+      message: `Importação concluída: ${resultado.sucessos} produtos importados, ${resultado.erros} erros`
+    });
+
+  } catch (error) {
+    console.error('❌ Erro na importação:', error);
+
+    // Remover arquivo em caso de erro
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+// Baixar template Excel
+const baixarTemplateExcel = async (req, res) => {
+  try {
+    console.log('📄 Gerando template Excel para download');
+
+    const buffer = ServicoImportacaoExcel.gerarTemplateExcel();
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=template-produtos.xlsx');
+
+    res.send(buffer);
+
+  } catch (error) {
+    console.error('❌ Erro ao gerar template:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   renderProdutos,
   renderEstoque,
@@ -250,5 +379,7 @@ module.exports = {
   createProduto,
   updateProduto,
   deleteProduto,
-  updateEstoque
+  updateEstoque,
+  importarProdutosExcel,
+  baixarTemplateExcel
 };

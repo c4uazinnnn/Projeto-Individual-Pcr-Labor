@@ -1,6 +1,119 @@
-<h1>PCR Labor</h1>
-<p>O projeto consiste no desenvolvimento de uma aplicação web para a empresa PCR Labor, com o objetivo de melhorar a integração entre plataformas de e-commerce (como Mercado Livre e Shopee). A aplicação vai consolidar informações de vendas, sugerir quantidades ideais de compra de produtos e fornecer relatórios de desempenho para facilitar o gerenciamento do estoque e a tomada de decisões comerciais.
-</p>
+# 🏥 PCR Labor - Sistema de Gestão Completo
+
+## 📋 Sobre o Projeto
+
+O **PCR Labor** é uma aplicação web completa desenvolvida para otimizar a gestão de vendas, estoque e pedidos da empresa PCR Labor. O sistema integra múltiplas plataformas de e-commerce (Mercado Livre, Shopee e vendas diretas) em uma interface unificada, proporcionando controle total sobre as operações comerciais.
+
+### 🎯 Objetivos Principais
+
+- **Centralização de Dados**: Unificar informações de vendas de todas as plataformas
+- **Gestão Inteligente**: Controle automatizado de estoque e sugestões de compra
+- **Análise de Performance**: Relatórios detalhados e métricas em tempo real
+- **Otimização de Processos**: Automatização de tarefas repetitivas
+- **Tomada de Decisão**: Dashboards interativos com insights estratégicos
+
+## 🚀 Funcionalidades Principais
+
+### 📊 Dashboard Executivo
+- **Visão Geral Completa**: Métricas consolidadas de todas as operações
+- **Gráficos Interativos**: Visualização de vendas, estoque, pedidos e plataformas
+- **KPIs em Tempo Real**: Indicadores de performance atualizados automaticamente
+- **Análise Comparativa**: Performance entre diferentes plataformas e períodos
+
+### 💰 Gestão de Vendas
+- **Histórico Completo**: Registro detalhado de todas as vendas
+- **Filtros Avançados**: Por período, plataforma, produto e status
+- **Métricas Detalhadas**: Valor total, ticket médio, quantidade vendida
+- **Projeções**: Estimativas baseadas em dados históricos
+- **Integração Multi-plataforma**: Shopee, Mercado Livre e vendas diretas
+
+### 📦 Controle de Estoque
+- **Monitoramento em Tempo Real**: Status atual de todos os produtos
+- **Alertas Inteligentes**: Notificações para estoque baixo ou crítico
+- **Categorização**: Organização por tipo de produto e prioridade
+- **Histórico de Movimentação**: Rastreamento completo de entradas e saídas
+- **Relatórios de Performance**: Análise de giro e rentabilidade
+
+### 🛒 Gestão de Pedidos
+- **Controle Completo**: Criação, aprovação e acompanhamento de pedidos
+- **Status Dinâmico**: Pendente, aprovado, cancelado com atualizações automáticas
+- **Filtros Inteligentes**: Por período, status, fornecedor e prioridade
+- **Workflow Otimizado**: Processo simplificado de aprovação
+- **Integração com Estoque**: Atualização automática após recebimento
+
+### 🌐 Análise de Plataformas
+- **Performance Individual**: Métricas específicas de cada plataforma
+- **Comparativo de Vendas**: Análise lado a lado das performances
+- **Sincronização**: Atualização automática de dados das APIs
+- **Relatórios Customizados**: Insights específicos por canal de venda
+
+### 👤 Perfil e Configurações
+- **Gestão de Usuários**: Controle de acesso e permissões
+- **Configurações Personalizadas**: Adaptação às necessidades específicas
+- **Dados Financeiros**: Informações bancárias e métodos de pagamento
+- **Preferências**: Customização da interface e notificações
+
+### ✅ Sistema de Tarefas
+- **Organização Kanban**: A fazer, fazendo, concluído
+- **Persistência de Dados**: Tarefas salvas no banco de dados
+- **Interface Intuitiva**: Drag-and-drop entre status
+- **Sincronização**: Atualizações em tempo real entre páginas
+
+## 🛠️ Tecnologias Utilizadas
+
+### Backend
+- **Node.js**: Runtime JavaScript para servidor
+- **Express.js**: Framework web minimalista e flexível
+- **PostgreSQL**: Banco de dados relacional robusto
+- **EJS**: Template engine para renderização server-side
+- **bcrypt**: Criptografia de senhas
+- **express-session**: Gerenciamento de sessões
+
+### Frontend
+- **HTML5**: Estrutura semântica moderna
+- **CSS3**: Estilização avançada com Flexbox e Grid
+- **JavaScript ES6+**: Funcionalidades interativas
+- **Chart.js**: Gráficos e visualizações de dados
+- **Design Responsivo**: Adaptação para todos os dispositivos
+
+### Banco de Dados
+- **PostgreSQL 14+**: Sistema de gerenciamento robusto
+- **Estrutura Normalizada**: Relacionamentos otimizados
+- **Índices de Performance**: Consultas rápidas e eficientes
+- **Views Customizadas**: Relatórios pré-configurados
+- **Triggers Automáticos**: Atualizações em tempo real
+
+## 📁 Estrutura do Projeto
+
+```
+PCR-Labor/
+├── 📁 config/              # Configurações do sistema
+│   └── db.js              # Conexão com banco de dados
+├── 📁 controllers/         # Controladores MVC
+│   ├── controladorAuth.js # Autenticação
+│   ├── controladorVendas.js # Gestão de vendas
+│   └── ...
+├── 📁 models/             # Modelos de dados
+│   ├── modeloVendas.js    # Modelo de vendas
+│   ├── modeloProdutos.js  # Modelo de produtos
+│   └── ...
+├── 📁 routes/             # Rotas da aplicação
+│   ├── rotasAuth.js       # Rotas de autenticação
+│   ├── rotasAPI.js        # API endpoints
+│   └── ...
+├── 📁 views/              # Templates EJS
+│   ├── 📁 pages/          # Páginas principais
+│   ├── 📁 components/     # Componentes reutilizáveis
+│   └── 📁 layouts/        # Layouts base
+├── 📁 public/             # Arquivos estáticos
+│   ├── 📁 css/            # Estilos CSS
+│   ├── 📁 js/             # Scripts JavaScript
+│   └── 📁 images/         # Imagens e assets
+├── 📁 scripts/            # Scripts de banco
+│   ├── database-completo.sql # Estrutura completa
+│   └── executar-database-completo.js # Executor
+├── 📁 services/           # Serviços de negócio
+└── 📁 documents/          # Documentação
 
 <h2>Funcionalidades</h2>
 <ul>

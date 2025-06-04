@@ -9,49 +9,33 @@
 
     <!-- Caixa das tarefas com design melhorado -->
     <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <span style="font-size: 14px; font-weight: 600; color: #333;">Pendentes</span>
-        <span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">4</span>
+      <div style="margin-bottom: 15px;">
+        <span style="font-size: 14px; font-weight: 600; color: #333;">Organização de Tarefas</span>
       </div>
 
-      <div style="display: grid; gap: 12px;">
-        <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
-          <input type="checkbox" id="task1" style="margin: 0; cursor: pointer;" onchange="toggleTask(this)">
-          <label for="task1" style="flex: 1; font-size: 13px; color: #333; cursor: pointer; margin: 0;">Revisar pedidos pendentes</label>
-          <span style="color: #f59e0b; font-size: 11px;">🔥 Urgente</span>
-        </div>
+      <!-- SISTEMA DE TAREFAS SIMPLES -->
 
-        <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: #dcfce7; border-radius: 8px; opacity: 0.7;">
-          <input type="checkbox" id="task2" checked style="margin: 0; cursor: pointer;" onchange="toggleTask(this)">
-          <label for="task2" style="flex: 1; font-size: 13px; color: #333; cursor: pointer; margin: 0; text-decoration: line-through;">Sincronizar Mercado Livre</label>
-          <span style="color: #16a34a; font-size: 11px;">✅ Feito</span>
-        </div>
+      <!-- A Fazer -->
+      <div style="margin-bottom: 15px;">
+        <h4 style="margin: 0 0 8px; font-size: 13px; color: #f59e0b;">📋 A Fazer (<span id="contA">0</span>)</h4>
+        <div id="aFazer" style="min-height: 50px; padding: 5px; border: 1px dashed #f59e0b; border-radius: 6px; background: #fff8e1;"></div>
+      </div>
 
-        <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
-          <input type="checkbox" id="task3" style="margin: 0; cursor: pointer;" onchange="toggleTask(this)">
-          <label for="task3" style="flex: 1; font-size: 13px; color: #333; cursor: pointer; margin: 0;">Atualizar preços Shopee</label>
-          <span style="color: #3b82f6; font-size: 11px;">📅 Hoje</span>
-        </div>
+      <!-- Fazendo -->
+      <div style="margin-bottom: 15px;">
+        <h4 style="margin: 0 0 8px; font-size: 13px; color: #3b82f6;">🔄 Fazendo (<span id="contF">0</span>)</h4>
+        <div id="fazendo" style="min-height: 50px; padding: 5px; border: 1px dashed #3b82f6; border-radius: 6px; background: #e3f2fd;"></div>
+      </div>
 
-        <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
-          <input type="checkbox" id="task4" style="margin: 0; cursor: pointer;" onchange="toggleTask(this)">
-          <label for="task4" style="flex: 1; font-size: 13px; color: #333; cursor: pointer; margin: 0;">Verificar estoque baixo</label>
-          <span style="color: #f59e0b; font-size: 11px;">⚠️ Alerta</span>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
-          <input type="checkbox" id="task5" style="margin: 0; cursor: pointer;" onchange="toggleTask(this)">
-          <label for="task5" style="flex: 1; font-size: 13px; color: #333; cursor: pointer; margin: 0;">Enviar relatório mensal</label>
-          <span style="color: #8b5cf6; font-size: 11px;">📊 Relatório</span>
-        </div>
+      <!-- Concluído -->
+      <div style="margin-bottom: 15px;">
+        <h4 style="margin: 0 0 8px; font-size: 13px; color: #16a34a;">✅ Concluído (<span id="contC">0</span>)</h4>
+        <div id="concluido" style="min-height: 50px; padding: 5px; border: 1px dashed #16a34a; border-radius: 6px; background: #f1f8e9;"></div>
       </div>
 
       <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0; display: grid; gap: 8px;">
-        <button onclick="adicionarTarefa()" style="width: 100%; padding: 8px; background: #f8f9fa; border: 1px dashed #ccc; border-radius: 6px; color: #666; font-size: 12px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
-          + Adicionar tarefa
-        </button>
-        <button onclick="verTodasTarefas()" style="width: 100%; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
-          📋 Ver todas
+        <button onclick="adicionarTarefa()" style="width: 100%; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s ease; font-weight: 600;" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'">
+          ➕ Adicionar Nova Tarefa
         </button>
       </div>
     </div>
@@ -294,38 +278,64 @@
     }
   }
 
-  function gerarRespostaIA(pergunta) {
+  async function gerarRespostaIA(pergunta) {
     const perguntaLower = pergunta.toLowerCase();
 
-    // Respostas baseadas em palavras-chave
-    if (perguntaLower.includes('venda') || perguntaLower.includes('vendas')) {
-      return `📊 **Análise de Vendas:**\n\n• Total hoje: R$ 2.450,00\n• Crescimento: +15% vs ontem\n• Melhor produto: Kit PCR COVID-19\n• Plataforma líder: Mercado Livre (60%)\n\nRecomendo focar na promoção dos kits de Hepatite B que estão com baixa rotatividade.`;
+    try {
+      // Buscar dados reais da empresa via API
+      const response = await fetch('/api/dashboard-stats');
+      const dadosEmpresa = await response.json();
+
+      // Respostas baseadas em dados REAIS da empresa
+      if (perguntaLower.includes('venda') || perguntaLower.includes('vendas')) {
+        const vendas = dadosEmpresa.data || {};
+        return `📊 **Análise de Vendas da Sua Empresa:**\n\n• Total de vendas: ${vendas.totalVendas || 0}\n• Valor total: R$ ${(vendas.valorTotalVendas || 0).toFixed(2)}\n• Vendas hoje: ${vendas.vendasHoje || 0}\n• Ticket médio: R$ ${(vendas.ticketMedio || 0).toFixed(2)}\n• Produto mais vendido: ${vendas.produtoMaisVendido || 'N/A'}\n\nCrescimento: ${vendas.crescimentoDiario || 0}% vs ontem`;
+      }
+
+      if (perguntaLower.includes('estoque')) {
+        const produtos = dadosEmpresa.data || {};
+        return `📦 **Status do Estoque da Sua Empresa:**\n\n• Total de produtos: ${produtos.totalProdutos || 0}\n• Produtos com estoque baixo: ${produtos.produtosEstoqueBaixo || 0}\n\n⚠️ **Atenção:** ${produtos.produtosEstoqueBaixo > 0 ? 'Alguns produtos precisam de reposição!' : 'Estoque adequado!'}\n\nSugestão: Monitore regularmente os níveis mínimos.`;
+      }
+
+      if (perguntaLower.includes('pedido') || perguntaLower.includes('pedidos')) {
+        const pedidos = dadosEmpresa.data || {};
+        return `� **Status dos Pedidos:**\n\n• Total de pedidos: ${pedidos.totalPedidos || 0}\n• Valor total: R$ ${(pedidos.valorTotalPedidos || 0).toFixed(2)}\n• Pedidos pendentes: ${pedidos.pedidosPendentes || 0}\n\n${pedidos.pedidosPendentes > 0 ? '⚠️ Há pedidos pendentes que precisam de atenção!' : '✅ Todos os pedidos estão em dia!'}`;
+      }
+
+      if (perguntaLower.includes('plataforma')) {
+        const plataformas = dadosEmpresa.data?.plataformas || [];
+        let resposta = `🛒 **Performance das Suas Plataformas:**\n\n`;
+
+        plataformas.forEach((plat, index) => {
+          resposta += `• **${plat.nome}**: R$ ${(plat.valor_total || 0).toFixed(2)} (${plat.total_vendas || 0} vendas)\n`;
+        });
+
+        if (plataformas.length === 0) {
+          resposta += 'Nenhum dado de plataforma disponível no momento.';
+        } else {
+          resposta += `\n🏆 **Líder:** ${plataformas[0]?.nome || 'N/A'}`;
+        }
+
+        return resposta;
+      }
+
+      if (perguntaLower.includes('relatório') || perguntaLower.includes('relatorio')) {
+        return `� **Relatórios Disponíveis para Sua Empresa:**\n\n1. **Dashboard Completo** - Visão geral atual\n2. **Análise de Vendas** - Histórico detalhado\n3. **Controle de Estoque** - Status e movimentações\n4. **Performance por Plataforma** - Comparativo\n5. **Gestão de Pedidos** - Workflow completo\n\nTodos os dados são específicos da sua empresa e atualizados em tempo real!`;
+      }
+
+      if (perguntaLower.includes('lucro') || perguntaLower.includes('margem')) {
+        return `💰 **Análise de Lucratividade:**\n\nCom os novos campos de preço base implementados, você pode:\n\n• Calcular margem real por produto\n• Considerar custos de frete\n• Analisar lucro líquido por venda\n• Identificar produtos mais rentáveis\n\nAcesse a seção de produtos para ver os cálculos detalhados!`;
+      }
+
+      // Resposta genérica com dados reais
+      return `🤖 Analisando "${pergunta}" com base nos dados da sua empresa:\n\n• ${dadosEmpresa.data?.totalProdutos || 0} produtos cadastrados\n• ${dadosEmpresa.data?.totalVendas || 0} vendas realizadas\n• R$ ${(dadosEmpresa.data?.valorTotalVendas || 0).toFixed(2)} em faturamento\n• ${dadosEmpresa.data?.produtosEstoqueBaixo || 0} produtos com estoque baixo\n\nPosso ajudar com análises mais específicas. O que você gostaria de saber?`;
+
+    } catch (error) {
+      console.error('Erro ao buscar dados da empresa:', error);
+
+      // Fallback para quando não conseguir acessar os dados
+      return `🤖 Desculpe, não consegui acessar os dados da sua empresa no momento.\n\nTente:\n• Verificar sua conexão\n• Recarregar a página\n• Tentar novamente em alguns segundos\n\nEnquanto isso, posso ajudar com informações gerais sobre o sistema!`;
     }
-
-    if (perguntaLower.includes('estoque')) {
-      return `📦 **Status do Estoque:**\n\n⚠️ **Produtos com estoque baixo:**\n• Kit PCR Dengue: 5 unidades\n• Kit PCR Zika: 8 unidades\n\n✅ **Estoque adequado:**\n• Kit PCR COVID-19: 150 unidades\n• Kit PCR Influenza: 200 unidades\n\nSugestão: Reabastecer os produtos em alerta.`;
-    }
-
-    if (perguntaLower.includes('relatório') || perguntaLower.includes('relatorio')) {
-      return `📄 **Relatórios Disponíveis:**\n\n1. **Vendas Mensais** - Análise completa\n2. **Estoque Atual** - Status detalhado\n3. **Performance por Plataforma**\n4. **Produtos Mais Vendidos**\n\nPosso gerar qualquer um desses relatórios. Qual você gostaria?`;
-    }
-
-    if (perguntaLower.includes('plataforma')) {
-      return `🛒 **Performance das Plataformas:**\n\n• **Mercado Livre**: R$ 15.200 (60%)\n• **Shopee**: R$ 8.500 (33%)\n• **PCR Labor Direto**: R$ 1.800 (7%)\n\nO Mercado Livre está performando muito bem! Considere aumentar o investimento em anúncios lá.`;
-    }
-
-    if (perguntaLower.includes('produto') || perguntaLower.includes('produtos')) {
-      return `📦 **Análise de Produtos:**\n\n🏆 **Top 3 Mais Vendidos:**\n1. Kit PCR COVID-19 (45 vendas)\n2. Kit PCR Influenza (32 vendas)\n3. Kit PCR Hepatite B (18 vendas)\n\n💡 **Oportunidade:** Kit PCR Zika tem baixa rotatividade. Que tal uma promoção?`;
-    }
-
-    // Respostas genéricas inteligentes
-    const respostasGenericas = [
-      `🤖 Entendi sua pergunta sobre "${pergunta}". Com base nos dados atuais:\n\n• Suas vendas estão 12% acima da média\n• Estoque geral está adequado\n• Recomendo focar no Mercado Livre\n\nPrecisa de mais detalhes sobre algum aspecto específico?`,
-
-      `📊 Analisando "${pergunta}"...\n\n• Performance geral: Excelente\n• Tendência: Crescimento sustentável\n• Próximos passos: Expandir produtos de alta rotatividade\n\nQuer que eu detalhe alguma métrica específica?`,
-
-      `💡 Sobre "${pergunta}", posso ajudar!\n\n• Dados atualizados em tempo real\n• Análise preditiva disponível\n• Sugestões personalizadas prontas\n\nQual aspecto você gostaria de explorar mais?`
-    ];
 
     return respostasGenericas[Math.floor(Math.random() * respostasGenericas.length)];
   }
@@ -361,455 +371,271 @@
     }
   }
 
-  // ===== SISTEMA DE TAREFAS DEFINITIVO =====
-  // Armazenamento global de tarefas
-  if (!window.tarefasGlobais) {
-    window.tarefasGlobais = [
-      { id: 1, texto: 'Revisar pedidos pendentes', prioridade: 'urgente', concluida: false },
-      { id: 2, texto: 'Sincronizar Mercado Livre', prioridade: 'normal', concluida: true },
-      { id: 3, texto: 'Atualizar preços Shopee', prioridade: 'normal', concluida: false },
-      { id: 4, texto: 'Verificar estoque baixo', prioridade: 'alta', concluida: false },
-      { id: 5, texto: 'Enviar relatório mensal', prioridade: 'baixa', concluida: false }
-    ];
-  }
+  // ===== SISTEMA DE TAREFAS SIMPLES COM PERSISTÊNCIA =====
 
-  let tarefas = window.tarefasGlobais;
+  let tarefas = [];
 
-  // Função para atualizar a exibição das tarefas na barra lateral
-  function atualizarExibicaoTarefas() {
-    const tarefasPendentes = tarefas.filter(t => !t.concluida);
-
-    // Seletor mais específico para evitar conflitos com gráficos
-    const containerTarefas = document.querySelector('.sidebar .content-section:first-child .section-content');
-
-    if (containerTarefas) {
-      // Limpar tarefas existentes
-      const tarefasExistentes = containerTarefas.querySelectorAll('[data-tarefa-id]');
-      tarefasExistentes.forEach(t => t.remove());
-
-      // Adicionar tarefas pendentes (máximo 3 na barra lateral)
-      tarefasPendentes.slice(0, 3).forEach(tarefa => {
-        const tarefaElement = document.createElement('div');
-        tarefaElement.setAttribute('data-tarefa-id', tarefa.id);
-        tarefaElement.style.cssText = `
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px;
-          background: #f8f9fa;
-          border-radius: 6px;
-          margin-bottom: 8px;
-          border-left: 3px solid ${getPrioridadeCor(tarefa.prioridade)};
-        `;
-
-        tarefaElement.innerHTML = `
-          <input type="checkbox" onchange="marcarTarefaConcluida(${tarefa.id}, this)" style="margin: 0; cursor: pointer;">
-          <span style="flex: 1; font-size: 12px; color: #333;">${tarefa.texto}</span>
-          <span style="font-size: 10px; color: #666;">${getPrioridadeTexto(tarefa.prioridade).split(' ')[0]}</span>
-        `;
-
-        // Inserir antes dos botões de tarefas
-        const botoesTarefas = containerTarefas.querySelector('[style*="border-top"][style*="gap: 8px"]');
-        if (botoesTarefas) {
-          containerTarefas.insertBefore(tarefaElement, botoesTarefas);
-        } else {
-          containerTarefas.appendChild(tarefaElement);
-        }
-      });
+  // Carregar tarefas do localStorage
+  function carregarTarefas() {
+    const tarefasSalvas = localStorage.getItem('tarefasPCRLabor');
+    if (tarefasSalvas) {
+      tarefas = JSON.parse(tarefasSalvas);
+      console.log('✅ Tarefas carregadas do localStorage:', tarefas.length);
+    } else {
+      // Tarefas padrão se não houver nada salvo
+      tarefas = [
+        { id: 1, texto: 'Revisar pedidos', status: 'a_fazer' },
+        { id: 2, texto: 'Sync Mercado Livre', status: 'fazendo' },
+        { id: 3, texto: 'Update Shopee', status: 'concluido' }
+      ];
+      salvarTarefas();
+      console.log('✅ Tarefas padrão criadas');
     }
-
-    atualizarContadorTarefas();
   }
 
-  function marcarTarefaConcluida(id, checkbox) {
-    const tarefa = window.tarefasGlobais.find(t => t.id === id);
-    if (tarefa) {
-      tarefa.concluida = checkbox.checked;
-      tarefas = window.tarefasGlobais; // Sincronizar
+  // Salvar tarefas no localStorage
+  function salvarTarefas() {
+    localStorage.setItem('tarefasPCRLabor', JSON.stringify(tarefas));
+    console.log('💾 Tarefas salvas no localStorage');
+  }
 
-      // Feedback visual
-      const toast = document.createElement('div');
-      toast.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: #16a34a;
-        color: white;
-        padding: 12px 20px;
+  function renderizar() {
+    const aFazer = document.getElementById('aFazer');
+    const fazendo = document.getElementById('fazendo');
+    const concluido = document.getElementById('concluido');
+
+    aFazer.innerHTML = '';
+    fazendo.innerHTML = '';
+    concluido.innerHTML = '';
+
+    let contA = 0, contF = 0, contC = 0;
+
+    tarefas.forEach(tarefa => {
+      const div = document.createElement('div');
+      div.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        background: white;
         border-radius: 8px;
-        z-index: 1000;
-        font-size: 14px;
+        margin-bottom: 8px;
+        cursor: grab;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-left: 4px solid ${getBorderColor(tarefa.status)};
+        transition: all 0.2s ease;
+        ${tarefa.status === 'concluido' ? 'opacity: 0.8;' : ''}
       `;
-      toast.textContent = checkbox.checked ? '✅ Tarefa concluída!' : '🔄 Tarefa reativada!';
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 2000);
+      div.draggable = true;
+      div.dataset.id = tarefa.id;
 
-      // Atualizar exibição
-      setTimeout(() => {
-        atualizarExibicaoTarefas();
-      }, 500);
-    }
+      div.innerHTML = `
+        <span style="font-size: 14px;">${getStatusIcon(tarefa.status)}</span>
+        <span style="flex: 1; font-size: 13px; font-weight: 500; color: #333; ${tarefa.status === 'concluido' ? 'text-decoration: line-through;' : ''}">${tarefa.texto}</span>
+        <button onclick="deletar(${tarefa.id})" style="background: #ef4444; color: white; border: none; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s ease;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">🗑️</button>
+      `;
+
+      // Drag events
+      div.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', tarefa.id);
+        div.style.opacity = '0.5';
+      });
+
+      div.addEventListener('dragend', e => {
+        div.style.opacity = '1';
+      });
+
+      // Hover effects
+      div.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+      });
+
+      div.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+      });
+
+      if (tarefa.status === 'a_fazer') {
+        aFazer.appendChild(div);
+        contA++;
+      } else if (tarefa.status === 'fazendo') {
+        fazendo.appendChild(div);
+        contF++;
+      } else {
+        concluido.appendChild(div);
+        contC++;
+      }
+    });
+
+    document.getElementById('contA').textContent = contA;
+    document.getElementById('contF').textContent = contF;
+    document.getElementById('contC').textContent = contC;
+  }
+
+  function getBorderColor(status) {
+    const colors = {
+      'a_fazer': '#f59e0b',
+      'fazendo': '#3b82f6',
+      'concluido': '#16a34a'
+    };
+    return colors[status] || '#6b7280';
+  }
+
+  function getStatusIcon(status) {
+    const icons = {
+      'a_fazer': '📋',
+      'fazendo': '🔄',
+      'concluido': '✅'
+    };
+    return icons[status] || '📋';
   }
 
   function adicionarTarefa() {
-    abrirModalTarefa();
-  }
-
-  function abrirModalTarefa(editarId = null) {
-    const tarefa = editarId ? tarefas.find(t => t.id === editarId) : null;
-    const titulo = editarId ? 'Editar Tarefa' : 'Nova Tarefa';
-
-    const modal = document.createElement('div');
-    modal.id = 'modalTarefa';
-    modal.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    `;
-
-    modal.innerHTML = `
-      <div style="background: white; border-radius: 12px; padding: 25px; width: 95%; max-width: 500px; max-height: 85vh; overflow-y: auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2 style="margin: 0; color: #333; font-size: 18px;">📝 ${titulo}</h2>
-          <button onclick="fecharModalTarefa()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
-        </div>
-
-        <form id="formTarefa" onsubmit="salvarTarefa(event, ${editarId})">
-          <div style="display: grid; gap: 20px;">
-
-            <!-- Descrição -->
-            <div>
-              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📝 Descrição da Tarefa</label>
-              <textarea id="descricaoTarefa" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; min-height: 80px; resize: vertical;" placeholder="Ex: Revisar pedidos pendentes de aprovação...">${tarefa ? tarefa.texto : ''}</textarea>
-            </div>
-
-            <!-- Prioridade -->
-            <div>
-              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">⚡ Prioridade</label>
-              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; ${tarefa?.prioridade === 'baixa' ? 'border-color: #16a34a; background: #f0fff4;' : ''}" onclick="selecionarPrioridade('baixa')">
-                  <input type="radio" name="prioridade" value="baixa" ${tarefa?.prioridade === 'baixa' ? 'checked' : ''} style="margin: 0;">
-                  <span>🟢 Baixa</span>
-                </label>
-                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; ${tarefa?.prioridade === 'normal' ? 'border-color: #3b82f6; background: #f0f8ff;' : ''}" onclick="selecionarPrioridade('normal')">
-                  <input type="radio" name="prioridade" value="normal" ${tarefa?.prioridade === 'normal' || !tarefa ? 'checked' : ''} style="margin: 0;">
-                  <span>🔵 Normal</span>
-                </label>
-                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; ${tarefa?.prioridade === 'alta' ? 'border-color: #f59e0b; background: #fff8e1;' : ''}" onclick="selecionarPrioridade('alta')">
-                  <input type="radio" name="prioridade" value="alta" ${tarefa?.prioridade === 'alta' ? 'checked' : ''} style="margin: 0;">
-                  <span>🟡 Alta</span>
-                </label>
-                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; ${tarefa?.prioridade === 'urgente' ? 'border-color: #ef4444; background: #fef2f2;' : ''}" onclick="selecionarPrioridade('urgente')">
-                  <input type="radio" name="prioridade" value="urgente" ${tarefa?.prioridade === 'urgente' ? 'checked' : ''} style="margin: 0;">
-                  <span>🔴 Urgente</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Data de vencimento -->
-            <div>
-              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📅 Data de Vencimento (Opcional)</label>
-              <input type="date" id="dataVencimento" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
-            </div>
-
-            <!-- Categoria -->
-            <div>
-              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">🏷️ Categoria</label>
-              <select id="categoriaTarefa" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
-                <option value="geral">📋 Geral</option>
-                <option value="vendas">💰 Vendas</option>
-                <option value="estoque">📦 Estoque</option>
-                <option value="pedidos">📋 Pedidos</option>
-                <option value="plataformas">🛒 Plataformas</option>
-                <option value="financeiro">💳 Financeiro</option>
-                <option value="administrativo">🏢 Administrativo</option>
-              </select>
-            </div>
-
-          </div>
-
-          <div style="display: flex; gap: 15px; margin-top: 25px;">
-            <button type="button" onclick="fecharModalTarefa()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
-              Cancelar
-            </button>
-            <button type="submit" style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
-              ${editarId ? '✅ Salvar' : '📝 Criar Tarefa'}
-            </button>
-          </div>
-        </form>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-    document.getElementById('descricaoTarefa').focus();
-  }
-
-  function fecharModalTarefa() {
-    const modal = document.getElementById('modalTarefa');
-    if (modal) modal.remove();
-  }
-
-  function selecionarPrioridade(prioridade) {
-    const radios = document.querySelectorAll('input[name="prioridade"]');
-    const labels = document.querySelectorAll('label[onclick*="selecionarPrioridade"]');
-
-    radios.forEach(radio => radio.checked = radio.value === prioridade);
-
-    labels.forEach(label => {
-      label.style.borderColor = '#e0e0e0';
-      label.style.background = 'white';
-    });
-
-    const cores = {
-      'baixa': { border: '#16a34a', bg: '#f0fff4' },
-      'normal': { border: '#3b82f6', bg: '#f0f8ff' },
-      'alta': { border: '#f59e0b', bg: '#fff8e1' },
-      'urgente': { border: '#ef4444', bg: '#fef2f2' }
-    };
-
-    const labelSelecionada = document.querySelector(`label[onclick="selecionarPrioridade('${prioridade}')"]`);
-    if (labelSelecionada && cores[prioridade]) {
-      labelSelecionada.style.borderColor = cores[prioridade].border;
-      labelSelecionada.style.background = cores[prioridade].bg;
-    }
-  }
-
-  function salvarTarefa(event, editarId) {
-    event.preventDefault();
-
-    const descricao = document.getElementById('descricaoTarefa').value.trim();
-    const prioridade = document.querySelector('input[name="prioridade"]:checked').value;
-    const dataVencimento = document.getElementById('dataVencimento').value;
-    const categoria = document.getElementById('categoriaTarefa').value;
-
-    if (!descricao) {
-      alert('❌ Por favor, digite a descrição da tarefa.');
-      return;
-    }
-
-    if (editarId) {
-      // Editar tarefa existente
-      const tarefa = window.tarefasGlobais.find(t => t.id === editarId);
-      if (tarefa) {
-        tarefa.texto = descricao;
-        tarefa.prioridade = prioridade;
-        tarefa.dataVencimento = dataVencimento;
-        tarefa.categoria = categoria;
-      }
-      alert('✅ Tarefa editada com sucesso!');
-    } else {
-      // Criar nova tarefa
-      const novaTarefa = {
+    const texto = prompt('Digite a nova tarefa:');
+    if (texto && texto.trim()) {
+      const nova = {
         id: Date.now(),
-        texto: descricao,
-        prioridade,
-        dataVencimento,
-        categoria,
-        concluida: false,
-        criadaEm: new Date()
+        texto: texto.trim(),
+        status: 'a_fazer'
       };
-      window.tarefasGlobais.push(novaTarefa);
-      alert('✅ Tarefa criada com sucesso!');
-    }
-
-    // Sincronizar variável local
-    tarefas = window.tarefasGlobais;
-
-    fecharModalTarefa();
-    atualizarExibicaoTarefas(); // Atualizar barra lateral
-  }
-
-  function atualizarContadorTarefas() {
-    const tarefasPendentes = tarefas.filter(t => !t.concluida).length;
-    const counter = document.querySelector('[style*="background: #f59e0b"]');
-    if (counter) {
-      counter.textContent = tarefasPendentes;
+      tarefas.push(nova);
+      salvarTarefas(); // Salvar após adicionar
+      renderizar();
+      mostrarToast('✅ Nova tarefa adicionada!', '#16a34a');
     }
   }
 
-  // Função para ver todas as tarefas
-  function verTodasTarefas() {
-    abrirModalListaTarefas();
+  function deletar(id) {
+    if (confirm('Deletar esta tarefa?')) {
+      tarefas = tarefas.filter(t => t.id !== id);
+      salvarTarefas(); // Salvar após deletar
+      renderizar();
+      mostrarToast('🗑️ Tarefa deletada!', '#ef4444');
+    }
   }
 
-  function abrirModalListaTarefas() {
-    const modal = document.createElement('div');
-    modal.id = 'modalListaTarefas';
-    modal.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    `;
-
-    const tarefasPendentes = tarefas.filter(t => !t.concluida);
-    const tarefasConcluidas = tarefas.filter(t => t.concluida);
-
-    modal.innerHTML = `
-      <div style="background: white; border-radius: 12px; padding: 25px; width: 95%; max-width: 700px; max-height: 85vh; overflow-y: auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2 style="margin: 0; color: #333; font-size: 18px;">📋 Todas as Tarefas</h2>
-          <button onclick="fecharModalListaTarefas()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
-        </div>
-
-        <!-- Estatísticas -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px;">
-          <div style="text-align: center; padding: 15px; background: #f0fff4; border-radius: 8px; border-left: 4px solid #16a34a;">
-            <div style="font-size: 24px; font-weight: bold; color: #16a34a;">${tarefasConcluidas.length}</div>
-            <div style="font-size: 12px; color: #666;">Concluídas</div>
-          </div>
-          <div style="text-align: center; padding: 15px; background: #fff8e1; border-radius: 8px; border-left: 4px solid #f59e0b;">
-            <div style="font-size: 24px; font-weight: bold; color: #f59e0b;">${tarefasPendentes.length}</div>
-            <div style="font-size: 12px; color: #666;">Pendentes</div>
-          </div>
-          <div style="text-align: center; padding: 15px; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
-            <div style="font-size: 24px; font-weight: bold; color: #3b82f6;">${tarefas.length}</div>
-            <div style="font-size: 12px; color: #666;">Total</div>
-          </div>
-        </div>
-
-        <!-- Tarefas Pendentes -->
-        <div style="margin-bottom: 25px;">
-          <h3 style="margin: 0 0 15px; color: #333; font-size: 16px;">⏳ Pendentes (${tarefasPendentes.length})</h3>
-          <div style="display: grid; gap: 10px;">
-            ${tarefasPendentes.map(tarefa => `
-              <div style="display: flex; align-items: center; gap: 12px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid ${getPrioridadeCor(tarefa.prioridade)};">
-                <input type="checkbox" onchange="toggleTarefaModal(${tarefa.id}, this)" style="margin: 0; cursor: pointer;">
-                <div style="flex: 1;">
-                  <div style="font-weight: 600; color: #333; margin-bottom: 4px;">${tarefa.texto}</div>
-                  <div style="display: flex; gap: 10px; font-size: 12px; color: #666;">
-                    <span>${getPrioridadeTexto(tarefa.prioridade)}</span>
-                    ${tarefa.categoria ? `<span>• ${getCategoriaTexto(tarefa.categoria)}</span>` : ''}
-                    ${tarefa.dataVencimento ? `<span>• 📅 ${new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}</span>` : ''}
-                  </div>
-                </div>
-                <button onclick="abrirModalTarefa(${tarefa.id})" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">✏️ Editar</button>
-                <button onclick="excluirTarefa(${tarefa.id})" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">🗑️</button>
-              </div>
-            `).join('')}
-            ${tarefasPendentes.length === 0 ? '<div style="text-align: center; padding: 20px; color: #666;">🎉 Nenhuma tarefa pendente!</div>' : ''}
-          </div>
-        </div>
-
-        <!-- Tarefas Concluídas -->
-        <div>
-          <h3 style="margin: 0 0 15px; color: #333; font-size: 16px;">✅ Concluídas (${tarefasConcluidas.length})</h3>
-          <div style="display: grid; gap: 10px;">
-            ${tarefasConcluidas.map(tarefa => `
-              <div style="display: flex; align-items: center; gap: 12px; padding: 15px; background: #dcfce7; border-radius: 8px; opacity: 0.7;">
-                <input type="checkbox" checked onchange="toggleTarefaModal(${tarefa.id}, this)" style="margin: 0; cursor: pointer;">
-                <div style="flex: 1;">
-                  <div style="font-weight: 600; color: #333; margin-bottom: 4px; text-decoration: line-through;">${tarefa.texto}</div>
-                  <div style="display: flex; gap: 10px; font-size: 12px; color: #666;">
-                    <span>${getPrioridadeTexto(tarefa.prioridade)}</span>
-                    ${tarefa.categoria ? `<span>• ${getCategoriaTexto(tarefa.categoria)}</span>` : ''}
-                  </div>
-                </div>
-                <button onclick="excluirTarefa(${tarefa.id})" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">🗑️</button>
-              </div>
-            `).join('')}
-            ${tarefasConcluidas.length === 0 ? '<div style="text-align: center; padding: 20px; color: #666;">Nenhuma tarefa concluída ainda.</div>' : ''}
-          </div>
-        </div>
-
-        <div style="display: flex; gap: 15px; margin-top: 25px;">
-          <button onclick="fecharModalListaTarefas()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer;">
-            Fechar
-          </button>
-          <button onclick="fecharModalListaTarefas(); abrirModalTarefa();" style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; cursor: pointer;">
-            📝 Nova Tarefa
-          </button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-  }
-
-  function fecharModalListaTarefas() {
-    const modal = document.getElementById('modalListaTarefas');
-    if (modal) modal.remove();
-  }
-
-  function toggleTarefaModal(id, checkbox) {
+  function mover(id, novoStatus) {
     const tarefa = tarefas.find(t => t.id === id);
     if (tarefa) {
-      tarefa.concluida = checkbox.checked;
-      atualizarContadorTarefas();
+      tarefa.status = novoStatus;
+      salvarTarefas(); // Salvar após mover
+      renderizar();
 
-      // Reabrir modal para atualizar a lista
-      setTimeout(() => {
-        fecharModalListaTarefas();
-        abrirModalListaTarefas();
-      }, 100);
+      const mensagens = {
+        'a_fazer': '📋 Movida para "A Fazer"',
+        'fazendo': '🔄 Movida para "Fazendo"',
+        'concluido': '✅ Movida para "Concluído"'
+      };
+      mostrarToast(mensagens[novoStatus], getBorderColor(novoStatus));
     }
   }
 
-  function excluirTarefa(id) {
-    if (confirm('🗑️ Tem certeza que deseja excluir esta tarefa?')) {
-      window.tarefasGlobais = window.tarefasGlobais.filter(t => t.id !== id);
-      tarefas = window.tarefasGlobais; // Sincronizar
-      atualizarExibicaoTarefas(); // Atualizar barra lateral
+  function mostrarToast(mensagem, cor) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: ${cor};
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      z-index: 1000;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease;
+    `;
+    toast.textContent = mensagem;
+    document.body.appendChild(toast);
 
-      // Reabrir modal para atualizar a lista
-      setTimeout(() => {
-        fecharModalListaTarefas();
-        abrirModalListaTarefas();
-      }, 100);
+    setTimeout(() => {
+      toast.style.animation = 'slideOut 0.3s ease';
+      setTimeout(() => toast.remove(), 300);
+    }, 2000);
+  }
+
+  function configurarDrop() {
+    ['aFazer', 'fazendo', 'concluido'].forEach(id => {
+      const container = document.getElementById(id);
+
+      container.addEventListener('dragover', e => {
+        e.preventDefault();
+        container.style.borderStyle = 'solid';
+      });
+
+      container.addEventListener('dragleave', e => {
+        container.style.borderStyle = 'dashed';
+      });
+
+      container.addEventListener('drop', e => {
+        e.preventDefault();
+        container.style.borderStyle = 'dashed';
+
+        const tarefaId = parseInt(e.dataTransfer.getData('text/plain'));
+        let novoStatus;
+
+        if (id === 'aFazer') novoStatus = 'a_fazer';
+        else if (id === 'fazendo') novoStatus = 'fazendo';
+        else novoStatus = 'concluido';
+
+        mover(tarefaId, novoStatus);
+      });
+    });
+  }
+
+  // Adicionar animações CSS
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
-  }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
 
-  function getPrioridadeCor(prioridade) {
-    const cores = {
-      'baixa': '#16a34a',
-      'normal': '#3b82f6',
-      'alta': '#f59e0b',
-      'urgente': '#ef4444'
-    };
-    return cores[prioridade] || '#6b7280';
-  }
-
-  function getPrioridadeTexto(prioridade) {
-    const textos = {
-      'baixa': '🟢 Baixa',
-      'normal': '🔵 Normal',
-      'alta': '🟡 Alta',
-      'urgente': '🔴 Urgente'
-    };
-    return textos[prioridade] || '🔵 Normal';
-  }
-
-  function getCategoriaTexto(categoria) {
-    const textos = {
-      'geral': '📋 Geral',
-      'vendas': '💰 Vendas',
-      'estoque': '📦 Estoque',
-      'pedidos': '📋 Pedidos',
-      'plataformas': '🛒 Plataformas',
-      'financeiro': '💳 Financeiro',
-      'administrativo': '🏢 Administrativo'
-    };
-    return textos[categoria] || '📋 Geral';
-  }
-
-  // Inicializar calendário e tarefas quando a página carregar
+  // Inicializar
   document.addEventListener('DOMContentLoaded', function() {
     generateCalendar();
-    setTimeout(() => {
-      atualizarExibicaoTarefas();
-    }, 500);
+
+    // Carregar tarefas salvas
+    carregarTarefas();
+    renderizar();
+    configurarDrop();
+
+    console.log('🚀 Sistema de tarefas inicializado com persistência');
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </script>

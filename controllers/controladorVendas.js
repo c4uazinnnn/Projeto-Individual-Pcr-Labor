@@ -9,16 +9,20 @@ const renderVendas = async (req, res) => {
     let vendas = [];
     let produtos = [];
     let plataformas = [];
+    const id_empresa = req.id_empresa; // Vem do middleware
+    const usuario = req.usuario; // Vem do middleware
 
     try {
       const [vendasDB, produtosDB, plataformasDB] = await Promise.all([
-        Venda.getAll(),
-        Produto.getAll(),
+        Venda.getAll(id_empresa), // FILTRADO POR EMPRESA
+        Produto.getAll(id_empresa), // FILTRADO POR EMPRESA
         Plataforma.getAll()
       ]);
       vendas = vendasDB;
       produtos = produtosDB;
       plataformas = plataformasDB;
+
+      console.log(`💰 Página Vendas - Carregadas ${vendas.length} vendas para empresa ${usuario.empresa_nome}`);
     } catch (dbError) {
       console.log('Banco não disponível, usando dados de demonstração');
       produtos = [
@@ -41,11 +45,12 @@ const renderVendas = async (req, res) => {
     }
 
     res.render('pages/vendas', {
-      pageTitle: 'Vendas - PCR Labor',
+      pageTitle: `Vendas - ${usuario.empresa_nome}`,
       currentPage: 'vendas',
       vendas,
       produtos,
-      plataformas
+      plataformas,
+      usuario
     });
   } catch (error) {
     console.error('Erro ao carregar vendas:', error);
@@ -60,47 +65,46 @@ const renderPlataformas = async (req, res) => {
   try {
     let plataformas = [];
     let vendasPorPlataforma = [];
+    const id_empresa = req.id_empresa; // Vem do middleware
+    const usuario = req.usuario; // Vem do middleware
 
     try {
       const [plataformasDB, vendasPorPlataformaDB] = await Promise.all([
         Plataforma.getAll(),
-        Plataforma.getVendasPorPlataforma()
+        Plataforma.getVendasPorPlataforma(id_empresa) // FILTRADO POR EMPRESA
       ]);
       plataformas = plataformasDB;
       vendasPorPlataforma = vendasPorPlataformaDB;
-    } catch (dbError) {
-      console.log('Banco não disponível, usando dados de demonstração');
-      plataformas = [
-        { id_plataforma: 1, nome: 'Mercado Livre' },
-        { id_plataforma: 2, nome: 'Shopee' },
-        { id_plataforma: 3, nome: 'Site Próprio' }
-      ];
 
-      vendasPorPlataforma = [
-        { id_plataforma: 1, nome: 'Mercado Livre', total_vendas: 15, quantidade_total: 45, valor_total: 1500.00 },
-        { id_plataforma: 2, nome: 'Shopee', total_vendas: 8, quantidade_total: 25, valor_total: 800.00 },
-        { id_plataforma: 3, nome: 'Site Próprio', total_vendas: 5, quantidade_total: 15, valor_total: 600.00 }
-      ];
+      console.log(`🛒 Página Plataformas - Carregadas vendas para empresa ${usuario.empresa_nome}`);
+    } catch (dbError) {
+      console.error('❌ Erro ao carregar dados do banco:', dbError.message);
+
+      // Em caso de erro, usar arrays vazios em vez de dados de demonstração
+      plataformas = [];
+      vendasPorPlataforma = [];
+
+      console.log('⚠️ Usando dados vazios devido ao erro no banco');
     }
 
-    // Buscar produtos também
+    // Buscar produtos também FILTRADOS POR EMPRESA
     let produtos = [];
     try {
       const Produto = require('../models/modeloProdutos');
-      produtos = await Produto.getAll();
+      produtos = await Produto.getAll(id_empresa); // FILTRADO POR EMPRESA
+      console.log(`📦 Produtos carregados para plataformas: ${produtos.length}`);
     } catch (error) {
-      produtos = [
-        { id_produto: 1, nome: 'Kit PCR COVID-19', sku: 'PCR-COVID-001', preco: 89.90, estoque_atual: 150 },
-        { id_produto: 2, nome: 'Kit PCR Influenza', sku: 'PCR-FLU-001', preco: 79.90, estoque_atual: 200 }
-      ];
+      console.error('❌ Erro ao carregar produtos:', error.message);
+      produtos = [];
     }
 
     res.render('pages/plataformas', {
-      pageTitle: 'Plataformas - PCR Labor',
+      pageTitle: `Plataformas - ${usuario.empresa_nome}`,
       currentPage: 'plataformas',
       plataformas: vendasPorPlataforma, // Usar vendasPorPlataforma que tem os dados completos
       vendasPorPlataforma,
-      produtos
+      produtos,
+      usuario
     });
   } catch (error) {
     console.error('Erro ao carregar plataformas:', error);
@@ -303,7 +307,8 @@ const deleteVenda = async (req, res) => {
 const getVendasPorPeriodo = async (req, res) => {
   try {
     const { dataInicio, dataFim } = req.query;
-    const vendas = await Venda.getByPeriodo(dataInicio, dataFim);
+    const id_empresa = req.id_empresa; // Filtro por empresa
+    const vendas = await Venda.getByPeriodo(dataInicio, dataFim, id_empresa);
     res.status(200).json({
       success: true,
       data: vendas,

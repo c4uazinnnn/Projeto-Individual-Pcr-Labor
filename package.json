@@ -6,8 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "init-db": "node scripts/runSQLScript.js",
-    "reset-db": "node scripts/resetDatabase.js"
+    "init-db": "node scripts/inicializar-banco.js",
+    "reset-db": "node scripts/resetar-banco.js",
+    "setup-db": "node scripts/configurar-banco.js"
   },
   "dependencies": {
     "axios": "^1.9.0",
@@ -16,7 +17,9 @@
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
-    "pg": "^8.16.0"
+    "multer": "^2.0.0",
+    "pg": "^8.16.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

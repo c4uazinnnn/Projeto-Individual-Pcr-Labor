@@ -37,6 +37,8 @@ const rotasVendas = require('./routes/rotasVendas');
 const rotasEmpresas = require('./routes/rotasEmpresas');
 const rotasUsuarios = require('./routes/rotasUsuarios');
 const rotasPedidos = require('./routes/rotasPedidos');
+const rotasTarefas = require('./routes/rotasTarefas');
+const rotasFornecedores = require('./routes/rotasFornecedores');
 
 app.use('/', rotasPaginas); // Rotas de páginas primeiro
 app.use('/', rotasPrincipais);
@@ -45,6 +47,8 @@ app.use('/api/vendas', rotasVendas);
 app.use('/api/empresas', rotasEmpresas);
 app.use('/api/usuarios', rotasUsuarios);
 app.use('/api/pedidos', rotasPedidos);
+app.use('/api/tarefas', rotasTarefas);
+app.use('/api/fornecedores', rotasFornecedores);
 
 // Middleware de tratamento de erros
 app.use((err, req, res, next) => {
