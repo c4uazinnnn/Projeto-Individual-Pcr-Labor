@@ -9,15 +9,20 @@ const renderDashboard = async (req, res) => {
   try {
     console.log('🔄 Carregando dashboard com dados em tempo real...');
 
-    // Sistema simplificado - usuário admin único
-    console.log('👤 Dashboard para: Admin PCR Labor');
+    // Obter dados da empresa do usuário logado
+    const id_empresa = req.id_empresa; // Vem do middleware
+    const usuario = req.usuario; // Vem do middleware
 
-    // Buscar TODOS os dados sem filtro de empresa
-    console.log('📦 Buscando todos os produtos');
-    console.log('💰 Buscando todas as vendas');
-    const [produtos, vendas] = await Promise.all([
-      Produto.getAll(),
-      Venda.getAll()
+    console.log(`👤 Dashboard para: ${usuario.nome} (${usuario.empresa_nome})`);
+
+    // Buscar TODOS os dados necessários FILTRADOS POR EMPRESA
+    console.log(`📦 Buscando dados da empresa ID: ${id_empresa}`);
+
+    const [produtos, vendas, pedidos, plataformas] = await Promise.all([
+      Produto.getAll(id_empresa).catch(() => []), // FILTRADO POR EMPRESA
+      Venda.getAll(id_empresa).catch(() => []),   // FILTRADO POR EMPRESA
+      require('../models/modeloPedidos').getAll(id_empresa).catch(() => []), // FILTRADO POR EMPRESA
+      require('../models/modeloPlataformas').getVendasPorPlataforma(id_empresa).catch(() => []) // FILTRADO POR EMPRESA
     ]);
 
     console.log(`✅ Produtos encontrados: ${produtos.length}`);
@@ -52,6 +57,28 @@ const renderDashboard = async (req, res) => {
       return dataFormatada === hoje;
     }).length;
 
+    // Calcular crescimento real baseado em dados históricos
+    const ontem = new Date();
+    ontem.setDate(ontem.getDate() - 1);
+    const ontemStr = ontem.toISOString().split('T')[0];
+
+    const vendasOntem = vendas.filter(v => {
+      if (!v.data && !v.data_venda) return false;
+      const dataVenda = v.data || v.data_venda;
+      const dataFormatada = new Date(dataVenda).toISOString().split('T')[0];
+      return dataFormatada === ontemStr;
+    });
+
+    const valorOntem = vendasOntem.reduce((total, v) => total + parseFloat(v.valor_total || 0), 0);
+    const valorHoje = vendas.filter(v => {
+      if (!v.data && !v.data_venda) return false;
+      const dataVenda = v.data || v.data_venda;
+      const dataFormatada = new Date(dataVenda).toISOString().split('T')[0];
+      return dataFormatada === hoje;
+    }).reduce((total, v) => total + parseFloat(v.valor_total || 0), 0);
+
+    const crescimentoDiario = valorOntem > 0 ? ((valorHoje - valorOntem) / valorOntem * 100) : 0;
+
     // Ticket médio
     const ticketMedio = totalVendas > 0 ? valorTotalVendas / totalVendas : 0;
 
@@ -69,14 +96,25 @@ const renderDashboard = async (req, res) => {
       ? Object.entries(vendasPorProduto).sort((a, b) => b[1] - a[1])[0][0]
       : 'N/A';
 
+    // Valor total dos pedidos REAL
+    const valorTotalPedidos = pedidos.reduce((total, pedido) => {
+      return total + parseFloat(pedido.valor_total || 0);
+    }, 0);
+
     const stats = {
       totalProdutos,
       produtosEstoqueBaixo,
       totalVendas,
+      totalPedidos: pedidos.length,
       vendasHoje,
       valorTotalVendas,
+      valorTotalPedidos,
       ticketMedio,
-      produtoMaisVendido
+      produtoMaisVendido,
+      crescimentoDiario: crescimentoDiario.toFixed(1),
+      valorHoje,
+      valorOntem,
+      plataformas: plataformas.slice(0, 3) // Top 3 plataformas
     };
 
     console.log('📊 Métricas calculadas:', stats);
@@ -91,12 +129,15 @@ const renderDashboard = async (req, res) => {
     console.log('✅ Dashboard carregado com métricas calculadas');
 
     res.render('pages/dashboard', {
-      pageTitle: 'Dashboard - PCR Labor',
+      pageTitle: `Dashboard - ${usuario.empresa_nome}`,
       currentPage: 'dashboard',
       stats,
       produtos: produtos.slice(0, 5),
       vendas: vendas.slice(0, 10),
-      lastUpdate: new Date().toLocaleString('pt-BR')
+      pedidos: pedidos.slice(0, 5),
+      plataformas: plataformas.slice(0, 3),
+      lastUpdate: new Date().toLocaleString('pt-BR'),
+      usuario
     });
   } catch (error) {
     console.error('❌ Erro ao carregar dashboard:', error);

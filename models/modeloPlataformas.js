@@ -56,10 +56,10 @@ class Plataforma {
     }
   }
 
-  static async getVendasPorPlataforma() {
+  static async getVendasPorPlataforma(id_empresa = null) {
     try {
-      const result = await db.query(`
-        SELECT 
+      let query = `
+        SELECT
           p.id_plataforma,
           p.nome,
           COUNT(v.id_venda) as total_vendas,
@@ -67,9 +67,18 @@ class Plataforma {
           SUM(v.valor_total) as valor_total
         FROM Plataforma p
         LEFT JOIN Venda v ON p.id_plataforma = v.id_plataforma
-        GROUP BY p.id_plataforma, p.nome
-        ORDER BY valor_total DESC NULLS LAST
-      `);
+      `;
+
+      const params = [];
+      if (id_empresa) {
+        query += ` AND v.id_empresa = $1`;
+        params.push(id_empresa);
+      }
+
+      query += ` GROUP BY p.id_plataforma, p.nome
+                 ORDER BY valor_total DESC NULLS LAST`;
+
+      const result = await db.query(query, params);
       return result.rows;
     } catch (error) {
       throw new Error(`Erro ao buscar vendas por plataforma: ${error.message}`);

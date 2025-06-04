@@ -47,17 +47,11 @@ router.get('/login', (req, res) => {
 router.get('/cadastro', controladorUsuarios.renderCadastro);
 router.post('/cadastro', controladorUsuarios.processarCadastro);
 
-// Rota de logout
-router.get('/logout', controladorUsuarios.processarLogout);
-router.post('/logout', controladorUsuarios.processarLogout);
-
 // Processar login
 router.post('/login', controladorUsuarios.processarLogin);
 
-// Rota de logout
-router.get('/logout', (req, res) => {
-  // Limpar sessão (em produção)
-  res.redirect('/login');
-});
+// Rotas de logout
+router.get('/logout', controladorUsuarios.processarLogout);
+router.post('/logout', controladorUsuarios.processarLogout);
 
 module.exports = router;

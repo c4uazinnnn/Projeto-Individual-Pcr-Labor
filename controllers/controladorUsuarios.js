@@ -9,33 +9,40 @@ const renderPerfil = async (req, res) => {
   try {
     console.log('👤 Carregando página de perfil...');
 
-    // Simular usuário logado (em produção viria da sessão)
-    const userId = 1;
-    let usuario = null;
+    // Obter dados da empresa do usuário logado
+    const id_empresa = req.id_empresa; // Vem do middleware
+    const usuario = req.usuario; // Vem do middleware
+
+    console.log(`👤 Perfil para: ${usuario.nome} (${usuario.empresa_nome})`);
+
     let metodosPagamento = [];
+    let vendas = [];
+    let pedidos = [];
 
     try {
-      // Buscar dados do usuário
-      usuario = await Usuario.getById(userId);
-      metodosPagamento = await Usuario.getMetodosPagamento(userId);
+      // Buscar dados FILTRADOS POR EMPRESA
+      const Venda = require('../models/modeloVendas');
+      const Pedido = require('../models/modeloPedidos');
 
-      console.log('✅ Dados do usuário carregados do banco');
+      const [metodosPagamentoResult, vendasResult, pedidosResult] = await Promise.all([
+        Usuario.getMetodosPagamento(usuario.id_usuario).catch(() => []),
+        Venda.getAll(id_empresa).catch(() => []),
+        Pedido.getAll(id_empresa).catch(() => [])
+      ]);
+
+      metodosPagamento = metodosPagamentoResult;
+      vendas = vendasResult;
+      pedidos = pedidosResult;
+
+      console.log('✅ Dados do perfil carregados do banco');
+      console.log(`📊 Vendas: ${vendas.length}, Pedidos: ${pedidos.length}`);
     } catch (dbError) {
-      console.log('⚠️ Banco não disponível, usando dados de demonstração:', dbError.message);
+      console.log('⚠️ Banco não disponível, usando dados vazios:', dbError.message);
+      metodosPagamento = [];
+      vendas = [];
+      pedidos = [];
 
-      // Dados de demonstração
-      usuario = {
-        id_usuario: 1,
-        nome: 'Administrador PCR',
-        email: 'admin@pcrlabor.com',
-        telefone: '+55 11 99999-9999',
-        cargo: 'Administrador',
-        empresa_nome: 'PCR Labor',
-        empresa_cnpj: '12.345.678/0001-90',
-        avatar: '/assets/avatar-default.png',
-        created_at: new Date('2024-01-01')
-      };
-
+      // Dados de demonstração para métodos de pagamento
       metodosPagamento = [
         {
           id_metodo: 1,
@@ -90,16 +97,32 @@ const renderPerfil = async (req, res) => {
       };
     });
 
-    // Estatísticas do usuário
+    // Calcular estatísticas REAIS
+    const valorTotalVendas = vendas.reduce((total, venda) => {
+      return total + parseFloat(venda.valor_total || 0);
+    }, 0);
+
+    const valorTotalPedidos = pedidos.reduce((total, pedido) => {
+      return total + parseFloat(pedido.valor_total || 0);
+    }, 0);
+
+    // Estatísticas do usuário com dados REAIS
     const stats = {
       tempoNaEmpresa: usuario.created_at ? Math.floor((new Date() - new Date(usuario.created_at)) / (1000 * 60 * 60 * 24)) : 0,
       metodosPagamentoAtivos: metodosPagamentoProcessados.filter(m => m.ativo).length,
       ultimoLogin: new Date().toLocaleDateString('pt-BR'),
-      sessaoAtiva: true
+      sessaoAtiva: true,
+      // DADOS FINANCEIROS REAIS
+      totalVendas: vendas.length,
+      totalPedidos: pedidos.length,
+      valorTotalVendas,
+      valorTotalPedidos
     };
 
+    console.log('📊 Estatísticas do perfil:', stats);
+
     res.render('pages/perfil', {
-      pageTitle: 'Perfil - PCR Labor',
+      pageTitle: `Perfil - ${usuario.empresa_nome}`,
       currentPage: 'perfil',
       usuario,
       metodosPagamento: metodosPagamentoProcessados,
@@ -399,21 +422,56 @@ const createUsuario = async (req, res) => {
 
 const updateUsuario = async (req, res) => {
   try {
-    const { nome, email, telefone, cargo, avatar } = req.body;
-    const updatedUsuario = await Usuario.update(req.params.id, { nome, email, telefone, cargo, avatar });
-    if (updatedUsuario) {
-      res.status(200).json({
-        success: true,
-        data: updatedUsuario,
-        message: 'Usuário atualizado com sucesso'
-      });
-    } else {
-      res.status(404).json({
+    const id_usuario = req.params.id;
+    const { nome, email, telefone, documento, cargo, avatar } = req.body;
+
+    console.log(`👤 Atualizando usuário ID: ${id_usuario}`, { nome, email, telefone, documento, cargo });
+
+    // Verificar se o usuário existe
+    const usuarioExistente = await Usuario.getById(id_usuario);
+    if (!usuarioExistente) {
+      return res.status(404).json({
         success: false,
         error: 'Usuário não encontrado'
       });
     }
+
+    // Dados para atualização (incluindo telefone e documento)
+    const dadosAtualizacao = {
+      nome: nome || usuarioExistente.nome,
+      email: email || usuarioExistente.email,
+      telefone: telefone || usuarioExistente.telefone,
+      documento: documento || usuarioExistente.documento,
+      cargo: cargo || usuarioExistente.cargo,
+      avatar: avatar || usuarioExistente.avatar
+    };
+
+    console.log('📝 Dados para atualização:', dadosAtualizacao);
+
+    const updatedUsuario = await Usuario.update(id_usuario, dadosAtualizacao);
+
+    if (updatedUsuario) {
+      console.log('✅ Usuário atualizado com sucesso:', updatedUsuario);
+
+      // Atualizar sessão se for o próprio usuário
+      if (req.session.usuario && req.session.usuario.id_usuario === parseInt(id_usuario)) {
+        req.session.usuario = { ...req.session.usuario, ...updatedUsuario };
+        console.log('🔄 Sessão atualizada');
+      }
+
+      res.status(200).json({
+        success: true,
+        data: updatedUsuario,
+        message: 'Perfil atualizado com sucesso'
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Erro ao atualizar usuário'
+      });
+    }
   } catch (error) {
+    console.error('❌ Erro ao atualizar usuário:', error);
     res.status(400).json({
       success: false,
       error: error.message

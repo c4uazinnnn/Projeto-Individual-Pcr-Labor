@@ -4,7 +4,7 @@
   <div class="header-logo">
     PCR LABOR
   </div>
-  
+
   <!-- Menu de navegação -->
   <nav>
     <ul class="header-nav">
@@ -14,42 +14,49 @@
           <span>Dashboard</span>
         </a>
       </li>
-      
+
       <li class="nav-item">
         <a href="/vendas" class="nav-link <%= currentPage === 'vendas' ? 'active' : '' %>">
           <span class="nav-icon">💰</span>
           <span>Vendas</span>
         </a>
       </li>
-      
+
       <li class="nav-item">
         <a href="/estoque" class="nav-link <%= currentPage === 'estoque' ? 'active' : '' %>">
           <span class="nav-icon">📦</span>
           <span>Estoque</span>
         </a>
       </li>
-      
+
       <li class="nav-item">
         <a href="/pedidos" class="nav-link <%= currentPage === 'pedidos' ? 'active' : '' %>">
           <span class="nav-icon">📋</span>
           <span>Pedidos</span>
         </a>
       </li>
-      
+
       <li class="nav-item">
         <a href="/plataformas" class="nav-link <%= currentPage === 'plataformas' ? 'active' : '' %>">
           <span class="nav-icon">🌐</span>
           <span>Plataformas</span>
         </a>
       </li>
-      
+
+      <li class="nav-item">
+        <a href="/fornecedores" class="nav-link <%= currentPage === 'fornecedores' ? 'active' : '' %>">
+          <span class="nav-icon">🏭</span>
+          <span>Fornecedores</span>
+        </a>
+      </li>
+
       <li class="nav-item">
         <a href="/perfil" class="nav-link <%= currentPage === 'perfil' ? 'active' : '' %>">
           <span class="nav-icon">👤</span>
           <span>Perfil</span>
         </a>
       </li>
-      
+
       <!-- Link "Emails" no menu -->
       <li class="nav-item">
         <a href="/emails" class="nav-link <%= currentPage === 'emails' ? 'active' : '' %>">
@@ -59,7 +66,7 @@
       </li>
     </ul>
   </nav>
-  
+
   <!-- Área do usuário (opcional) -->
   <div style="display: flex; align-items: center; gap: 15px;">
     <span style="color: #666; font-size: 14px;">Admin</span>
