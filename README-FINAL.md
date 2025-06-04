@@ -1,10 +1,10 @@
-# 🏥 PCR Labor - Sistema de Gestão Completo
+# PCR Labor - Sistema de Gestão Completo
 
-## 📋 Sobre o Projeto
+## Sobre o Projeto
 
 O **PCR Labor** é uma aplicação web completa desenvolvida para otimizar a gestão de vendas, estoque e pedidos da empresa PCR Labor. O sistema integra múltiplas plataformas de e-commerce (Mercado Livre, Shopee e vendas diretas) em uma interface unificada, proporcionando controle total sobre as operações comerciais.
 
-### 🎯 Objetivos Principais
+### Objetivos Principais
 
 - **Centralização de Dados**: Unificar informações de vendas de todas as plataformas
 - **Gestão Inteligente**: Controle automatizado de estoque e sugestões de compra
@@ -12,54 +12,54 @@ O **PCR Labor** é uma aplicação web completa desenvolvida para otimizar a ges
 - **Otimização de Processos**: Automatização de tarefas repetitivas
 - **Tomada de Decisão**: Dashboards interativos com insights estratégicos
 
-## 🚀 Funcionalidades Principais
+## Funcionalidades Principais
 
-### 📊 Dashboard Executivo
+### Dashboard Executivo
 - **Visão Geral Completa**: Métricas consolidadas de todas as operações
 - **Gráficos Interativos**: Visualização de vendas, estoque, pedidos e plataformas
 - **KPIs em Tempo Real**: Indicadores de performance atualizados automaticamente
 - **Análise Comparativa**: Performance entre diferentes plataformas e períodos
 
-### 💰 Gestão de Vendas
+### Gestão de Vendas
 - **Histórico Completo**: Registro detalhado de todas as vendas
 - **Filtros Avançados**: Por período (ano, 6 meses, mês, semana, hoje), plataforma e status
 - **Métricas Detalhadas**: Valor total, ticket médio, quantidade vendida
 - **Projeções**: Estimativas baseadas em dados históricos
 - **Integração Multi-plataforma**: Shopee, Mercado Livre e vendas diretas
 
-### 📦 Controle de Estoque
+### Controle de Estoque
 - **Monitoramento em Tempo Real**: Status atual de todos os produtos
 - **Alertas Inteligentes**: Notificações para estoque baixo ou crítico
 - **Categorização**: Organização por tipo de produto e prioridade
 - **Histórico de Movimentação**: Rastreamento completo de entradas e saídas
 - **Relatórios de Performance**: Análise de giro e rentabilidade
 
-### 🛒 Gestão de Pedidos
+### Gestão de Pedidos
 - **Controle Completo**: Criação, aprovação e acompanhamento de pedidos
 - **Status Dinâmico**: Pendente, aprovado, cancelado com atualizações automáticas
 - **Filtros Inteligentes**: Por período, status, fornecedor e prioridade
 - **Workflow Otimizado**: Processo simplificado de aprovação
 - **Integração com Estoque**: Atualização automática após recebimento
 
-### 🌐 Análise de Plataformas
+### Análise de Plataformas
 - **Performance Individual**: Métricas específicas de cada plataforma
 - **Comparativo de Vendas**: Análise lado a lado das performances
 - **Sincronização**: Atualização automática de dados das APIs
 - **Relatórios Customizados**: Insights específicos por canal de venda
 
-### 👤 Perfil e Configurações
+### Perfil e Configurações
 - **Gestão de Usuários**: Controle de acesso e permissões
 - **Configurações Personalizadas**: Adaptação às necessidades específicas
 - **Dados Financeiros**: Informações bancárias e métodos de pagamento
 - **Preferências**: Customização da interface e notificações
 
-### ✅ Sistema de Tarefas
+### Sistema de Tarefas
 - **Organização Kanban**: A fazer, fazendo, concluído
 - **Persistência de Dados**: Tarefas salvas no banco de dados
 - **Interface Intuitiva**: Drag-and-drop entre status
 - **Sincronização**: Atualizações em tempo real entre páginas
 
-## 🛠️ Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 ### Backend
 - **Node.js**: Runtime JavaScript para servidor
@@ -83,7 +83,7 @@ O **PCR Labor** é uma aplicação web completa desenvolvida para otimizar a ges
 - **Views Customizadas**: Relatórios pré-configurados
 - **Triggers Automáticos**: Atualizações em tempo real
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 PCR-Labor/
@@ -133,16 +133,16 @@ PCR-Labor/
     └── WAD.md            # Documentação técnica
 ```
 
-## 🚀 Instalação e Configuração
+## Instalação e Configuração
 
-### 📋 Pré-requisitos
+### Pré-requisitos
 
 - **Node.js** 16+ 
 - **PostgreSQL** 14+
 - **Git**
 - **npm** ou **yarn**
 
-### 🔧 Passo a Passo
+### Passo a Passo
 
 #### 1️⃣ **Clone o Repositório**
 ```bash
@@ -184,12 +184,12 @@ npm start
 
 #### 5️⃣ **Acesse o Sistema**
 ```
-🌐 URL: http://localhost:3000
-👤 Email: admin@pcrlabor.com
-🔑 Senha: admin123
+URL: http://localhost:3000
+Email: admin@pcrlabor.com
+Senha: admin123
 ```
 
-### ⚙️ Configuração do .env
+### Configuração do .env
 
 ```env
 # Banco de Dados
@@ -205,7 +205,7 @@ NODE_ENV=development
 SESSION_SECRET=pcr_labor_secret_key_2025
 ```
 
-### 🛠️ Scripts Disponíveis
+### Scripts Disponíveis
 
 ```bash
 npm start          # Inicia em produção
@@ -215,15 +215,15 @@ npm run init-db    # Inicializa banco (legado)
 npm run reset-db   # Reseta banco (legado)
 ```
 
-## 📊 Funcionalidades Detalhadas
+## Funcionalidades Detalhadas
 
-### 🎯 Dashboard
+### Dashboard
 - **6 Gráficos Interativos**: Vendas por dia, distribuição de estoque, produtos mais vendidos, evolução de pedidos, comparativo de plataformas
 - **Métricas em Tempo Real**: Total de vendas, vendas hoje, produtos em estoque, pedidos pendentes
 - **Visão Consolidada**: Informações de todas as áreas em uma única tela
 - **Design Responsivo**: Adaptação automática para diferentes dispositivos
 
-### 💰 Vendas
+### Vendas
 - **Filtros Temporais**: Ano, 6 meses, mês, semana, hoje, todos (em ordem decrescente)
 - **Filtros por Plataforma**: Shopee, Mercado Livre, PCR Labor (Site Próprio)
 - **Histórico Completo**: Lista detalhada com produto, data, quantidade, valor
@@ -231,7 +231,7 @@ npm run reset-db   # Reseta banco (legado)
 - **Gráfico Dinâmico**: Atualização automática baseada nos filtros aplicados
 - **Exportação**: Relatórios em diferentes formatos
 
-### 📦 Estoque
+### Estoque
 - **Status Inteligente**: Normal (verde), baixo (amarelo), crítico (vermelho), sem estoque
 - **Alertas Automáticos**: Notificações visuais para produtos que precisam de reposição
 - **Gestão Completa**: Adicionar, editar, remover produtos com validações
@@ -239,7 +239,7 @@ npm run reset-db   # Reseta banco (legado)
 - **Busca Avançada**: Filtros por categoria, status, fornecedor
 - **Histórico de Movimentação**: Rastreamento de entradas e saídas
 
-### 🛒 Pedidos
+### Pedidos
 - **Workflow Completo**: Criação → Aprovação → Recebimento → Finalização
 - **Status Dinâmico**: Pendente (amarelo), aprovado (verde), cancelado (vermelho)
 - **Filtros Temporais**: Mesmo padrão das vendas para consistência
@@ -248,7 +248,7 @@ npm run reset-db   # Reseta banco (legado)
 - **Sistema de Aprovação**: Workflow de aprovação com histórico
 - **Logs Detalhados**: Debug completo para troubleshooting
 
-### 🌐 Plataformas
+### Plataformas
 - **Análise Individual**: Performance específica de cada canal de venda
 - **Sincronização Automática**: Atualização de dados via APIs (simulado)
 - **Comparativos Visuais**: Gráficos lado a lado das performances
@@ -256,7 +256,7 @@ npm run reset-db   # Reseta banco (legado)
 - **Relatórios Customizados**: Insights específicos por plataforma
 - **Configurações**: Parâmetros de integração e sincronização
 
-### ✅ Sistema de Tarefas (Sidebar)
+### Sistema de Tarefas (Sidebar)
 - **Organização Kanban**: Três colunas (A fazer, Fazendo, Concluído)
 - **Persistência Real**: Dados salvos no banco PostgreSQL
 - **Interface Drag-and-Drop**: Movimentação intuitiva entre status
@@ -264,78 +264,78 @@ npm run reset-db   # Reseta banco (legado)
 - **Gestão Completa**: Criar, editar, excluir, mover tarefas
 - **Design Integrado**: Interface consistente com o resto do sistema
 
-## 🎨 Design e UX
+## Design e UX
 
-### 🎯 Princípios de Design
+### Princípios de Design
 - **Consistência Visual**: Padrões uniformes em todas as telas
 - **Responsividade**: Adaptação para desktop, tablet e mobile
 - **Acessibilidade**: Cores contrastantes e navegação intuitiva
 - **Performance**: Carregamento rápido e interações fluidas
 
-### 🎨 Paleta de Cores
+### Paleta de Cores
 - **Verde Principal**: #018820 (PCR Labor)
 - **Azul Secundário**: #3b82f6 (Ações e links)
 - **Laranja Shopee**: #ff6600
 - **Azul Mercado Livre**: #3483fa
 - **Cinza Neutro**: #6b7280 (Textos secundários)
 
-### 📱 Layout Responsivo
+### Layout Responsivo
 - **Header Fixo**: Navegação sempre visível
 - **Sidebar Inteligente**: Tarefas e funcionalidades auxiliares
 - **Grid Flexível**: Adaptação automática do conteúdo
 - **Cards Informativos**: Organização visual clara
 
-## 🔒 Segurança
+## Segurança
 
-### 🛡️ Autenticação
+### Autenticação
 - **Senhas Criptografadas**: bcrypt com salt rounds
 - **Sessões Seguras**: express-session com secret key
 - **Validação de Entrada**: Sanitização de dados
 - **Controle de Acesso**: Middleware de autenticação
 
-### 🔐 Banco de Dados
+### Banco de Dados
 - **Prepared Statements**: Proteção contra SQL Injection
 - **Validações**: Constraints e triggers no banco
 - **Backup Automático**: Scripts de backup e restore
 - **Logs de Auditoria**: Rastreamento de alterações
 
-## 📈 Performance
+## Performance
 
-### ⚡ Otimizações
+### Otimizações
 - **Índices de Banco**: Consultas otimizadas
 - **Cache de Sessão**: Redução de consultas
 - **Compressão**: Gzip para assets estáticos
 - **Lazy Loading**: Carregamento sob demanda
 
-### 📊 Métricas
+### Métricas
 - **Tempo de Carregamento**: < 2 segundos
 - **Consultas de Banco**: Otimizadas com índices
 - **Tamanho de Assets**: Minificados e comprimidos
 - **Responsividade**: Suporte completo mobile
 
-## 🧪 Testes e Debug
+## Testes e Debug
 
-### 🔍 Sistema de Logs
+### Sistema de Logs
 - **Console Detalhado**: Logs estruturados em todas as operações
 - **Debug de Filtros**: Rastreamento completo de aplicação de filtros
 - **Monitoramento**: Acompanhamento de performance em tempo real
 - **Error Handling**: Tratamento robusto de erros
 
-### 🧪 Dados de Teste
+### Dados de Teste
 - **Botão de Teste**: Criação automática de dados variados
 - **Cenários Diversos**: Diferentes datas, status e valores
 - **Reset Fácil**: Scripts para limpar e recriar dados
 - **Validação**: Testes de integridade dos dados
 
-## 🚀 Deploy e Produção
+## Deploy e Produção
 
-### 🌐 Ambientes
+### Ambientes
 - **Desenvolvimento**: localhost:3000
 - **Produção**: Configuração para servidores cloud
 - **Staging**: Ambiente de testes
 - **CI/CD**: Scripts automatizados
 
-### 📦 Build
+### Build
 ```bash
 # Preparar para produção
 npm run build
@@ -347,31 +347,31 @@ npm audit
 npm run optimize-db
 ```
 
-## 📞 Suporte e Contato
+## Suporte e Contato
 
-### 🆘 Problemas Comuns
+### Problemas Comuns
 1. **Erro de Conexão**: Verificar PostgreSQL e credenciais
 2. **Filtros Não Funcionam**: Abrir console para debug
 3. **Dados Não Aparecem**: Executar script de dados de teste
 4. **Performance Lenta**: Verificar índices do banco
 
-### 📧 Contato
-- **Desenvolvedor**: Cauã Alencar
-- **Email**: caua.alencar@sou.inteli.edu.br
+### Contato
+- **Desenvolvedor**: Cauã Pirilo Asquino
+- **Email**: caua.asquino@sou.inteli.edu.br
 - **GitHub**: [c4uazinnnn](https://github.com/c4uazinnnn)
 - **Projeto**: [PCR Labor Repository](https://github.com/c4uazinnnn/Projeto-Individual-Pcr-Labor)
 
 ---
 
-## 🎉 Conclusão
+## Conclusão
 
 O **PCR Labor** representa uma solução completa e moderna para gestão empresarial, combinando tecnologias robustas com uma interface intuitiva. O sistema foi desenvolvido seguindo as melhores práticas de desenvolvimento web, garantindo escalabilidade, segurança e performance.
 
-### ✨ Diferenciais
+### Diferenciais
 - **Código Limpo**: Estrutura MVC bem organizada
 - **Documentação Completa**: README detalhado e comentários no código
 - **Testes Integrados**: Sistema de debug e validação
 - **Design Profissional**: Interface moderna e responsiva
 - **Performance Otimizada**: Consultas rápidas e carregamento eficiente
 
-**🚀 Pronto para produção e evolução contínua!**
+**Pronto para produção e evolução contínua!**

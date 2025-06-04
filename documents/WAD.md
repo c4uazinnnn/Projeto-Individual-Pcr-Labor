@@ -63,63 +63,197 @@ A US01 é negociável porque o gerente de operações pode escolher, por exemplo
 
 
 ```sql
--- Criação do schema
-CREATE DATABASE IF NOT EXISTS bd_pcr_labor;
-USE bd_pcr_labor;
-
--- Tabela de empresas
-CREATE TABLE Empresa (
-    id_empresa INT PRIMARY KEY AUTO_INCREMENT,
+-- Tabela de Empresas
+CREATE TABLE IF NOT EXISTS Empresa (
+    id_empresa SERIAL PRIMARY KEY,
     nome_fantasia VARCHAR(100) NOT NULL,
-    cnpj VARCHAR(18) UNIQUE NOT NULL
+    cnpj VARCHAR(18) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabela de usuários (ligados à empresa)
-CREATE TABLE Usuario (
-    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
+-- Tabela de Usuários (ligados à empresa)
+CREATE TABLE IF NOT EXISTS Usuario (
+    id_usuario SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     senha_hash VARCHAR(255) NOT NULL,
-    id_empresa INT NOT NULL,
-    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa)
+    telefone VARCHAR(20),
+    cargo VARCHAR(100),
+    avatar VARCHAR(255),
+    id_empresa INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa) ON DELETE CASCADE
 );
 
--- Tabela de plataformas (ex: Shopee, Mercado Livre)
-CREATE TABLE Plataforma (
-    id_plataforma INT PRIMARY KEY AUTO_INCREMENT,
-    nome VARCHAR(50) NOT NULL
+-- Tabela de Plataformas (ex: Shopee, Mercado Livre)
+CREATE TABLE IF NOT EXISTS Plataforma (
+    id_plataforma SERIAL PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabela de produtos (ligados à empresa)
-CREATE TABLE Produto (
-    id_produto INT PRIMARY KEY AUTO_INCREMENT,
-    id_empresa INT NOT NULL,
+-- Tabela de Produtos (ligados à empresa)
+CREATE TABLE IF NOT EXISTS Produto (
+    id_produto SERIAL PRIMARY KEY,
+    id_empresa INTEGER NOT NULL,
     nome VARCHAR(100) NOT NULL,
     sku VARCHAR(50) UNIQUE NOT NULL,
     preco DECIMAL(10,2) NOT NULL,
-    estoque_atual INT NOT NULL,
-    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa)
+    preco_base DECIMAL(10,2) DEFAULT 0,
+    custo_frete DECIMAL(10,2) DEFAULT 0,
+    estoque_atual INTEGER NOT NULL DEFAULT 0,
+    estoque_minimo INTEGER DEFAULT 10,
+    categoria VARCHAR(50),
+    descricao TEXT,
+    ativo BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa) ON DELETE CASCADE
 );
 
--- Tabela de vendas
-CREATE TABLE Venda (
-    id_venda INT PRIMARY KEY AUTO_INCREMENT,
-    id_produto INT NOT NULL,
-    id_plataforma INT NOT NULL,
-    quantidade INT NOT NULL,
+-- Tabela de Vendas
+CREATE TABLE IF NOT EXISTS Venda (
+    id_venda SERIAL PRIMARY KEY,
+    id_produto INTEGER NOT NULL,
+    id_plataforma INTEGER NOT NULL,
+    id_empresa INTEGER,
+    quantidade INTEGER NOT NULL,
     data DATE NOT NULL,
-    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto),
-    FOREIGN KEY (id_plataforma) REFERENCES Plataforma(id_plataforma)
+    valor_total DECIMAL(10,2),
+    numero_venda VARCHAR(50),
+    preco_unitario DECIMAL(10,2),
+    desconto DECIMAL(10,2) DEFAULT 0,
+    taxa_plataforma DECIMAL(5,2) DEFAULT 0,
+    valor_liquido DECIMAL(10,2),
+    status VARCHAR(20) DEFAULT 'confirmada',
+    id_usuario INTEGER,
+    observacoes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto) ON DELETE CASCADE,
+    FOREIGN KEY (id_plataforma) REFERENCES Plataforma(id_plataforma) ON DELETE CASCADE,
+    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE SET NULL
 );
 
--- Tabela de sugestões de compra
-CREATE TABLE SugestaoCompra (
-    id_sugestao INT PRIMARY KEY AUTO_INCREMENT,
-    id_produto INT NOT NULL,
-    quantidade_sugerida INT NOT NULL,
-    data_gerada DATE NOT NULL,
-    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto)
+-- Tabela de Pedidos
+CREATE TABLE IF NOT EXISTS Pedido (
+    id_pedido SERIAL PRIMARY KEY,
+    id_produto INTEGER NOT NULL,
+    id_plataforma INTEGER NOT NULL,
+    id_empresa INTEGER,
+    id_fornecedor INTEGER,
+    quantidade INTEGER NOT NULL,
+    status VARCHAR(20) DEFAULT 'PENDENTE',
+    data_pedido DATE NOT NULL DEFAULT CURRENT_DATE,
+    data_entrega DATE,
+    valor_total DECIMAL(10,2),
+    fornecedor VARCHAR(100),
+    prioridade VARCHAR(20) DEFAULT 'media',
+    observacoes TEXT,
+    numero_pedido VARCHAR(50),
+    aprovado_por INTEGER,
+    data_aprovacao TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto) ON DELETE CASCADE,
+    FOREIGN KEY (id_plataforma) REFERENCES Plataforma(id_plataforma) ON DELETE CASCADE,
+    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa) ON DELETE CASCADE,
+    FOREIGN KEY (id_fornecedor) REFERENCES Fornecedor(id_fornecedor) ON DELETE SET NULL,
+    FOREIGN KEY (aprovado_por) REFERENCES Usuario(id_usuario) ON DELETE SET NULL
 );
+
+-- ===== TABELAS ADICIONAIS =====
+
+-- Tabela de Fornecedores
+CREATE TABLE IF NOT EXISTS Fornecedor (
+    id_fornecedor SERIAL PRIMARY KEY,
+    id_empresa INTEGER NOT NULL,
+    nome VARCHAR(200) NOT NULL,
+    cnpj VARCHAR(18),
+    email VARCHAR(100),
+    telefone VARCHAR(20),
+    endereco TEXT,
+    observacoes TEXT,
+    ativo BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa) ON DELETE CASCADE
+);
+
+-- Tabela de Tarefas (Sistema Kanban)
+CREATE TABLE IF NOT EXISTS Tarefa (
+    id_tarefa SERIAL PRIMARY KEY,
+    id_usuario INTEGER NOT NULL,
+    titulo VARCHAR(200) NOT NULL,
+    descricao TEXT,
+    status VARCHAR(20) DEFAULT 'a_fazer',
+    prioridade VARCHAR(20) DEFAULT 'media',
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_conclusao TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE CASCADE
+);
+
+-- Tabela de Sugestões de Compra
+CREATE TABLE IF NOT EXISTS SugestaoCompra (
+    id_sugestao SERIAL PRIMARY KEY,
+    id_produto INTEGER NOT NULL,
+    quantidade_sugerida INTEGER NOT NULL,
+    motivo TEXT,
+    prioridade VARCHAR(20) DEFAULT 'media',
+    status VARCHAR(20) DEFAULT 'pendente',
+    data_sugestao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    processado_em TIMESTAMP,
+    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto) ON DELETE CASCADE
+);
+
+-- Tabela de Emails
+CREATE TABLE IF NOT EXISTS Email (
+    id_email SERIAL PRIMARY KEY,
+    id_empresa INTEGER NOT NULL,
+    id_remetente INTEGER,
+    id_destinatario INTEGER,
+    email_destinatario VARCHAR(100),
+    assunto VARCHAR(200) NOT NULL,
+    corpo TEXT NOT NULL,
+    prioridade VARCHAR(20) DEFAULT 'normal',
+    categoria VARCHAR(50) DEFAULT 'geral',
+    status VARCHAR(20) DEFAULT 'enviado',
+    lido BOOLEAN DEFAULT false,
+    data_leitura TIMESTAMP,
+    anexos TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa) ON DELETE CASCADE,
+    FOREIGN KEY (id_remetente) REFERENCES Usuario(id_usuario) ON DELETE SET NULL,
+    FOREIGN KEY (id_destinatario) REFERENCES Usuario(id_usuario) ON DELETE SET NULL
+);
+
+-- Tabela de Movimentação de Estoque
+CREATE TABLE IF NOT EXISTS MovimentacaoEstoque (
+    id_movimentacao SERIAL PRIMARY KEY,
+    id_produto INTEGER NOT NULL,
+    id_empresa INTEGER NOT NULL,
+    tipo_movimentacao VARCHAR(20) NOT NULL, -- 'entrada', 'saida', 'transferencia', 'full'
+    quantidade INTEGER NOT NULL,
+    quantidade_anterior INTEGER NOT NULL,
+    quantidade_atual INTEGER NOT NULL,
+    motivo VARCHAR(100),
+    observacoes TEXT,
+    id_usuario INTEGER,
+    id_venda INTEGER,
+    id_pedido INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto) ON DELETE CASCADE,
+    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE SET NULL,
+    FOREIGN KEY (id_venda) REFERENCES Venda(id_venda) ON DELETE SET NULL,
+    FOREIGN KEY (id_pedido) REFERENCES Pedido(id_pedido) ON DELETE SET NULL
+);
+
 ```
 
 ### 3.1.1 BD e Models (Semana 5)
