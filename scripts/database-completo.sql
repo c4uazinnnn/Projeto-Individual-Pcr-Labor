@@ -1,18 +1,3 @@
--- =====================================================
--- PCR LABOR - SISTEMA DE GESTÃO COMPLETO
--- Arquivo SQL Consolidado (Baseado no init.sql funcional)
--- =====================================================
---
--- Este arquivo consolida toda a estrutura do banco
--- PCR Labor em um único arquivo organizado, mantendo
--- compatibilidade total com o sistema existente.
---
--- Versão: 1.0 Final - Organizado
--- Data: Janeiro 2025
--- =====================================================
-
--- ===== CRIAÇÃO DAS TABELAS PRINCIPAIS =====
-
 -- Tabela de Empresas
 CREATE TABLE IF NOT EXISTS Empresa (
     id_empresa SERIAL PRIMARY KEY,
