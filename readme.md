@@ -169,6 +169,17 @@ npm run setup-db
 createdb pcr_labor
 
 # 2. Configure o arquivo .env (veja exemplo abaixo)
+### Configuração do .env
+
+```env
+DB_USER=postgres.zjicffmdnxnaitgahfua
+DB_HOST=aws-0-sa-east-1.pooler.supabase.com
+DB_DATABASE=postgres
+DB_PASSWORD=jpHXc3vJp7wG5fPI
+DB_PORT=5432
+DB_SSL=true
+PORT=3000
+```
 # 3. Execute o setup do banco
 npm run setup-db
 ```
@@ -189,21 +200,6 @@ Email: admin@pcrlabor.com
 Senha: admin123
 ```
 
-### Configuração do .env
-
-```env
-# Banco de Dados
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=pcr_labor
-DB_USER=postgres
-DB_PASSWORD=sua_senha
-
-# Aplicação
-PORT=3000
-NODE_ENV=development
-SESSION_SECRET=pcr_labor_secret_key_2025
-```
 
 ### Scripts Disponíveis
 

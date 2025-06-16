@@ -16,8 +16,9 @@ router.get('/login', controladorDashboard.renderLogin);
 router.get('/dashboard', controladorDashboard.renderDashboard);
 
 // APIs do dashboard
-router.post('/api/sync-data', controladorDashboard.syncData);
-router.get('/api/metrics', controladorDashboard.getMetrics);
+const { verificarAutenticacao } = require('../middleware/autenticacao');
+router.post('/api/sync-data', verificarAutenticacao, controladorDashboard.syncData);
+// router.get('/api/metrics', verificarAutenticacao, controladorDashboard.getMetrics); // DESABILITADO - usar /api/dashboard-stats
 
 // Rotas de páginas
 router.get('/produtos', controladorProdutos.renderProdutos);
@@ -25,13 +26,8 @@ router.get('/estoque', controladorProdutos.renderEstoque);
 router.get('/vendas', controladorVendas.renderVendas);
 router.get('/plataformas', controladorVendas.renderPlataformas);
 
-// Rota para fornecedores
-router.get('/fornecedores', (req, res) => {
-  res.render('pages/fornecedores', {
-    pageTitle: 'Fornecedores - PCR Labor',
-    currentPage: 'fornecedores',
-    usuario: req.usuario || { nome: 'Usuário', empresa_nome: 'PCR Labor' }
-  });
-});
+// Rota de fornecedores movida para rotasPaginas.js
+
+
 
 module.exports = router;

@@ -28,28 +28,28 @@
       <div class="section-content">
         <!-- Cards de métricas de vendas -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
-          <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #018820, #02a025); color: white; border-radius: 12px;">
-            <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; font-weight: 600;">Total de Vendas</div>
-            <div style="font-size: 32px; font-weight: bold; margin: 10px 0;">R$ <%= stats.valorTotalVendas.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".") %></div>
-            <div style="font-size: 14px; opacity: 0.9;">Faturamento total</div>
+          <div data-card="vendas" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #018820, #02a025); color: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(1, 136, 32, 0.3);">
+            <div style="font-size: 12px; opacity: 1; text-transform: uppercase; font-weight: 600; color: #ffffff;">TOTAL DE VENDAS</div>
+            <div class="card-value" style="font-size: 32px; font-weight: bold; margin: 10px 0; color: #ffffff;">R$ <%= stats.valorTotalVendas.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".") %></div>
+            <div style="font-size: 14px; opacity: 1; color: #ffffff;">Faturamento total</div>
           </div>
 
-          <div style="text-align: center; padding: 20px; background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px;">
+          <div data-card="vendas-quantidade" style="text-align: center; padding: 20px; background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px;">
             <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Vendas Realizadas</div>
-            <div style="font-size: 32px; font-weight: bold; color: #333; margin: 10px 0;"><%= stats.totalVendas %></div>
+            <div class="card-value" style="font-size: 32px; font-weight: bold; color: #333; margin: 10px 0;"><%= stats.totalVendas %></div>
             <div style="font-size: 14px; color: #666;">Transações</div>
           </div>
 
-          <div style="text-align: center; padding: 20px; background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px;">
+          <div data-card="vendas-hoje" style="text-align: center; padding: 20px; background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px;">
             <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Vendas Hoje</div>
-            <div style="font-size: 32px; font-weight: bold; color: #333; margin: 10px 0;"><%= stats.vendasHoje %></div>
+            <div class="card-value" style="font-size: 32px; font-weight: bold; color: #333; margin: 10px 0;"><%= stats.vendasHoje %></div>
             <div style="font-size: 14px; color: #666;">Hoje</div>
           </div>
 
-          <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border-radius: 12px;">
-            <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; font-weight: 600;">Crescimento</div>
-            <div style="font-size: 32px; font-weight: bold; margin: 10px 0;">+12%</div>
-            <div style="font-size: 14px; opacity: 0.9;">vs mês anterior</div>
+          <div data-card="crescimento" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border-radius: 12px;">
+            <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; font-weight: 600; color: #ffffff;">Crescimento</div>
+            <div class="card-value" style="font-size: 32px; font-weight: bold; margin: 10px 0; color: #ffffff;">+12%</div>
+            <div class="vs-mes-anterior" style="font-size: 14px; opacity: 1; color: #ffffff !important; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">vs mês anterior</div>
           </div>
         </div>
 
@@ -120,7 +120,7 @@
             <div style="color: #666; font-size: 14px;">Aprovados</div>
           </div>
           <div style="text-align: center; padding: 20px; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
-            <div style="font-size: 28px; font-weight: bold; color: #3b82f6;">R$ <%= valorTotalPedidos.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".") %></div>
+            <div style="font-size: 28px; font-weight: bold; color: #3b82f6;">R$ <%= valorTotalPedidos.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) %></div>
             <div style="color: #666; font-size: 14px;">Valor Total</div>
           </div>
           <div style="text-align: center; padding: 20px; background: #faf5ff; border-radius: 8px; border-left: 4px solid #8b5cf6;">
@@ -164,18 +164,18 @@
     // ===== CONFIGURAÇÃO DOS GRÁFICOS DO DASHBOARD =====
 
     /**
-     * GRÁFICO 1: Vendas por Dia da Semana
+     * GRÁFICO 1: Vendas por Dia da Semana - DADOS REAIS
      * Tipo: Linha com área preenchida
      * Mostra a evolução das vendas durante a semana
      */
     const vendasCtx = document.getElementById('vendasChart').getContext('2d');
-    new Chart(vendasCtx, {
+    window.vendasChart = new Chart(vendasCtx, {
       type: 'line',
       data: {
         labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
         datasets: [{
           label: 'Vendas (R$)',
-          data: [1200, 1900, 800, 1500, 2200, 1800, 2500],
+          data: [0, 0, 0, 0, 0, 0, 0], // Será atualizado com dados reais
           borderColor: '#018820',
           backgroundColor: 'rgba(1, 136, 32, 0.1)',
           borderWidth: 3,
@@ -200,6 +200,11 @@
             beginAtZero: true,
             grid: {
               color: '#f0f0f0'
+            },
+            ticks: {
+              callback: function(value) {
+                return 'R$ ' + value.toLocaleString();
+              }
             }
           },
           x: {
@@ -398,8 +403,13 @@
         try {
           const response = await fetch('/api/dashboard-stats');
           if (response.ok) {
-            statsReais = await response.json();
-            console.log('📊 Dados reais carregados via API:', statsReais);
+            const apiResponse = await response.json();
+            if (apiResponse.success) {
+              statsReais = apiResponse.data;
+              console.log('📊 Dados reais carregados via API:', statsReais);
+            } else {
+              throw new Error('API retornou erro');
+            }
           } else {
             throw new Error('API não disponível');
           }
@@ -412,6 +422,8 @@
             totalVendas: 1,
             totalPedidos: 0,
             valorTotalVendas: 5000,
+            vendasHoje: 0,
+            crescimentoMensal: 15.5,
             plataformas: [
               { nome: 'Shopee', valor_total: 5000, total_vendas: 1 },
               { nome: 'Mercado Livre', valor_total: 0, total_vendas: 0 },
@@ -419,6 +431,55 @@
             ]
           };
         }
+
+        // ===== ATUALIZAR APENAS CARD DE CRESCIMENTO (NÃO SOBRESCREVER OUTROS) =====
+        // Atualizar apenas card de crescimento com cor dinâmica
+        const crescimentoElement = document.querySelector('[data-card="crescimento"] .card-value');
+        if (crescimentoElement && statsReais.crescimentoMensal !== undefined) {
+          let crescimento = parseFloat(statsReais.crescimentoMensal);
+
+          // Limitar valores extremos para evitar números muito altos
+          if (crescimento > 999) crescimento = 999;
+          if (crescimento < -999) crescimento = -999;
+
+          const sinal = crescimento >= 0 ? '+' : '';
+          crescimentoElement.textContent = `${sinal}${crescimento.toFixed(1)}%`;
+
+          // Mudar cor baseado no crescimento
+          const card = crescimentoElement.closest('[data-card="crescimento"]');
+          const textoVsMes = card.querySelector('.vs-mes-anterior') || card.querySelector('div:last-child');
+
+          if (crescimento >= 0) {
+            card.style.background = 'linear-gradient(135deg, #16a34a, #15803d)'; // Verde para positivo
+            card.style.color = 'white';
+          } else {
+            card.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)'; // Vermelho para negativo
+            card.style.color = 'white';
+          }
+
+          // Garantir que todos os textos sejam brancos
+          const todosTextos = card.querySelectorAll('div');
+          todosTextos.forEach(texto => {
+            texto.style.color = '#ffffff';
+            texto.style.setProperty('color', '#ffffff', 'important');
+          });
+
+          // Aplicar estilo específico ao texto "vs mês anterior"
+          if (textoVsMes) {
+            textoVsMes.style.color = '#ffffff';
+            textoVsMes.style.setProperty('color', '#ffffff', 'important');
+            textoVsMes.style.opacity = '1';
+            textoVsMes.style.fontWeight = '600';
+            textoVsMes.style.textShadow = '0 1px 2px rgba(0,0,0,0.3)';
+          }
+        }
+
+        // ===== NÃO SOBRESCREVER OUTROS CARDS - ELES JÁ TÊM VALORES CORRETOS DO SERVIDOR =====
+        // Os cards de vendas, produtos, etc. já vêm com valores corretos do backend
+        // Comentado para não sobrescrever:
+        // - vendasElement (Total de Vendas)
+        // - vendasQuantidadeElement (Vendas Realizadas)
+        // - vendasHojeElement (Vendas Hoje)
 
         // ===== ATUALIZAR CARDS DAS PLATAFORMAS =====
         const plataformasContainer = document.getElementById('plataformasCards');
@@ -483,6 +544,47 @@
             Math.floor(totalPedidos * 0.1)  // Cancelados
           ];
           window.pedidosChart.update();
+        }
+
+        // ===== ATUALIZAR GRÁFICO DE VENDAS POR DIA =====
+        if (window.vendasChart) {
+          // Buscar vendas por período
+          try {
+            const vendasResponse = await fetch('/api/vendas-periodo/semana');
+            if (vendasResponse.ok) {
+              const vendasData = await vendasResponse.json();
+              if (vendasData.success && vendasData.data) {
+                // Processar dados para os últimos 7 dias
+                const hoje = new Date();
+                const vendasPorDia = [0, 0, 0, 0, 0, 0, 0]; // Seg a Dom
+
+                vendasData.data.forEach(venda => {
+                  const dataVenda = new Date(venda.data);
+                  const diaSemana = dataVenda.getDay(); // 0=Dom, 1=Seg, etc
+                  const indice = diaSemana === 0 ? 6 : diaSemana - 1; // Converter para Seg=0, Dom=6
+                  vendasPorDia[indice] += parseFloat(venda.valor_total || 0);
+                });
+
+                window.vendasChart.data.datasets[0].data = vendasPorDia;
+                window.vendasChart.update();
+              }
+            }
+          } catch (vendasError) {
+            console.warn('⚠️ Erro ao carregar vendas por dia:', vendasError);
+            // Usar dados simulados baseados no total
+            const valorTotal = statsReais.valorTotalVendas || 0;
+            const vendasSimuladas = [
+              valorTotal * 0.1,
+              valorTotal * 0.15,
+              valorTotal * 0.12,
+              valorTotal * 0.18,
+              valorTotal * 0.20,
+              valorTotal * 0.15,
+              valorTotal * 0.10
+            ];
+            window.vendasChart.data.datasets[0].data = vendasSimuladas;
+            window.vendasChart.update();
+          }
         }
 
         console.log('✅ Dashboard atualizado com dados reais');

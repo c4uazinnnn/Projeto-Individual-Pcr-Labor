@@ -1,0 +1,424 @@
+<!-- Componente de Filtro Unificado -->
+<div class="filtro-unificado" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
+  
+  <!-- Filtro de Data -->
+  <div class="filtro-dropdown">
+    <button class="filtro-btn" onclick="toggleDropdown('filtroData')" style="padding: 8px 16px; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+      📅 Data
+      <span class="dropdown-arrow">▼</span>
+    </button>
+    <div id="filtroData" class="filtro-dropdown-content" style="display: none; position: absolute; background: white; border: 1px solid #e0e0e0; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000; min-width: 200px; margin-top: 5px;">
+      <div style="padding: 15px;">
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Período:</label>
+          <select id="periodoSelect" onchange="aplicarFiltroPeriodo()" style="width: 100%; padding: 8px; border: 1px solid #e0e0e0; border-radius: 4px;">
+            <option value="todos">Todos os períodos</option>
+            <option value="hoje">Hoje</option>
+            <option value="ontem">Ontem</option>
+            <option value="semana">Esta semana</option>
+            <option value="mes">Este mês</option>
+            <option value="trimestre">Este trimestre</option>
+            <option value="ano">Este ano</option>
+            <option value="personalizado">Período personalizado</option>
+          </select>
+        </div>
+        
+        <div id="dataPersonalizada" style="display: none;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #666;">De:</label>
+              <input type="date" id="dataInicio" style="width: 100%; padding: 6px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 12px;">
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #666;">Até:</label>
+              <input type="date" id="dataFim" style="width: 100%; padding: 6px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 12px;">
+            </div>
+          </div>
+        </div>
+        
+        <button onclick="aplicarFiltroData()" style="width: 100%; padding: 8px; background: #018820; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+          Aplicar Filtro
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtro de Status -->
+  <div class="filtro-dropdown">
+    <button class="filtro-btn" onclick="toggleDropdown('filtroStatus')" style="padding: 8px 16px; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+      🏷️ Status
+      <span class="dropdown-arrow">▼</span>
+    </button>
+    <div id="filtroStatus" class="filtro-dropdown-content" style="display: none; position: absolute; background: white; border: 1px solid #e0e0e0; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000; min-width: 180px; margin-top: 5px;">
+      <div style="padding: 15px;">
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Selecione o status:</label>
+          <div id="statusOptions" style="display: grid; gap: 8px;">
+            <!-- Opções serão preenchidas dinamicamente -->
+          </div>
+        </div>
+        
+        <button onclick="aplicarFiltroStatus()" style="width: 100%; padding: 8px; background: #018820; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+          Aplicar Filtro
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtro de Valor -->
+  <div class="filtro-dropdown">
+    <button class="filtro-btn" onclick="toggleDropdown('filtroValor')" style="padding: 8px 16px; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+      💰 Valor
+      <span class="dropdown-arrow">▼</span>
+    </button>
+    <div id="filtroValor" class="filtro-dropdown-content" style="display: none; position: absolute; background: white; border: 1px solid #e0e0e0; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000; min-width: 220px; margin-top: 5px;">
+      <div style="padding: 15px;">
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Faixa de valor:</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #666;">Mínimo (R$):</label>
+              <input type="number" id="valorMinimo" step="0.01" min="0" style="width: 100%; padding: 6px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 12px;" placeholder="0,00">
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #666;">Máximo (R$):</label>
+              <input type="number" id="valorMaximo" step="0.01" min="0" style="width: 100%; padding: 6px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 12px;" placeholder="999999,99">
+            </div>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Faixas predefinidas:</label>
+          <div style="display: grid; gap: 5px;">
+            <button onclick="definirFaixaValor(0, 50)" style="padding: 6px; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 4px; cursor: pointer; font-size: 12px;">Até R$ 50</button>
+            <button onclick="definirFaixaValor(50, 200)" style="padding: 6px; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 4px; cursor: pointer; font-size: 12px;">R$ 50 - R$ 200</button>
+            <button onclick="definirFaixaValor(200, 500)" style="padding: 6px; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 4px; cursor: pointer; font-size: 12px;">R$ 200 - R$ 500</button>
+            <button onclick="definirFaixaValor(500, 999999)" style="padding: 6px; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 4px; cursor: pointer; font-size: 12px;">Acima de R$ 500</button>
+          </div>
+        </div>
+        
+        <button onclick="aplicarFiltroValor()" style="width: 100%; padding: 8px; background: #018820; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+          Aplicar Filtro
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtro de Categoria/Tipo -->
+  <div class="filtro-dropdown">
+    <button class="filtro-btn" onclick="toggleDropdown('filtroCategoria')" style="padding: 8px 16px; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+      📂 Categoria
+      <span class="dropdown-arrow">▼</span>
+    </button>
+    <div id="filtroCategoria" class="filtro-dropdown-content" style="display: none; position: absolute; background: white; border: 1px solid #e0e0e0; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000; min-width: 200px; margin-top: 5px;">
+      <div style="padding: 15px;">
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Selecione as categorias:</label>
+          <div id="categoriaOptions" style="display: grid; gap: 8px; max-height: 200px; overflow-y: auto;">
+            <!-- Opções serão preenchidas dinamicamente -->
+          </div>
+        </div>
+        
+        <button onclick="aplicarFiltroCategoria()" style="width: 100%; padding: 8px; background: #018820; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+          Aplicar Filtro
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botão Limpar Filtros -->
+  <button onclick="limparTodosFiltros()" style="padding: 8px 16px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+    🗑️ Limpar Filtros
+  </button>
+
+  <!-- Indicador de Filtros Ativos -->
+  <div id="filtrosAtivos" style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <!-- Tags de filtros ativos aparecerão aqui -->
+  </div>
+
+</div>
+
+<script>
+// ===== SISTEMA DE FILTROS UNIFICADO =====
+
+let filtrosAplicados = {
+  data: null,
+  status: [],
+  valor: { min: null, max: null },
+  categoria: []
+};
+
+// Toggle dropdown
+function toggleDropdown(dropdownId) {
+  // Fechar todos os outros dropdowns
+  document.querySelectorAll('.filtro-dropdown-content').forEach(dropdown => {
+    if (dropdown.id !== dropdownId) {
+      dropdown.style.display = 'none';
+    }
+  });
+  
+  // Toggle o dropdown clicado
+  const dropdown = document.getElementById(dropdownId);
+  dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+// Fechar dropdowns ao clicar fora
+document.addEventListener('click', function(event) {
+  if (!event.target.closest('.filtro-dropdown')) {
+    document.querySelectorAll('.filtro-dropdown-content').forEach(dropdown => {
+      dropdown.style.display = 'none';
+    });
+  }
+});
+
+// Aplicar filtro de período
+function aplicarFiltroPeriodo() {
+  const periodo = document.getElementById('periodoSelect').value;
+  const dataPersonalizada = document.getElementById('dataPersonalizada');
+  
+  if (periodo === 'personalizado') {
+    dataPersonalizada.style.display = 'block';
+  } else {
+    dataPersonalizada.style.display = 'none';
+    
+    // Aplicar período predefinido
+    const hoje = new Date();
+    let dataInicio, dataFim;
+    
+    switch(periodo) {
+      case 'hoje':
+        dataInicio = dataFim = hoje.toISOString().split('T')[0];
+        break;
+      case 'ontem':
+        const ontem = new Date(hoje);
+        ontem.setDate(ontem.getDate() - 1);
+        dataInicio = dataFim = ontem.toISOString().split('T')[0];
+        break;
+      case 'semana':
+        const inicioSemana = new Date(hoje);
+        inicioSemana.setDate(hoje.getDate() - hoje.getDay());
+        dataInicio = inicioSemana.toISOString().split('T')[0];
+        dataFim = hoje.toISOString().split('T')[0];
+        break;
+      case 'mes':
+        dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+        dataFim = hoje.toISOString().split('T')[0];
+        break;
+      case 'trimestre':
+        const trimestre = Math.floor(hoje.getMonth() / 3);
+        dataInicio = new Date(hoje.getFullYear(), trimestre * 3, 1).toISOString().split('T')[0];
+        dataFim = hoje.toISOString().split('T')[0];
+        break;
+      case 'ano':
+        dataInicio = new Date(hoje.getFullYear(), 0, 1).toISOString().split('T')[0];
+        dataFim = hoje.toISOString().split('T')[0];
+        break;
+      default:
+        dataInicio = dataFim = null;
+    }
+    
+    if (dataInicio && dataFim) {
+      filtrosAplicados.data = { inicio: dataInicio, fim: dataFim, periodo };
+      atualizarIndicadorFiltros();
+    }
+  }
+}
+
+// Aplicar filtro de data
+function aplicarFiltroData() {
+  const periodo = document.getElementById('periodoSelect').value;
+  
+  if (periodo === 'personalizado') {
+    const dataInicio = document.getElementById('dataInicio').value;
+    const dataFim = document.getElementById('dataFim').value;
+    
+    if (dataInicio && dataFim) {
+      filtrosAplicados.data = { inicio: dataInicio, fim: dataFim, periodo: 'personalizado' };
+    }
+  }
+  
+  atualizarIndicadorFiltros();
+  toggleDropdown('filtroData');
+  
+  // Chamar função de aplicação específica da página
+  if (typeof aplicarFiltros === 'function') {
+    aplicarFiltros();
+  }
+}
+
+// Aplicar filtro de status
+function aplicarFiltroStatus() {
+  const checkboxes = document.querySelectorAll('#statusOptions input[type="checkbox"]:checked');
+  filtrosAplicados.status = Array.from(checkboxes).map(cb => cb.value);
+  
+  atualizarIndicadorFiltros();
+  toggleDropdown('filtroStatus');
+  
+  if (typeof aplicarFiltros === 'function') {
+    aplicarFiltros();
+  }
+}
+
+// Definir faixa de valor predefinida
+function definirFaixaValor(min, max) {
+  document.getElementById('valorMinimo').value = min;
+  document.getElementById('valorMaximo').value = max === 999999 ? '' : max;
+}
+
+// Aplicar filtro de valor
+function aplicarFiltroValor() {
+  const min = parseFloat(document.getElementById('valorMinimo').value) || null;
+  const max = parseFloat(document.getElementById('valorMaximo').value) || null;
+  
+  filtrosAplicados.valor = { min, max };
+  
+  atualizarIndicadorFiltros();
+  toggleDropdown('filtroValor');
+  
+  if (typeof aplicarFiltros === 'function') {
+    aplicarFiltros();
+  }
+}
+
+// Aplicar filtro de categoria
+function aplicarFiltroCategoria() {
+  const checkboxes = document.querySelectorAll('#categoriaOptions input[type="checkbox"]:checked');
+  filtrosAplicados.categoria = Array.from(checkboxes).map(cb => cb.value);
+  
+  atualizarIndicadorFiltros();
+  toggleDropdown('filtroCategoria');
+  
+  if (typeof aplicarFiltros === 'function') {
+    aplicarFiltros();
+  }
+}
+
+// Limpar todos os filtros
+function limparTodosFiltros() {
+  filtrosAplicados = {
+    data: null,
+    status: [],
+    valor: { min: null, max: null },
+    categoria: []
+  };
+  
+  // Resetar formulários
+  document.getElementById('periodoSelect').value = 'todos';
+  document.getElementById('dataPersonalizada').style.display = 'none';
+  document.getElementById('valorMinimo').value = '';
+  document.getElementById('valorMaximo').value = '';
+  
+  // Desmarcar checkboxes
+  document.querySelectorAll('#statusOptions input[type="checkbox"]').forEach(cb => cb.checked = false);
+  document.querySelectorAll('#categoriaOptions input[type="checkbox"]').forEach(cb => cb.checked = false);
+  
+  atualizarIndicadorFiltros();
+  
+  if (typeof aplicarFiltros === 'function') {
+    aplicarFiltros();
+  }
+}
+
+// Atualizar indicador de filtros ativos
+function atualizarIndicadorFiltros() {
+  const container = document.getElementById('filtrosAtivos');
+  container.innerHTML = '';
+  
+  // Filtro de data
+  if (filtrosAplicados.data) {
+    const tag = criarTagFiltro(`📅 ${filtrosAplicados.data.periodo}`, () => {
+      filtrosAplicados.data = null;
+      document.getElementById('periodoSelect').value = 'todos';
+      atualizarIndicadorFiltros();
+      if (typeof aplicarFiltros === 'function') aplicarFiltros();
+    });
+    container.appendChild(tag);
+  }
+  
+  // Filtro de status
+  if (filtrosAplicados.status.length > 0) {
+    const tag = criarTagFiltro(`🏷️ Status (${filtrosAplicados.status.length})`, () => {
+      filtrosAplicados.status = [];
+      document.querySelectorAll('#statusOptions input[type="checkbox"]').forEach(cb => cb.checked = false);
+      atualizarIndicadorFiltros();
+      if (typeof aplicarFiltros === 'function') aplicarFiltros();
+    });
+    container.appendChild(tag);
+  }
+  
+  // Filtro de valor
+  if (filtrosAplicados.valor.min !== null || filtrosAplicados.valor.max !== null) {
+    const tag = criarTagFiltro('💰 Valor', () => {
+      filtrosAplicados.valor = { min: null, max: null };
+      document.getElementById('valorMinimo').value = '';
+      document.getElementById('valorMaximo').value = '';
+      atualizarIndicadorFiltros();
+      if (typeof aplicarFiltros === 'function') aplicarFiltros();
+    });
+    container.appendChild(tag);
+  }
+  
+  // Filtro de categoria
+  if (filtrosAplicados.categoria.length > 0) {
+    const tag = criarTagFiltro(`📂 Categoria (${filtrosAplicados.categoria.length})`, () => {
+      filtrosAplicados.categoria = [];
+      document.querySelectorAll('#categoriaOptions input[type="checkbox"]').forEach(cb => cb.checked = false);
+      atualizarIndicadorFiltros();
+      if (typeof aplicarFiltros === 'function') aplicarFiltros();
+    });
+    container.appendChild(tag);
+  }
+}
+
+// Criar tag de filtro ativo
+function criarTagFiltro(texto, onRemove) {
+  const tag = document.createElement('div');
+  tag.style.cssText = `
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    background: #e3f2fd;
+    color: #1976d2;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  `;
+  
+  tag.innerHTML = `
+    <span>${texto}</span>
+    <button onclick="event.stopPropagation()" style="background: none; border: none; color: #1976d2; cursor: pointer; font-size: 14px; padding: 0; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;">×</button>
+  `;
+  
+  tag.querySelector('button').addEventListener('click', onRemove);
+  
+  return tag;
+}
+
+// Inicializar opções de status e categoria (deve ser chamado pela página)
+function inicializarFiltros(opcoes) {
+  // Inicializar opções de status
+  if (opcoes.status) {
+    const statusContainer = document.getElementById('statusOptions');
+    statusContainer.innerHTML = opcoes.status.map(status => `
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <input type="checkbox" value="${status.value}" style="margin: 0;">
+        <span style="font-size: 14px;">${status.label}</span>
+      </label>
+    `).join('');
+  }
+  
+  // Inicializar opções de categoria
+  if (opcoes.categorias) {
+    const categoriaContainer = document.getElementById('categoriaOptions');
+    categoriaContainer.innerHTML = opcoes.categorias.map(categoria => `
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <input type="checkbox" value="${categoria.value}" style="margin: 0;">
+        <span style="font-size: 14px;">${categoria.label}</span>
+      </label>
+    `).join('');
+  }
+}
+
+console.log('🔍 Sistema de filtros unificado carregado');
+</script>

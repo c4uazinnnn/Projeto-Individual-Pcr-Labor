@@ -240,25 +240,84 @@ const createVenda = async (req, res) => {
 
 const updateVenda = async (req, res) => {
   try {
-    const id_empresa = req.id_empresa; // Verificar se a venda pertence à empresa
+    const id_empresa = req.id_empresa;
+    const vendaId = req.params.id;
     const { produto_id, plataforma_id, quantidade, preco_unitario, status, data_venda, observacoes } = req.body;
 
-    console.log(`✏️ Atualizando venda ID: ${req.params.id} para empresa ID: ${id_empresa}`);
-    console.log(`📋 Novos dados:`, { produto_id, plataforma_id, quantidade, preco_unitario, status, data_venda, observacoes });
+    console.log(`✏️ Atualizando venda ID: ${vendaId} para empresa ID: ${id_empresa}`);
+    console.log(`📋 Dados recebidos:`, req.body);
 
-    // Calcular valor total
-    const valor_total = quantidade * preco_unitario;
+    // Verificar se a venda existe e pertence à empresa
+    const vendaExistente = await Venda.getById(vendaId);
+    if (!vendaExistente) {
+      return res.status(404).json({
+        success: false,
+        error: 'Venda não encontrada'
+      });
+    }
 
-    const updatedVenda = await Venda.update(req.params.id, {
-      id_produto: produto_id,
-      id_plataforma: plataforma_id,
-      quantidade,
-      preco_unitario,
-      valor_total,
-      status,
-      data: data_venda,
-      observacoes
-    });
+    // Verificar se a venda pertence à empresa do usuário
+    if (vendaExistente.id_empresa !== id_empresa) {
+      return res.status(403).json({
+        success: false,
+        error: 'Acesso negado: venda não pertence à sua empresa'
+      });
+    }
+
+    // Validações básicas
+    if (produto_id && isNaN(parseInt(produto_id))) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID do produto inválido'
+      });
+    }
+
+    if (plataforma_id && isNaN(parseInt(plataforma_id))) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID da plataforma inválido'
+      });
+    }
+
+    if (quantidade && (isNaN(parseInt(quantidade)) || parseInt(quantidade) <= 0)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Quantidade deve ser um número positivo'
+      });
+    }
+
+    if (preco_unitario && (isNaN(parseFloat(preco_unitario)) || parseFloat(preco_unitario) <= 0)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Preço unitário deve ser um número positivo'
+      });
+    }
+
+    // Preparar dados para atualização
+    const dadosAtualizacao = {};
+
+    if (produto_id !== undefined) dadosAtualizacao.id_produto = parseInt(produto_id);
+    if (plataforma_id !== undefined) dadosAtualizacao.id_plataforma = parseInt(plataforma_id);
+    if (quantidade !== undefined) dadosAtualizacao.quantidade = parseInt(quantidade);
+    if (preco_unitario !== undefined) dadosAtualizacao.preco_unitario = parseFloat(preco_unitario);
+    if (status !== undefined) dadosAtualizacao.status = status;
+    if (data_venda !== undefined) dadosAtualizacao.data = data_venda;
+    if (observacoes !== undefined) dadosAtualizacao.observacoes = observacoes;
+
+    // Calcular valor total se quantidade e preço foram fornecidos
+    if (dadosAtualizacao.quantidade && dadosAtualizacao.preco_unitario) {
+      dadosAtualizacao.valor_total = dadosAtualizacao.quantidade * dadosAtualizacao.preco_unitario;
+    } else if (dadosAtualizacao.quantidade && !dadosAtualizacao.preco_unitario) {
+      // Usar preço atual se só quantidade foi alterada
+      dadosAtualizacao.valor_total = dadosAtualizacao.quantidade * (vendaExistente.preco_unitario || vendaExistente.valor_total / vendaExistente.quantidade);
+    } else if (!dadosAtualizacao.quantidade && dadosAtualizacao.preco_unitario) {
+      // Usar quantidade atual se só preço foi alterado
+      dadosAtualizacao.valor_total = vendaExistente.quantidade * dadosAtualizacao.preco_unitario;
+    }
+
+    console.log(`📋 Dados para atualização:`, dadosAtualizacao);
+
+    const updatedVenda = await Venda.update(vendaId, dadosAtualizacao);
 
     if (updatedVenda) {
       console.log(`✅ Venda atualizada com sucesso: ID ${updatedVenda.id_venda}`);
@@ -270,14 +329,14 @@ const updateVenda = async (req, res) => {
     } else {
       res.status(404).json({
         success: false,
-        error: 'Venda não encontrada'
+        error: 'Erro ao atualizar venda'
       });
     }
   } catch (error) {
     console.error('❌ Erro ao atualizar venda:', error);
     res.status(400).json({
       success: false,
-      error: error.message
+      error: `Erro ao atualizar venda: ${error.message}`
     });
   }
 };

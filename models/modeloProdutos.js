@@ -177,6 +177,132 @@ class Produto {
       throw new Error(`Erro ao buscar produtos com estoque baixo: ${error.message}`);
     }
   }
+
+  // ===== IMPORTAÇÃO VIA EXCEL =====
+  static async importarExcel(produtosArray, id_empresa) {
+    try {
+      const resultados = {
+        sucesso: 0,
+        erros: 0,
+        detalhes: []
+      };
+
+      for (const produto of produtosArray) {
+        try {
+          // Validar dados obrigatórios
+          if (!produto.nome || !produto.sku) {
+            resultados.erros++;
+            resultados.detalhes.push({
+              linha: produto.linha || 'N/A',
+              erro: 'Nome e SKU são obrigatórios',
+              produto: produto.nome || 'Sem nome'
+            });
+            continue;
+          }
+
+          // Verificar se SKU já existe
+          const existente = await db.query(
+            'SELECT id_produto FROM Produto WHERE sku = $1 AND id_empresa = $2',
+            [produto.sku, id_empresa]
+          );
+
+          if (existente.rows.length > 0) {
+            resultados.erros++;
+            resultados.detalhes.push({
+              linha: produto.linha || 'N/A',
+              erro: 'SKU já existe',
+              produto: produto.nome
+            });
+            continue;
+          }
+
+          // Criar produto
+          const novoProduto = await this.create({
+            id_empresa,
+            nome: produto.nome,
+            sku: produto.sku,
+            preco: parseFloat(produto.preco || 0),
+            preco_base: parseFloat(produto.preco_base || 0),
+            custo_frete: parseFloat(produto.custo_frete || 0),
+            estoque_atual: parseInt(produto.estoque_atual || 0),
+            categoria: produto.categoria || 'Importado',
+            descricao: produto.descricao || ''
+          });
+
+          resultados.sucesso++;
+          resultados.detalhes.push({
+            linha: produto.linha || 'N/A',
+            sucesso: true,
+            produto: produto.nome,
+            id_produto: novoProduto.id_produto
+          });
+
+        } catch (error) {
+          resultados.erros++;
+          resultados.detalhes.push({
+            linha: produto.linha || 'N/A',
+            erro: error.message,
+            produto: produto.nome || 'Erro na linha'
+          });
+        }
+      }
+
+      return resultados;
+    } catch (error) {
+      throw new Error(`Erro na importação: ${error.message}`);
+    }
+  }
+
+  // ===== CALCULAR LUCRO =====
+  static calcularLucro(preco_venda, preco_base, custo_frete = 0) {
+    const precoVenda = parseFloat(preco_venda || 0);
+    const precoBase = parseFloat(preco_base || 0);
+    const custoFrete = parseFloat(custo_frete || 0);
+
+    const lucroAbsoluto = precoVenda - precoBase - custoFrete;
+    const lucroPercentual = precoBase > 0 ? ((lucroAbsoluto / precoBase) * 100) : 0;
+
+    return {
+      lucro_absoluto: lucroAbsoluto,
+      lucro_percentual: lucroPercentual,
+      margem_liquida: precoVenda > 0 ? ((lucroAbsoluto / precoVenda) * 100) : 0
+    };
+  }
+
+  // ===== RELATÓRIO DE LUCRATIVIDADE =====
+  static async getRelatorioLucratividade(id_empresa = null) {
+    try {
+      let query = `
+        SELECT
+          p.*,
+          (p.preco - p.preco_base - p.custo_frete) as lucro_absoluto,
+          CASE
+            WHEN p.preco_base > 0 THEN
+              ((p.preco - p.preco_base - p.custo_frete) / p.preco_base) * 100
+            ELSE 0
+          END as lucro_percentual,
+          CASE
+            WHEN p.preco > 0 THEN
+              ((p.preco - p.preco_base - p.custo_frete) / p.preco) * 100
+            ELSE 0
+          END as margem_liquida
+        FROM Produto p
+      `;
+
+      const params = [];
+      if (id_empresa) {
+        query += ` WHERE p.id_empresa = $1`;
+        params.push(id_empresa);
+      }
+
+      query += ` ORDER BY lucro_percentual DESC`;
+
+      const result = await db.query(query, params);
+      return result.rows;
+    } catch (error) {
+      throw new Error(`Erro ao gerar relatório de lucratividade: ${error.message}`);
+    }
+  }
 }
 
 module.exports = Produto;

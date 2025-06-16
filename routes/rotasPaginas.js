@@ -12,6 +12,8 @@ const controladorVendas = require('../controllers/controladorVendas');
 const controladorProdutos = require('../controllers/controladorProdutos');
 const controladorPedidos = require('../controllers/controladorPedidos');
 const controladorUsuarios = require('../controllers/controladorUsuarios');
+const controladorPlataformas = require('../controllers/controladorPlataformas');
+const controladorEmails = require('../controllers/controladorEmails');
 
 // Rota principal - redirecionar para dashboard
 router.get('/', (req, res) => {
@@ -24,8 +26,13 @@ router.get('/vendas', verificarAutenticacao, controladorVendas.renderVendas);
 router.get('/estoque', verificarAutenticacao, controladorProdutos.renderEstoque);
 router.get('/produtos', verificarAutenticacao, controladorProdutos.renderProdutos);
 router.get('/pedidos', verificarAutenticacao, controladorPedidos.renderPedidos);
-router.get('/plataformas', verificarAutenticacao, controladorVendas.renderPlataformas);
+router.get('/plataformas', verificarAutenticacao, controladorPlataformas.renderPlataformas);
+router.get('/emails', verificarAutenticacao, controladorEmails.renderEmails);
 router.get('/perfil', verificarAutenticacao, controladorUsuarios.renderPerfil);
+
+// Rota de fornecedores
+const controladorFornecedores = require('../controllers/controladorFornecedores');
+router.get('/fornecedores', verificarAutenticacao, controladorFornecedores.renderFornecedores);
 
 // Rota de emails
 router.get('/emails', (req, res) => {

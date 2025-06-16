@@ -77,7 +77,17 @@ const renderDashboard = async (req, res) => {
       return dataFormatada === hoje;
     }).reduce((total, v) => total + parseFloat(v.valor_total || 0), 0);
 
-    const crescimentoDiario = valorOntem > 0 ? ((valorHoje - valorOntem) / valorOntem * 100) : 0;
+    // Calcular crescimento com proteção contra valores extremos
+    let crescimentoDiario = 0;
+    if (valorOntem > 0) {
+      crescimentoDiario = ((valorHoje - valorOntem) / valorOntem * 100);
+      // Limitar valores extremos
+      if (crescimentoDiario > 999) crescimentoDiario = 999;
+      if (crescimentoDiario < -999) crescimentoDiario = -999;
+    } else if (valorHoje > 0) {
+      // Se não havia vendas ontem mas há hoje, considerar 100% de crescimento
+      crescimentoDiario = 100;
+    }
 
     // Ticket médio
     const ticketMedio = totalVendas > 0 ? valorTotalVendas / totalVendas : 0;
@@ -150,7 +160,7 @@ const renderDashboard = async (req, res) => {
       const [produtos, vendas, plataformas] = await Promise.all([
         Produto.getAll(id_empresa),
         Venda.getAll(id_empresa),
-        Plataforma.getVendasPorPlataforma()
+        Plataforma.getVendasPorPlataforma(id_empresa) // FILTRADO POR EMPRESA
       ]);
 
       const stats = {
@@ -256,13 +266,21 @@ const syncData = async (req, res) => {
 
 const getMetrics = async (req, res) => {
   try {
-    const metrics = await ServicoIntegracaoDados.calculateMetrics();
+    console.log('📊 Buscando estatísticas do dashboard...');
+    const id_empresa = req.id_empresa; // Vem do middleware de autenticação
+    console.log('🏢 Filtrando métricas para empresa ID:', id_empresa);
+
+    const metrics = await ServicoIntegracaoDados.calculateMetrics(id_empresa);
+
+    console.log('✅ Estatísticas calculadas:', metrics);
+
     res.json({
       success: true,
       data: metrics,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
+    console.error('❌ Erro ao buscar estatísticas:', error);
     res.status(500).json({
       success: false,
       error: error.message

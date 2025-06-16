@@ -26,7 +26,7 @@
         <button class="btn btn-primary" onclick="filtrarPeriodoFinanceiro('mes')" id="filtroMesPerfil">Este mês</button>
         <button class="btn btn-secondary" onclick="filtrarPeriodoFinanceiro('ultimo')" id="filtroUltimoPerfil">Último mês</button>
         <button class="btn btn-secondary" onclick="filtrarPeriodoFinanceiro('trimestre')" id="filtroTrimestre">Últimos 3 meses</button>
-        <button class="btn btn-secondary" onclick="abrirRelatorioFinanceiro()">📊 Relatório</button>
+        <button class="btn btn-secondary" onclick="abrirRelatorioFinanceiro()">Relatório</button>
       </div>
 
       <!-- Campos principais: "A pagar", "A receber", "Saldo" -->
@@ -192,22 +192,22 @@
       <div class="content-section">
         <div class="section-header">
           <h3 class="section-title">👤 Informações Pessoais</h3>
-          <button class="btn btn-secondary" onclick="editarInformacoesPessoais()">✏️ Editar</button>
+          <button class="btn btn-secondary" onclick="editarInformacoesPessoais()">Editar</button>
         </div>
         <div class="section-content">
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px;">
             <div>
               <div style="margin-bottom: 20px;">
                 <label style="font-size: 14px; color: #666; font-weight: 600;">Nome Completo</label>
-                <div style="font-size: 16px; color: #333; font-weight: bold;"><%= usuario.nome %></div>
+                <div style="font-size: 16px; color: #333; font-weight: bold;" data-field="nome"><%= usuario.nome %></div>
               </div>
               <div style="margin-bottom: 20px;">
                 <label style="font-size: 14px; color: #666; font-weight: 600;">Email</label>
-                <div style="font-size: 16px; color: #333;"><%= usuario.email %></div>
+                <div style="font-size: 16px; color: #333;" data-field="email"><%= usuario.email %></div>
               </div>
               <div style="margin-bottom: 20px;">
                 <label style="font-size: 14px; color: #666; font-weight: 600;">Telefone</label>
-                <div style="font-size: 16px; color: #333;"><%= usuario.telefone || 'Não informado' %></div>
+                <div style="font-size: 16px; color: #333;" data-field="telefone"><%= usuario.telefone || 'Não informado' %></div>
               </div>
             </div>
             <div>
@@ -227,9 +227,9 @@
           </div>
 
           <div style="display: flex; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
-            <button class="btn btn-primary" onclick="salvarAlteracoes()">💾 Salvar Alterações</button>
-            <button class="btn btn-secondary" onclick="alterarSenha()">🔒 Alterar Senha</button>
-            <button class="btn btn-secondary" onclick="baixarDados()">📄 Baixar Dados</button>
+            <button class="btn btn-primary" onclick="salvarAlteracoes()">Salvar Alterações</button>
+            <button class="btn btn-secondary" onclick="alterarSenha()">Alterar Senha</button>
+            <button class="btn btn-secondary" onclick="baixarDados()">Baixar Dados</button>
           </div>
         </div>
       </div>
@@ -494,13 +494,27 @@
 
       try {
         console.log('💾 Salvando conta bancária:', formData);
-        await new Promise(resolve => setTimeout(resolve, 1000));
 
-        alert('✅ Conta bancária adicionada com sucesso!');
-        fecharModalContaBancaria();
-        location.reload();
+        const response = await fetch('/api/perfil/conta-bancaria', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          mostrarToast('✅ Conta bancária adicionada com sucesso!', 'success');
+          fecharModalContaBancaria();
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          throw new Error(result.message || 'Erro ao salvar conta');
+        }
       } catch (error) {
-        alert('❌ Erro ao adicionar conta. Tente novamente.');
+        console.error('❌ Erro ao salvar conta:', error);
+        mostrarToast('❌ Erro ao adicionar conta: ' + error.message, 'error');
       }
     }
 
@@ -567,10 +581,36 @@
       if (modal) modal.remove();
     }
 
-    function salvarMetodoTransferencia(event) {
+    async function salvarMetodoTransferencia(event) {
       event.preventDefault();
-      alert('✅ Método de transferência adicionado com sucesso!');
-      fecharModalMetodoTransferencia();
+
+      const formData = {
+        tipo: document.getElementById('tipoTransferencia').value,
+        chave_pix: document.getElementById('chavePixInput').value
+      };
+
+      try {
+        const response = await fetch('/api/perfil/metodo-transferencia', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          mostrarToast('✅ Método de transferência adicionado com sucesso!', 'success');
+          fecharModalMetodoTransferencia();
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          throw new Error(result.message || 'Erro ao salvar método');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao salvar método:', error);
+        mostrarToast('❌ Erro ao adicionar método: ' + error.message, 'error');
+      }
     }
 
     // Adicionar link de pagamento
@@ -642,10 +682,36 @@
       if (modal) modal.remove();
     }
 
-    function salvarLinkPagamento(event) {
+    async function salvarLinkPagamento(event) {
       event.preventDefault();
-      alert('✅ Gateway de pagamento configurado com sucesso!');
-      fecharModalLinkPagamento();
+
+      const formData = {
+        gateway: document.getElementById('gatewayPagamento').value,
+        link: document.getElementById('linkPagamentoInput').value
+      };
+
+      try {
+        const response = await fetch('/api/perfil/link-pagamento', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          mostrarToast('✅ Gateway de pagamento configurado com sucesso!', 'success');
+          fecharModalLinkPagamento();
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          throw new Error(result.message || 'Erro ao salvar link');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao salvar link:', error);
+        mostrarToast('❌ Erro ao configurar gateway: ' + error.message, 'error');
+      }
     }
 
     // Editar informações pessoais
@@ -717,16 +783,75 @@
       if (modal) modal.remove();
     }
 
-    function salvarEdicaoPerfil(event) {
+    async function salvarEdicaoPerfil(event) {
       event.preventDefault();
-      alert('✅ Informações pessoais atualizadas com sucesso!');
-      fecharModalEditarPerfil();
-      location.reload();
+
+      const formData = {
+        nome: document.getElementById('nomeCompleto').value,
+        email: document.getElementById('emailUsuario').value,
+        telefone: document.getElementById('telefoneUsuario').value,
+        documento: document.getElementById('documentoUsuario').value
+      };
+
+      try {
+        console.log('💾 Salvando perfil:', formData);
+
+        // Enviar para API real
+        const response = await fetch('/api/usuarios/perfil', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('✅ Informações pessoais atualizadas com sucesso!');
+          fecharModalEditarPerfil();
+
+          // Atualizar dados na tela
+          document.querySelector('[data-field="nome"]').textContent = formData.nome;
+          document.querySelector('[data-field="email"]').textContent = formData.email;
+          document.querySelector('[data-field="telefone"]').textContent = formData.telefone || 'Não informado';
+        } else {
+          throw new Error(result.error || 'Erro desconhecido');
+        }
+
+      } catch (error) {
+        console.error('❌ Erro ao salvar perfil:', error);
+        alert('❌ Erro ao salvar informações: ' + error.message);
+      }
     }
 
     // Salvar alterações
-    function salvarAlteracoes() {
-      alert('💾 Salvando alterações...\n\nTodas as informações foram atualizadas com sucesso!');
+    async function salvarAlteracoes() {
+      try {
+        mostrarToast('💾 Salvando alterações...', 'info');
+
+        const response = await fetch('/api/perfil/salvar-alteracoes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            // Aqui você pode coletar dados dos campos do perfil
+            timestamp: new Date().toISOString()
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          mostrarToast('✅ Todas as informações foram atualizadas com sucesso!', 'success');
+        } else {
+          throw new Error(result.message || 'Erro ao salvar');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao salvar:', error);
+        mostrarToast('❌ Erro ao salvar alterações: ' + error.message, 'error');
+      }
     }
 
     // Alterar senha
@@ -830,12 +955,67 @@
     }
 
     // Baixar dados
-    function baixarDados() {
-      alert('📄 Preparando download dos seus dados...\n\nEm breve você receberá um arquivo ZIP com:\n• Dados pessoais\n• Histórico de vendas\n• Relatórios financeiros\n• Configurações da conta');
+    async function baixarDados() {
+      try {
+        mostrarToast('📄 Preparando download dos seus dados...', 'info');
 
-      setTimeout(() => {
-        alert('✅ Download iniciado!\n\nVerifique sua pasta de downloads.');
-      }, 3000);
+        const response = await fetch('/api/perfil/exportar-dados');
+        const result = await response.json();
+
+        if (result.success) {
+          // Criar arquivo JSON com os dados
+          const dadosCompletos = {
+            perfil: result.data.perfil,
+            vendas: result.data.vendas,
+            pedidos: result.data.pedidos,
+            produtos: result.data.produtos,
+            configuracoes: result.data.configuracoes,
+            exportado_em: new Date().toISOString()
+          };
+
+          const jsonContent = JSON.stringify(dadosCompletos, null, 2);
+
+          // Download do arquivo
+          const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+          const link = document.createElement('a');
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+          link.setAttribute('download', `meus_dados_pcr_labor_${new Date().toISOString().split('T')[0]}.json`);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          mostrarToast('✅ Download iniciado! Verifique sua pasta de downloads.', 'success');
+        } else {
+          throw new Error(result.message || 'Erro ao exportar dados');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao baixar dados:', error);
+        mostrarToast('❌ Erro ao baixar dados: ' + error.message, 'error');
+      }
+    }
+
+    // ===== FUNÇÃO TOAST =====
+    function mostrarToast(mensagem, tipo = 'info') {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: ${tipo === 'success' ? '#16a34a' : tipo === 'error' ? '#dc2626' : '#3b82f6'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 400px;
+        word-wrap: break-word;
+      `;
+      toast.textContent = mensagem;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
     }
 
     console.log('👤 Página de perfil carregada com funcionalidades completas');

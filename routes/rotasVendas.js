@@ -65,67 +65,6 @@ router.get('/api/fornecedores', async (req, res) => {
   }
 });
 
-// API endpoint para dados do dashboard
-router.get('/api/dashboard-stats', async (req, res) => {
-  try {
-    const id_empresa = req.id_empresa;
-
-    // Buscar dados reais do banco
-    const Produto = require('../models/modeloProdutos');
-    const Venda = require('../models/modeloVendas');
-    const Pedido = require('../models/modeloPedidos');
-
-    const [produtos, vendas, pedidos] = await Promise.all([
-      Produto.getAll(id_empresa).catch(() => []),
-      Venda.getAll(id_empresa).catch(() => []),
-      Pedido.getAll(id_empresa).catch(() => [])
-    ]);
-
-    // Calcular métricas
-    const totalProdutos = produtos.length;
-    const produtosEstoqueBaixo = produtos.filter(p => p.estoque_atual <= 10).length;
-    const totalVendas = vendas.length;
-    const totalPedidos = pedidos.length;
-    const valorTotalVendas = vendas.reduce((total, v) => total + parseFloat(v.valor_total || 0), 0);
-
-    // Agrupar vendas por plataforma
-    const vendasPorPlataforma = vendas.reduce((acc, venda) => {
-      const plataforma = venda.plataforma || 'Site Próprio';
-      if (!acc[plataforma]) {
-        acc[plataforma] = { nome: plataforma, valor_total: 0, total_vendas: 0, quantidade_total: 0 };
-      }
-      acc[plataforma].valor_total += parseFloat(venda.valor_total || 0);
-      acc[plataforma].total_vendas += 1;
-      acc[plataforma].quantidade_total += parseInt(venda.quantidade || 1);
-      return acc;
-    }, {});
-
-    // Garantir que todas as plataformas principais existam
-    const plataformasBase = ['Shopee', 'Mercado Livre', 'Site Próprio'];
-    plataformasBase.forEach(nome => {
-      if (!vendasPorPlataforma[nome]) {
-        vendasPorPlataforma[nome] = { nome, valor_total: 0, total_vendas: 0, quantidade_total: 0 };
-      }
-    });
-
-    const plataformas = Object.values(vendasPorPlataforma);
-
-    const stats = {
-      totalProdutos,
-      produtosEstoqueBaixo,
-      totalVendas,
-      totalPedidos,
-      valorTotalVendas,
-      plataformas
-    };
-
-    console.log('📊 API Dashboard Stats:', stats);
-    res.json(stats);
-
-  } catch (error) {
-    console.error('❌ Erro na API dashboard-stats:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
+// API duplicada removida - usar /api/dashboard-stats em rotasAPI.js
 
 module.exports = router;
