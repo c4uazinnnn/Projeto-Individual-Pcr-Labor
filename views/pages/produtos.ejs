@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="app-container">
-    <%- include('../components/navbar') %>
+    <%- include('../components/cabecalho') %>
 
     <main class="main-content">
       <div class="page-header">
@@ -56,16 +56,15 @@
           </div>
         </div>
 
-        <!-- Filtros e Ações -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
-          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="btn btn-secondary" onclick="filtrarProdutos('todos')" id="filtroTodos">Todos</button>
-            <button class="btn btn-secondary" onclick="filtrarProdutos('estoque_baixo')" id="filtroEstoqueBaixo">Estoque Baixo</button>
-            <button class="btn btn-secondary" onclick="filtrarProdutos('normal')" id="filtroNormal">Normal</button>
-            <button class="btn btn-secondary" onclick="abrirFiltroAvancadoProdutos()">🔍 Filtros</button>
-          </div>
-          <div style="display: flex; gap: 10px;">
-            <button class="btn btn-secondary" onclick="exportarProdutos()">📄 Exportar</button>
+        <!-- Filtros Unificados -->
+        <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+          <%- include('../components/filtroUnificado') %>
+
+          <!-- Ações Específicas -->
+          <div style="display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="baixarTemplateExcel()">📄 Template Excel</button>
+            <button class="btn btn-secondary" onclick="importarProdutosExcel()">📥 Importar Excel</button>
+            <button class="btn btn-secondary" onclick="exportarProdutos()">📤 Exportar</button>
             <button class="btn btn-primary" onclick="novoProduto()">+ Novo Produto</button>
           </div>
         </div>
@@ -80,7 +79,9 @@
               <tr>
                 <th>Nome</th>
                 <th>SKU</th>
-                <th>Preço</th>
+                <th>Preço Venda</th>
+                <th>Preço Base</th>
+                <th>Lucro</th>
                 <th>Estoque</th>
                 <th>Status</th>
                 <th>Ações</th>
@@ -88,11 +89,28 @@
             </thead>
             <tbody>
               <% if (produtos && produtos.length > 0) { %>
-                <% produtos.forEach(produto => { %>
+                <% produtos.forEach(produto => {
+                  const precoVenda = parseFloat(produto.preco || 0);
+                  const precoBase = parseFloat(produto.preco_base || 0);
+                  const custoFrete = parseFloat(produto.custo_frete || 0);
+                  const lucroAbsoluto = precoVenda - precoBase - custoFrete;
+                  const lucroPercentual = precoBase > 0 ? ((lucroAbsoluto / precoBase) * 100) : 0;
+                %>
                   <tr>
                     <td><%= produto.nome %></td>
                     <td><%= produto.sku %></td>
-                    <td>R$ <%= parseFloat(produto.preco).toFixed(2) %></td>
+                    <td>R$ <%= precoVenda.toFixed(2) %></td>
+                    <td>R$ <%= precoBase.toFixed(2) %></td>
+                    <td>
+                      <div style="display: flex; flex-direction: column; align-items: center;">
+                        <span style="font-weight: bold; color: <%= lucroAbsoluto >= 0 ? '#28a745' : '#dc3545' %>;">
+                          R$ <%= lucroAbsoluto.toFixed(2) %>
+                        </span>
+                        <small style="color: #666; font-size: 11px;">
+                          <%= lucroPercentual.toFixed(1) %>%
+                        </small>
+                      </div>
+                    </td>
                     <td><%= produto.estoque_atual %></td>
                     <td>
                       <% if (produto.estoque_atual <= 10) { %>
@@ -104,13 +122,13 @@
                     <td>
                       <div style="display: flex; gap: 5px;">
                         <button class="btn btn-primary" onclick="editarProduto(<%= produto.id_produto %>)" style="padding: 6px 12px; font-size: 12px;">
-                          ✏️ Editar
+                          Editar
                         </button>
                         <button class="btn btn-secondary" onclick="verDetalhesProduto(<%= produto.id_produto %>)" style="padding: 6px 12px; font-size: 12px;">
-                          👁️ Ver
+                          Ver
                         </button>
                         <button class="btn btn-danger" onclick="excluirProduto(<%= produto.id_produto %>)" style="padding: 6px 12px; font-size: 12px; background: #dc3545;">
-                          🗑️
+                          Excluir
                         </button>
                       </div>
                     </td>
@@ -118,7 +136,7 @@
                 <% }) %>
               <% } else { %>
                 <tr>
-                  <td colspan="6" style="text-align: center; color: #666; padding: 40px;">
+                  <td colspan="8" style="text-align: center; color: #666; padding: 40px;">
                     Nenhum produto encontrado
                   </td>
                 </tr>
@@ -252,6 +270,10 @@
 
     // ===== NOVO PRODUTO =====
     function novoProduto() {
+      abrirModalNovoProduto();
+    }
+
+    function abrirModalNovoProduto() {
       const modal = document.createElement('div');
       modal.id = 'modalNovoProduto';
       modal.style.cssText = `
@@ -268,53 +290,78 @@
       `;
 
       modal.innerHTML = `
-        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-            <h2 style="margin: 0; color: #333;">📦 Novo Produto</h2>
+        <div style="background: white; border-radius: 12px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+          <div style="padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; color: #333;">🧪 Novo Produto</h3>
             <button onclick="fecharModalNovoProduto()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
           </div>
 
-          <form id="formNovoProduto" onsubmit="criarNovoProduto(event)">
-            <div style="display: grid; gap: 20px;">
-
-              <!-- Nome -->
+          <form id="formNovoProduto" style="padding: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
               <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📝 Nome do Produto</label>
-                <input type="text" id="nomeInput" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" placeholder="Ex: Kit PCR COVID-19">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nome do Produto *</label>
+                <input type="text" id="produtoNome" placeholder="Ex: Kit Lula Premium" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
               </div>
-
-              <!-- SKU -->
               <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">🏷️ SKU</label>
-                <input type="text" id="skuInput" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" placeholder="Ex: PCR-COVID-001">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">SKU *</label>
+                <input type="text" id="produtoSku" placeholder="Ex: KIT-LULA-001" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
               </div>
-
-              <!-- Preço -->
-              <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">💰 Preço (R$)</label>
-                <input type="number" id="precoInput" step="0.01" min="0" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" placeholder="Ex: 89.90">
-              </div>
-
-              <!-- Estoque -->
-              <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📊 Estoque Inicial</label>
-                <input type="number" id="estoqueInput" min="0" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" placeholder="Ex: 100">
-              </div>
-
-              <!-- Descrição -->
-              <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📄 Descrição</label>
-                <textarea id="descricaoInput" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; min-height: 80px;" placeholder="Descrição detalhada do produto..."></textarea>
-              </div>
-
             </div>
 
-            <div style="display: flex; gap: 15px; margin-top: 30px;">
-              <button type="button" onclick="fecharModalNovoProduto()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Preço Base *</label>
+                <input type="number" id="produtoPrecoBase" placeholder="0.00" step="0.01" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Custo Frete</label>
+                <input type="number" id="produtoCustoFrete" placeholder="0.00" step="0.01"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Preço Venda *</label>
+                <input type="number" id="produtoPrecoVenda" placeholder="0.00" step="0.01" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Estoque Inicial</label>
+                <input type="number" id="produtoEstoque" placeholder="0" min="0"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Estoque Mínimo</label>
+                <input type="number" id="produtoEstoqueMinimo" placeholder="10" min="0"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+              </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold;">Descrição</label>
+              <textarea id="produtoDescricao" rows="3" placeholder="Descrição detalhada do produto..."
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; resize: vertical;"></textarea>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <h4 style="margin: 0 0 10px 0; color: #333;">💰 Cálculo de Lucro</h4>
+              <div id="calculoLucro" style="font-size: 14px; color: #666;">
+                Preencha os preços para ver o cálculo automático
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+              <button type="button" onclick="fecharModalNovoProduto()"
+                      style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer;">
                 Cancelar
               </button>
-              <button type="submit" style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
-                📦 Criar Produto
+              <button type="submit"
+                      style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                Criar Produto
               </button>
             </div>
           </form>
@@ -322,6 +369,15 @@
       `;
 
       document.body.appendChild(modal);
+      document.getElementById('produtoNome').focus();
+
+      // Adicionar eventos para cálculo automático
+      ['produtoPrecoBase', 'produtoCustoFrete', 'produtoPrecoVenda'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calcularLucroAutomatico);
+      });
+
+      // Adicionar evento de submit
+      document.getElementById('formNovoProduto').addEventListener('submit', criarNovoProduto);
     }
 
     function fecharModalNovoProduto() {
@@ -329,22 +385,56 @@
       if (modal) modal.remove();
     }
 
+    function calcularLucroAutomatico() {
+      const precoBase = parseFloat(document.getElementById('produtoPrecoBase').value) || 0;
+      const custoFrete = parseFloat(document.getElementById('produtoCustoFrete').value) || 0;
+      const precoVenda = parseFloat(document.getElementById('produtoPrecoVenda').value) || 0;
+
+      const lucroAbsoluto = precoVenda - precoBase - custoFrete;
+      const lucroPercentual = precoBase > 0 ? ((lucroAbsoluto / precoBase) * 100) : 0;
+
+      const calculoDiv = document.getElementById('calculoLucro');
+      if (calculoDiv) {
+        calculoDiv.innerHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <strong>Lucro Absoluto:</strong><br>
+              <span style="color: ${lucroAbsoluto >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                R$ ${lucroAbsoluto.toFixed(2)}
+              </span>
+            </div>
+            <div>
+              <strong>Lucro Percentual:</strong><br>
+              <span style="color: ${lucroPercentual >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                ${lucroPercentual.toFixed(1)}%
+              </span>
+            </div>
+          </div>
+        `;
+      }
+    }
+
     async function criarNovoProduto(event) {
       event.preventDefault();
 
-      const formData = {
-        nome: document.getElementById('nomeInput').value,
-        sku: document.getElementById('skuInput').value,
-        preco: parseFloat(document.getElementById('precoInput').value),
-        estoque_atual: parseInt(document.getElementById('estoqueInput').value),
-        descricao: document.getElementById('descricaoInput').value
+      const produtoData = {
+        nome: document.getElementById('produtoNome').value,
+        sku: document.getElementById('produtoSku').value,
+        preco_base: parseFloat(document.getElementById('produtoPrecoBase').value),
+        custo_frete: parseFloat(document.getElementById('produtoCustoFrete').value) || 0,
+        preco: parseFloat(document.getElementById('produtoPrecoVenda').value),
+        estoque_atual: parseInt(document.getElementById('produtoEstoque').value) || 0,
+        estoque_minimo: parseInt(document.getElementById('produtoEstoqueMinimo').value) || 10,
+        descricao: document.getElementById('produtoDescricao').value
       };
 
       try {
         const response = await fetch('/api/produtos', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(produtoData)
         });
 
         const result = await response.json();
@@ -352,18 +442,36 @@
         if (result.success) {
           alert('✅ Produto criado com sucesso!');
           fecharModalNovoProduto();
-          location.reload();
+          location.reload(); // Recarregar página para mostrar novo produto
         } else {
-          alert('❌ Erro ao criar produto: ' + (result.error || 'Erro desconhecido'));
+          throw new Error(result.error || 'Erro ao criar produto');
         }
       } catch (error) {
         console.error('Erro ao criar produto:', error);
-        alert('❌ Erro ao criar produto. Tente novamente.');
+        alert('❌ Erro ao criar produto: ' + error.message);
       }
     }
 
     // ===== EDITAR PRODUTO =====
-    function editarProduto(id) {
+    async function editarProduto(id) {
+      try {
+        // Buscar dados do produto
+        const response = await fetch(`/api/produtos/${id}`);
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.error || 'Erro ao carregar produto');
+        }
+
+        const produto = result.data;
+        abrirModalEditarProduto(produto);
+      } catch (error) {
+        console.error('Erro ao carregar produto:', error);
+        alert('❌ Erro ao carregar produto: ' + error.message);
+      }
+    }
+
+    function abrirModalEditarProduto(produto) {
       const modal = document.createElement('div');
       modal.id = 'modalEditarProduto';
       modal.style.cssText = `
@@ -380,59 +488,80 @@
       `;
 
       modal.innerHTML = `
-        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-            <h2 style="margin: 0; color: #333;">✏️ Editar Produto #${id}</h2>
+        <div style="background: white; border-radius: 12px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+          <div style="padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; color: #333;">✏️ Editar Produto</h3>
             <button onclick="fecharModalEditarProduto()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
           </div>
 
-          <form id="formEditarProduto" onsubmit="salvarEdicaoProduto(event, ${id})">
-            <div style="display: grid; gap: 20px;">
+          <form id="formEditarProduto" style="padding: 20px;">
+            <input type="hidden" id="editProdutoId" value="${produto.id_produto}">
 
-              <!-- Nome -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
               <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📝 Nome do Produto</label>
-                <input type="text" id="nomeEditProduto" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="Kit PCR COVID-19">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nome do Produto *</label>
+                <input type="text" id="editProdutoNome" value="${produto.nome}" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
               </div>
-
-              <!-- SKU -->
               <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">🏷️ SKU</label>
-                <input type="text" id="skuEditProduto" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="PCR-COVID-001">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">SKU *</label>
+                <input type="text" id="editProdutoSku" value="${produto.sku}" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
               </div>
-
-              <!-- Preço -->
-              <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">💰 Preço (R$)</label>
-                <input type="number" id="precoEditProduto" step="0.01" min="0" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="89.90">
-              </div>
-
-              <!-- Estoque Atual -->
-              <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📊 Estoque Atual</label>
-                <input type="number" id="estoqueEditProduto" min="0" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="150">
-              </div>
-
-              <!-- Estoque Mínimo -->
-              <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">⚠️ Estoque Mínimo</label>
-                <input type="number" id="estoqueMinEditProduto" min="0" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" value="10">
-              </div>
-
-              <!-- Descrição -->
-              <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">📄 Descrição</label>
-                <textarea id="descricaoEditProduto" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; min-height: 80px;" placeholder="Descrição detalhada do produto...">Kit para diagnóstico de COVID-19 por PCR</textarea>
-              </div>
-
             </div>
 
-            <div style="display: flex; gap: 15px; margin-top: 30px;">
-              <button type="button" onclick="fecharModalEditarProduto()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Preço Base *</label>
+                <input type="number" id="editProdutoPrecoBase" value="${produto.preco_base || 0}" step="0.01" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Custo Frete</label>
+                <input type="number" id="editProdutoCustoFrete" value="${produto.custo_frete || 0}" step="0.01"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Preço Venda *</label>
+                <input type="number" id="editProdutoPrecoVenda" value="${produto.preco}" step="0.01" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Estoque Atual</label>
+                <input type="number" id="editProdutoEstoque" value="${produto.estoque_atual}" min="0"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Estoque Mínimo</label>
+                <input type="number" id="editProdutoEstoqueMinimo" value="${produto.estoque_minimo || 10}" min="0"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+              </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold;">Descrição</label>
+              <textarea id="editProdutoDescricao" rows="3"
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; resize: vertical;">${produto.descricao || ''}</textarea>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <h4 style="margin: 0 0 10px 0; color: #333;">💰 Cálculo de Lucro</h4>
+              <div id="editCalculoLucro" style="font-size: 14px; color: #666;">
+                Calculando...
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+              <button type="button" onclick="fecharModalEditarProduto()"
+                      style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer;">
                 Cancelar
               </button>
-              <button type="submit" style="flex: 1; padding: 12px; background: #018820; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
-                ✅ Salvar Alterações
+              <button type="submit"
+                      style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                Salvar Alterações
               </button>
             </div>
           </form>
@@ -440,6 +569,17 @@
       `;
 
       document.body.appendChild(modal);
+
+      // Calcular lucro inicial
+      calcularLucroEditarAutomatico();
+
+      // Adicionar eventos para cálculo automático
+      ['editProdutoPrecoBase', 'editProdutoCustoFrete', 'editProdutoPrecoVenda'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calcularLucroEditarAutomatico);
+      });
+
+      // Adicionar evento de submit
+      document.getElementById('formEditarProduto').addEventListener('submit', salvarEdicaoProduto);
     }
 
     function fecharModalEditarProduto() {
@@ -447,44 +587,101 @@
       if (modal) modal.remove();
     }
 
-    async function salvarEdicaoProduto(event, id) {
+    function calcularLucroEditarAutomatico() {
+      const precoBase = parseFloat(document.getElementById('editProdutoPrecoBase').value) || 0;
+      const custoFrete = parseFloat(document.getElementById('editProdutoCustoFrete').value) || 0;
+      const precoVenda = parseFloat(document.getElementById('editProdutoPrecoVenda').value) || 0;
+
+      const lucroAbsoluto = precoVenda - precoBase - custoFrete;
+      const lucroPercentual = precoBase > 0 ? ((lucroAbsoluto / precoBase) * 100) : 0;
+
+      const calculoDiv = document.getElementById('editCalculoLucro');
+      if (calculoDiv) {
+        calculoDiv.innerHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <strong>Lucro Absoluto:</strong><br>
+              <span style="color: ${lucroAbsoluto >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                R$ ${lucroAbsoluto.toFixed(2)}
+              </span>
+            </div>
+            <div>
+              <strong>Lucro Percentual:</strong><br>
+              <span style="color: ${lucroPercentual >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                ${lucroPercentual.toFixed(1)}%
+              </span>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    async function salvarEdicaoProduto(event) {
       event.preventDefault();
 
-      const formData = {
-        nome: document.getElementById('nomeEditProduto').value,
-        sku: document.getElementById('skuEditProduto').value,
-        preco: parseFloat(document.getElementById('precoEditProduto').value),
-        estoque_atual: parseInt(document.getElementById('estoqueEditProduto').value),
-        estoque_minimo: parseInt(document.getElementById('estoqueMinEditProduto').value),
-        descricao: document.getElementById('descricaoEditProduto').value
+      const id = document.getElementById('editProdutoId').value;
+      const produtoData = {
+        nome: document.getElementById('editProdutoNome').value,
+        sku: document.getElementById('editProdutoSku').value,
+        preco_base: parseFloat(document.getElementById('editProdutoPrecoBase').value),
+        custo_frete: parseFloat(document.getElementById('editProdutoCustoFrete').value) || 0,
+        preco: parseFloat(document.getElementById('editProdutoPrecoVenda').value),
+        estoque_atual: parseInt(document.getElementById('editProdutoEstoque').value),
+        estoque_minimo: parseInt(document.getElementById('editProdutoEstoqueMinimo').value) || 10,
+        descricao: document.getElementById('editProdutoDescricao').value
       };
 
       try {
-        console.log('✏️ Editando produto:', id, formData);
-
         const response = await fetch(`/api/produtos/${id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(produtoData)
         });
 
         const result = await response.json();
 
         if (result.success) {
-          alert('✅ Produto editado com sucesso!\n\nTodas as alterações foram salvas.');
+          alert('✅ Produto atualizado com sucesso!');
           fecharModalEditarProduto();
-          location.reload();
+          location.reload(); // Recarregar página para mostrar alterações
         } else {
-          alert('❌ Erro ao editar produto: ' + (result.error || 'Erro desconhecido'));
+          throw new Error(result.error || 'Erro ao atualizar produto');
         }
       } catch (error) {
-        console.error('❌ Erro ao editar produto:', error);
-        alert('❌ Erro ao editar produto. Tente novamente.');
+        console.error('Erro ao atualizar produto:', error);
+        alert('❌ Erro ao atualizar produto: ' + error.message);
       }
     }
 
     // ===== VER DETALHES =====
-    function verDetalhesProduto(id) {
+    async function verDetalhesProduto(id) {
+      try {
+        // Buscar dados do produto
+        const response = await fetch(`/api/produtos/${id}`);
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.error || 'Erro ao carregar produto');
+        }
+
+        const produto = result.data;
+        abrirModalDetalhesProduto(produto);
+      } catch (error) {
+        console.error('Erro ao carregar produto:', error);
+        alert('❌ Erro ao carregar produto: ' + error.message);
+      }
+    }
+
+    function abrirModalDetalhesProduto(produto) {
+      const precoVenda = parseFloat(produto.preco || 0);
+      const precoBase = parseFloat(produto.preco_base || 0);
+      const custoFrete = parseFloat(produto.custo_frete || 0);
+      const lucroAbsoluto = precoVenda - precoBase - custoFrete;
+      const lucroPercentual = precoBase > 0 ? ((lucroAbsoluto / precoBase) * 100) : 0;
+      const valorEstoque = precoVenda * produto.estoque_atual;
+
       const modal = document.createElement('div');
       modal.id = 'modalDetalhesProduto';
       modal.style.cssText = `
@@ -501,65 +698,111 @@
       `;
 
       modal.innerHTML = `
-        <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-            <h2 style="margin: 0; color: #333;">👁️ Detalhes do Produto #${id}</h2>
-            <button onclick="fecharDetalhesProduto()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+        <div style="background: white; border-radius: 12px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
+          <div style="padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; color: #333;">👁️ Detalhes do Produto</h3>
+            <button onclick="fecharModalDetalhesProduto()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
           </div>
 
-          <div style="display: grid; gap: 20px;">
-
-            <!-- Informações principais -->
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
-              <h3 style="margin: 0 0 15px; color: #333;">📦 Informações Básicas</h3>
-              <div style="display: grid; gap: 10px;">
-                <div><strong>Nome:</strong> Kit PCR COVID-19</div>
-                <div><strong>SKU:</strong> PCR-COVID-001</div>
-                <div><strong>Preço:</strong> R$ 89,90</div>
-                <div><strong>Estoque Atual:</strong> 150 unidades</div>
-              </div>
-            </div>
-
-            <!-- Estatísticas -->
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-              <div style="background: #f0fff4; padding: 15px; border-radius: 8px; border-left: 4px solid #16a34a;">
-                <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Vendas Totais</div>
-                <div style="font-size: 24px; font-weight: bold; color: #16a34a;">245 unidades</div>
-              </div>
-              <div style="background: #f0fff4; padding: 15px; border-radius: 8px; border-left: 4px solid #16a34a;">
-                <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Receita Total</div>
-                <div style="font-size: 24px; font-weight: bold; color: #16a34a;">R$ 22.025,50</div>
-              </div>
-            </div>
-
-            <!-- Histórico recente -->
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
-              <h3 style="margin: 0 0 15px; color: #333;">📅 Movimentações Recentes</h3>
-              <div style="display: grid; gap: 10px;">
-                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
-                  <span>15/12/2024 - Venda</span>
-                  <span style="color: #dc3545;">-5 unidades</span>
+          <div style="padding: 20px;">
+            <!-- Informações básicas -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h4 style="margin: 0 0 15px 0; color: #333;">📋 Informações Básicas</h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                  <strong>Nome:</strong><br>
+                  <span style="color: #666;">${produto.nome}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
-                  <span>14/12/2024 - Reposição</span>
-                  <span style="color: #16a34a;">+50 unidades</span>
+                <div>
+                  <strong>SKU:</strong><br>
+                  <span style="color: #666;">${produto.sku}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                  <span>13/12/2024 - Venda</span>
-                  <span style="color: #dc3545;">-3 unidades</span>
+                <div>
+                  <strong>ID:</strong><br>
+                  <span style="color: #666;">#${produto.id_produto}</span>
+                </div>
+                <div>
+                  <strong>Data Cadastro:</strong><br>
+                  <span style="color: #666;">${new Date(produto.created_at).toLocaleDateString('pt-BR')}</span>
                 </div>
               </div>
             </div>
 
-          </div>
+            <!-- Preços e lucro -->
+            <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h4 style="margin: 0 0 15px 0; color: #333;">💰 Preços e Lucro</h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div>
+                  <strong>Preço Base:</strong><br>
+                  <span style="color: #666;">R$ ${precoBase.toFixed(2)}</span>
+                </div>
+                <div>
+                  <strong>Custo Frete:</strong><br>
+                  <span style="color: #666;">R$ ${custoFrete.toFixed(2)}</span>
+                </div>
+                <div>
+                  <strong>Preço Venda:</strong><br>
+                  <span style="color: #666;">R$ ${precoVenda.toFixed(2)}</span>
+                </div>
+                <div>
+                  <strong>Lucro Absoluto:</strong><br>
+                  <span style="color: ${lucroAbsoluto >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                    R$ ${lucroAbsoluto.toFixed(2)}
+                  </span>
+                </div>
+                <div>
+                  <strong>Lucro %:</strong><br>
+                  <span style="color: ${lucroPercentual >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                    ${lucroPercentual.toFixed(1)}%
+                  </span>
+                </div>
+                <div>
+                  <strong>Margem:</strong><br>
+                  <span style="color: #666;">${precoVenda > 0 ? ((lucroAbsoluto / precoVenda) * 100).toFixed(1) : 0}%</span>
+                </div>
+              </div>
+            </div>
 
-          <div style="display: flex; gap: 15px; margin-top: 30px;">
-            <button onclick="fecharDetalhesProduto()" style="flex: 1; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer;">
-              Fechar
-            </button>
-            <button onclick="editarProduto(${id})" style="flex: 1; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">
-              ✏️ Editar
-            </button>
+            <!-- Estoque -->
+            <div style="background: #f3e5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h4 style="margin: 0 0 15px 0; color: #333;">📦 Estoque</h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div>
+                  <strong>Estoque Atual:</strong><br>
+                  <span style="color: ${produto.estoque_atual <= (produto.estoque_minimo || 10) ? '#dc3545' : '#28a745'}; font-weight: bold;">
+                    ${produto.estoque_atual} unidades
+                  </span>
+                </div>
+                <div>
+                  <strong>Estoque Mínimo:</strong><br>
+                  <span style="color: #666;">${produto.estoque_minimo || 10} unidades</span>
+                </div>
+                <div>
+                  <strong>Valor em Estoque:</strong><br>
+                  <span style="color: #666; font-weight: bold;">R$ ${valorEstoque.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Descrição -->
+            ${produto.descricao ? `
+              <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 15px 0; color: #333;">📝 Descrição</h4>
+                <p style="margin: 0; color: #666; line-height: 1.6;">${produto.descricao}</p>
+              </div>
+            ` : ''}
+
+            <!-- Ações -->
+            <div style="display: flex; gap: 10px; justify-content: center;">
+              <button onclick="editarProduto(${produto.id_produto}); fecharModalDetalhesProduto();"
+                      style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                ✏️ Editar
+              </button>
+              <button onclick="fecharModalDetalhesProduto()"
+                      style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                Fechar
+              </button>
+            </div>
           </div>
         </div>
       `;
@@ -567,48 +810,219 @@
       document.body.appendChild(modal);
     }
 
-    function fecharDetalhesProduto() {
+    function fecharModalDetalhesProduto() {
       const modal = document.getElementById('modalDetalhesProduto');
       if (modal) modal.remove();
     }
 
     // ===== EXCLUIR PRODUTO =====
     async function excluirProduto(id) {
-      if (confirm('⚠️ Tem certeza que deseja excluir este produto?\n\nEsta ação não pode ser desfeita.')) {
-        try {
-          console.log(`🗑️ Excluindo produto #${id}`);
+      if (!confirm('❌ Tem certeza que deseja excluir este produto?\n\nEsta ação não pode ser desfeita.')) {
+        return;
+      }
 
-          const response = await fetch(`/api/produtos/${id}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' }
+      try {
+        const response = await fetch(`/api/produtos/${id}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('✅ Produto excluído com sucesso!');
+          location.reload(); // Recarregar página
+        } else {
+          throw new Error(result.error || 'Erro ao excluir produto');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao excluir produto:', error);
+        alert('❌ Erro ao excluir produto: ' + error.message);
+      }
+    }
+
+    // ===== EXPORTAR =====
+    async function exportarProdutos() {
+      try {
+        console.log('📊 Exportando produtos...');
+
+        const response = await fetch('/api/produtos/exportar');
+        const result = await response.json();
+
+        if (result.success) {
+          // Converter dados para CSV
+          const dados = result.data;
+          const headers = Object.keys(dados[0]);
+          const csvContent = [
+            headers.join(','),
+            ...dados.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+          ].join('\n');
+
+          // Download do arquivo
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const link = document.createElement('a');
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+          link.setAttribute('download', `produtos_${new Date().toISOString().split('T')[0]}.csv`);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          alert(`✅ ${dados.length} produtos exportados com sucesso!`);
+        } else {
+          throw new Error(result.error || 'Erro ao exportar');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao exportar:', error);
+        alert('❌ Erro ao exportar produtos: ' + error.message);
+      }
+    }
+
+    // ===== IMPORTAR =====
+    function importarProdutosExcel() {
+      // Criar input de arquivo
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.csv,.xlsx,.xls';
+      input.style.display = 'none';
+
+      input.onchange = async function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+          console.log('📥 Importando arquivo:', file.name);
+          alert('📥 Processando arquivo...');
+
+          // Ler arquivo CSV
+          const text = await file.text();
+          const lines = text.split('\n').filter(line => line.trim());
+
+          if (lines.length < 2) {
+            throw new Error('Arquivo deve ter pelo menos uma linha de cabeçalho e uma linha de dados');
+          }
+
+          const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+          const produtos = [];
+
+          for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',').map(v => v.replace(/"/g, '').trim());
+            const produto = { linha: i + 1 };
+
+            headers.forEach((header, index) => {
+              const value = values[index] || '';
+              switch(header.toLowerCase()) {
+                case 'nome':
+                  produto.nome = value;
+                  break;
+                case 'sku':
+                  produto.sku = value;
+                  break;
+                case 'preco':
+                case 'preço':
+                case 'preco_venda':
+                  produto.preco = parseFloat(value) || 0;
+                  break;
+                case 'preco_base':
+                case 'preço_base':
+                  produto.preco_base = parseFloat(value) || 0;
+                  break;
+                case 'custo_frete':
+                  produto.custo_frete = parseFloat(value) || 0;
+                  break;
+                case 'estoque':
+                case 'estoque_atual':
+                  produto.estoque_atual = parseInt(value) || 0;
+                  break;
+                case 'estoque_minimo':
+                  produto.estoque_minimo = parseInt(value) || 10;
+                  break;
+                case 'descricao':
+                case 'descrição':
+                  produto.descricao = value;
+                  break;
+              }
+            });
+
+            if (produto.nome && produto.sku) {
+              produtos.push(produto);
+            }
+          }
+
+          if (produtos.length === 0) {
+            throw new Error('Nenhum produto válido encontrado no arquivo');
+          }
+
+          // Enviar para API
+          const response = await fetch('/api/produtos/importar-csv', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ produtos })
           });
 
           const result = await response.json();
 
           if (result.success) {
-            alert('✅ Produto excluído com sucesso!');
-            location.reload();
+            const { sucesso, erros, detalhes } = result.data;
+
+            let mensagem = `📊 IMPORTAÇÃO CONCLUÍDA:\n\n`;
+            mensagem += `✅ Sucessos: ${sucesso}\n`;
+            mensagem += `❌ Erros: ${erros}\n\n`;
+
+            if (erros > 0) {
+              mensagem += `DETALHES DOS ERROS:\n`;
+              detalhes.filter(d => d.erro).slice(0, 5).forEach(d => {
+                mensagem += `• Linha ${d.linha}: ${d.erro}\n`;
+              });
+              if (erros > 5) {
+                mensagem += `... e mais ${erros - 5} erros\n`;
+              }
+            }
+
+            alert(mensagem);
+
+            if (sucesso > 0) {
+              location.reload(); // Recarregar página
+            }
           } else {
-            alert('❌ Erro ao excluir produto: ' + (result.error || 'Erro desconhecido'));
+            throw new Error(result.error || 'Erro na importação');
           }
+
         } catch (error) {
-          console.error('❌ Erro ao excluir produto:', error);
-          alert('❌ Erro ao excluir produto. Tente novamente.');
+          console.error('❌ Erro na importação:', error);
+          alert('❌ Erro ao importar arquivo:\n\n' + error.message + '\n\nFormato esperado (CSV):\nnome,sku,preco,preco_base,estoque_atual');
         }
-      }
+      };
+
+      document.body.appendChild(input);
+      input.click();
+      document.body.removeChild(input);
     }
 
-    // ===== EXPORTAR PRODUTOS =====
-    function exportarProdutos() {
-      alert('📄 Exportando produtos...\n\nArquivo Excel será gerado com todos os produtos.');
-    }
+    // ===== TEMPLATE =====
+    function baixarTemplateExcel() {
+      const templateData = [
+        ['nome', 'sku', 'preco', 'preco_base', 'custo_frete', 'estoque_atual', 'estoque_minimo', 'descricao'],
+        ['Kit Lula Premium', 'KIT-LULA-001', '89.90', '45.00', '8.50', '50', '10', 'Kit completo para pesca de lula'],
+        ['Vara Telescópica 3m', 'VARA-TEL-3M', '129.90', '65.00', '12.00', '25', '5', 'Vara telescópica resistente 3 metros']
+      ];
 
-    // ===== FILTRO AVANÇADO =====
-    function abrirFiltroAvancadoProdutos() {
-      alert('🔍 Filtros avançados para produtos\n\nModal com filtros por categoria, preço, estoque, etc.');
-    }
+      const csvContent = templateData.map(row =>
+        row.map(cell => `"${cell}"`).join(',')
+      ).join('\n');
 
-    console.log('📦 Página de produtos carregada com funcionalidades completas');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'template_produtos.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      alert('📄 Template baixado com sucesso!\n\nPreencha o arquivo CSV e importe novamente.');
+    }
   </script>
 </body>
 </html>

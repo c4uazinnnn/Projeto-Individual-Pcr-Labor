@@ -4,19 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= pageTitle %></title>
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/estilos.css">
 </head>
 <body>
   <!-- Inclui o cabeçalho como um partial -->
-  <%- include('../components/header') %>
+  <%- include('../components/cabecalho') %>
 
-  <main>
-    <!-- Renderiza o conteúdo da página específica -->
-    <%- body %>
-  </main>
+  <div class="main-layout">
+    <main class="content-area">
+      <!-- Renderiza o conteúdo da página específica -->
+      <%- body %>
+    </main>
 
-  <footer>
-    &copy; 2025 PCR-Labor. Todos os direitos reservados.
+    <!-- Lateral direita com Tarefas, Calendário e Pergunte para IA -->
+    <%- include('../components/barraLateral') %>
+  </div>
+
+  <footer style="text-align: center; padding: 20px; color: #666; font-size: 14px;">
+    &copy; 2025 PCR Labor. Todos os direitos reservados.
   </footer>
 </body>
 </html>

@@ -73,10 +73,10 @@
           flex-wrap: wrap;
           gap: 15px;
         ">
-          <button class="btn btn-primary" onclick="sincronizarTodasPlataformas()">🔄 Sincronizar Todas</button>
-          <button class="btn btn-secondary" onclick="exportarRelatorio()">📄 Exportar Relatório</button>
-          <button class="btn btn-secondary" onclick="configurarPlataformas()">⚙️ Configurações</button>
-          <button class="btn btn-secondary" onclick="analisarPerformance()">📊 Análise Detalhada</button>
+          <button class="btn btn-primary" onclick="sincronizarTodasPlataformas()">Sincronizar Todas</button>
+          <button class="btn btn-secondary" onclick="exportarRelatorio()">Exportar Relatório</button>
+          <button class="btn btn-secondary" onclick="gerenciarPlataformas()">Gerenciar Plataformas</button>
+          <button class="btn btn-secondary" onclick="analisarPerformance()">Análise Detalhada</button>
         </div>
       </div>
 
@@ -91,7 +91,7 @@
         <div class="content-section">
           <div class="section-header">
             <h3 class="section-title" style="color: #ff6600;">🛍️ Shopee</h3>
-            <button class="btn btn-secondary" onclick="sincronizarShopee()">🔄 Sync</button>
+            <button class="btn btn-secondary" onclick="sincronizarShopee()">Sync</button>
           </div>
           <div class="section-content">
             <div style="display: grid; gap: 15px;">
@@ -134,7 +134,7 @@
         <div class="content-section">
           <div class="section-header">
             <h3 class="section-title" style="color: #3483fa;">🛒 Mercado Livre</h3>
-            <button class="btn btn-secondary" onclick="sincronizarMercadoLivre()">🔄 Sync</button>
+            <button class="btn btn-secondary" onclick="sincronizarMercadoLivre()">Sync</button>
           </div>
           <div class="section-content">
             <div style="display: grid; gap: 15px;">
@@ -177,7 +177,7 @@
         <div class="content-section">
           <div class="section-header">
             <h3 class="section-title" style="color: #018820;">🌐 PCR Labor</h3>
-            <button class="btn btn-secondary" onclick="sincronizarPCRLabor()">🔄 Sync</button>
+            <button class="btn btn-secondary" onclick="sincronizarPCRLabor()">Sync</button>
           </div>
           <div class="section-content">
             <div style="display: grid; gap: 15px;">
@@ -218,7 +218,7 @@
       <div class="content-section">
         <div class="section-header">
           <h3 class="section-title">📊 Consolidado Geral + Estimativa de Compras</h3>
-          <button class="btn btn-primary" onclick="calcularEstimativas()">🔄 Recalcular</button>
+          <button class="btn btn-primary" onclick="calcularEstimativas()">Recalcular</button>
         </div>
         <div class="section-content">
           <!-- Resumo consolidado das vendas - DADOS REAIS -->
@@ -479,55 +479,415 @@
     });
 
     // FUNÇÕES INTERATIVAS
-    function sincronizarTodasPlataformas() {
-      alert('🔄 Sincronizando todas as plataformas...\n\n• Shopee\n• Mercado Livre\n• PCR Labor\n\nEsta operação pode levar alguns minutos.');
+    async function sincronizarTodasPlataformas() {
+      try {
+        mostrarToast('🔄 Sincronizando todas as plataformas...', 'info');
 
-      setTimeout(() => {
-        alert('✅ Sincronização concluída!\n\n• 12 novas vendas encontradas\n• 3 produtos atualizados\n• Performance atualizada');
-        location.reload();
-      }, 3000);
+        const response = await fetch('/api/plataformas/sincronizar-todas', {
+          method: 'POST'
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          mostrarToast(`✅ Sincronização concluída! ${result.message || ''}`, 'success');
+          setTimeout(() => location.reload(), 2000);
+        } else {
+          throw new Error(result.message || 'Erro na sincronização');
+        }
+      } catch (error) {
+        console.error('❌ Erro na sincronização:', error);
+        mostrarToast('❌ Erro na sincronização: ' + error.message, 'error');
+      }
     }
 
-    function sincronizarShopee() {
-      alert('🛍️ Sincronizando Shopee...\n\nBuscando novas vendas e atualizações de produtos.');
-      setTimeout(() => {
-        alert('✅ Shopee sincronizada!\n\n• 5 novas vendas\n• 2 produtos atualizados');
-      }, 2000);
+    async function sincronizarShopee() {
+      try {
+        mostrarToast('🛍️ Sincronizando Shopee...', 'info');
+
+        const response = await fetch('/api/plataformas/shopee/sincronizar', {
+          method: 'POST'
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          mostrarToast(`✅ Shopee sincronizada! ${result.message || ''}`, 'success');
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          throw new Error(result.message || 'Erro na sincronização');
+        }
+      } catch (error) {
+        console.error('❌ Erro na sincronização Shopee:', error);
+        mostrarToast('❌ Erro na sincronização Shopee: ' + error.message, 'error');
+      }
     }
 
-    function sincronizarMercadoLivre() {
-      alert('🛒 Sincronizando Mercado Livre...\n\nBuscando novas vendas e atualizações de produtos.');
-      setTimeout(() => {
-        alert('✅ Mercado Livre sincronizado!\n\n• 4 novas vendas\n• 1 produto atualizado');
-      }, 2000);
+    async function sincronizarMercadoLivre() {
+      try {
+        mostrarToast('🛒 Sincronizando Mercado Livre...', 'info');
+
+        const response = await fetch('/api/plataformas/mercado-livre/sincronizar', {
+          method: 'POST'
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          mostrarToast(`✅ Mercado Livre sincronizado! ${result.message || ''}`, 'success');
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          throw new Error(result.message || 'Erro na sincronização');
+        }
+      } catch (error) {
+        console.error('❌ Erro na sincronização Mercado Livre:', error);
+        mostrarToast('❌ Erro na sincronização Mercado Livre: ' + error.message, 'error');
+      }
     }
 
-    function sincronizarPCRLabor() {
-      alert('🌐 Sincronizando PCR Labor...\n\nAtualizando vendas diretas e estoque.');
-      setTimeout(() => {
-        alert('✅ PCR Labor sincronizada!\n\n• 3 novas vendas\n• Estoque atualizado');
-      }, 2000);
+    async function sincronizarPCRLabor() {
+      try {
+        mostrarToast('🌐 Sincronizando PCR Labor...', 'info');
+
+        const response = await fetch('/api/plataformas/pcr-labor/sincronizar', {
+          method: 'POST'
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          mostrarToast(`✅ PCR Labor sincronizada! ${result.message || ''}`, 'success');
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          throw new Error(result.message || 'Erro na sincronização');
+        }
+      } catch (error) {
+        console.error('❌ Erro na sincronização PCR Labor:', error);
+        mostrarToast('❌ Erro na sincronização PCR Labor: ' + error.message, 'error');
+      }
     }
 
-    function exportarRelatorio() {
-      alert('📄 Exportando relatório de plataformas...\n\nEm breve você receberá um arquivo Excel com:\n• Performance por plataforma\n• Vendas detalhadas\n• Análise comparativa');
+    async function exportarRelatorio() {
+      try {
+        console.log('📊 Exportando relatório de plataformas...');
+
+        const response = await fetch('/api/plataformas/relatorio');
+        const result = await response.json();
+
+        if (result.success) {
+          // Criar CSV
+          const headers = ['Plataforma', 'Total Vendas', 'Valor Total', 'Ticket Médio', 'Produtos Ativos', 'Performance'];
+          const csvContent = [
+            headers.join(','),
+            ...result.data.map(plat => [
+              plat.nome,
+              plat.total_vendas,
+              plat.valor_total,
+              plat.ticket_medio,
+              plat.produtos_ativos,
+              plat.performance
+            ].join(','))
+          ].join('\n');
+
+          // Download do arquivo
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const link = document.createElement('a');
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+          link.setAttribute('download', `relatorio_plataformas_${new Date().toISOString().split('T')[0]}.csv`);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          mostrarToast('✅ Relatório exportado com sucesso!', 'success');
+        } else {
+          throw new Error(result.message || 'Erro ao exportar');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao exportar:', error);
+        mostrarToast('❌ Erro ao exportar relatório: ' + error.message, 'error');
+      }
     }
 
-    function configurarPlataformas() {
-      alert('⚙️ Configurações de Plataformas\n\nEm breve você poderá:\n• Configurar APIs\n• Definir comissões\n• Ajustar sincronização');
+    function gerenciarPlataformas() {
+      abrirModalGerenciarPlataformas();
     }
 
-    function analisarPerformance() {
-      alert('📊 Análise Detalhada de Performance\n\nEm breve você terá acesso a:\n• Relatórios avançados\n• Comparativos mensais\n• Projeções de crescimento');
+    // ===== MODAL GERENCIAR PLATAFORMAS =====
+    async function abrirModalGerenciarPlataformas() {
+      try {
+        // Buscar plataformas existentes
+        const response = await fetch('/api/plataformas');
+        const result = await response.json();
+
+        const plataformas = result.success ? result.data : [];
+
+        const modal = document.createElement('div');
+        modal.id = 'modalGerenciarPlataformas';
+        modal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        `;
+
+        modal.innerHTML = `
+          <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+              <h2 style="margin: 0; color: #333;">🌐 Gerenciar Plataformas</h2>
+              <button onclick="fecharModalGerenciarPlataformas()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+            </div>
+
+            <!-- Adicionar nova plataforma -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="margin: 0 0 15px 0; color: #333;">➕ Adicionar Nova Plataforma</h3>
+              <div style="display: flex; gap: 15px; align-items: end;">
+                <div style="flex: 1;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Nome da Plataforma</label>
+                  <input type="text" id="nomePlataforma" placeholder="Ex: Amazon, Magazine Luiza" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px;">
+                </div>
+                <button onclick="adicionarPlataforma()" style="padding: 10px 20px; background: #16a34a; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                  Adicionar
+                </button>
+              </div>
+            </div>
+
+            <!-- Lista de plataformas existentes -->
+            <div>
+              <h3 style="margin: 0 0 15px 0; color: #333;">📋 Plataformas Existentes</h3>
+              <div id="listaPlataformas">
+                ${plataformas.map(p => `
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 10px;">
+                    <div>
+                      <div style="font-weight: 600; color: #333;">${p.nome}</div>
+                      <div style="font-size: 12px; color: #666;">ID: ${p.id_plataforma}</div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                      <button onclick="editarPlataforma(${p.id_plataforma}, '${p.nome}')" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        Editar
+                      </button>
+                      <button onclick="sincronizarPlataformaEspecifica(${p.id_plataforma})" style="padding: 6px 12px; background: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        Sync
+                      </button>
+                      <button onclick="excluirPlataforma(${p.id_plataforma})" style="padding: 6px 12px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        Excluir
+                      </button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: center; margin-top: 30px;">
+              <button onclick="fecharModalGerenciarPlataformas()" style="padding: 12px 30px; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                Fechar
+              </button>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(modal);
+      } catch (error) {
+        console.error('❌ Erro ao abrir modal:', error);
+        alert('❌ Erro ao carregar plataformas');
+      }
     }
 
-    function calcularEstimativas() {
-      alert('🔄 Recalculando estimativas...\n\nAnalisando:\n• Histórico de vendas\n• Sazonalidade\n• Estoque atual\n• Demanda projetada');
+    async function analisarPerformance() {
+      try {
+        mostrarToast('📊 Gerando análise de performance...', 'info');
 
-      setTimeout(() => {
-        alert('✅ Estimativas atualizadas!\n\n• Demanda recalculada\n• Investimento otimizado\n• Cobertura ajustada');
-        location.reload();
-      }, 2500);
+        const response = await fetch('/api/plataformas/analise-performance');
+        const result = await response.json();
+
+        if (result.success) {
+          // Criar relatório detalhado
+          const headers = ['Período', 'Plataforma', 'Vendas', 'Crescimento %', 'Ticket Médio', 'Conversão %', 'ROI'];
+          const csvContent = [
+            headers.join(','),
+            ...result.data.map(item => [
+              item.periodo,
+              item.plataforma,
+              item.vendas,
+              item.crescimento,
+              item.ticket_medio,
+              item.conversao,
+              item.roi
+            ].join(','))
+          ].join('\n');
+
+          // Download do arquivo
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const link = document.createElement('a');
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+          link.setAttribute('download', `analise_performance_${new Date().toISOString().split('T')[0]}.csv`);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          mostrarToast('✅ Análise de performance exportada!', 'success');
+        } else {
+          throw new Error(result.message || 'Erro na análise');
+        }
+      } catch (error) {
+        console.error('❌ Erro na análise:', error);
+        mostrarToast('❌ Erro na análise de performance: ' + error.message, 'error');
+      }
+    }
+
+    async function calcularEstimativas() {
+      try {
+        mostrarToast('🔄 Recalculando estimativas...', 'info');
+
+        const response = await fetch('/api/plataformas/calcular-estimativas', {
+          method: 'POST'
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          mostrarToast(`✅ Estimativas atualizadas! ${result.message || ''}`, 'success');
+          setTimeout(() => location.reload(), 2000);
+        } else {
+          throw new Error(result.message || 'Erro no cálculo');
+        }
+      } catch (error) {
+        console.error('❌ Erro no cálculo:', error);
+        mostrarToast('❌ Erro no cálculo de estimativas: ' + error.message, 'error');
+      }
+    }
+
+    function fecharModalGerenciarPlataformas() {
+      const modal = document.getElementById('modalGerenciarPlataformas');
+      if (modal) modal.remove();
+    }
+
+    async function adicionarPlataforma() {
+      const nome = document.getElementById('nomePlataforma').value.trim();
+
+      if (!nome) {
+        alert('❌ Digite o nome da plataforma');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/plataformas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert(`✅ Plataforma "${nome}" adicionada com sucesso!`);
+          fecharModalGerenciarPlataformas();
+          location.reload(); // Recarregar página para mostrar nova plataforma
+        } else {
+          alert('❌ Erro ao adicionar plataforma: ' + result.error);
+        }
+      } catch (error) {
+        console.error('❌ Erro:', error);
+        alert('❌ Erro ao adicionar plataforma');
+      }
+    }
+
+    async function editarPlataforma(id, nomeAtual) {
+      const novoNome = prompt('✏️ Editar nome da plataforma:', nomeAtual);
+
+      if (!novoNome || novoNome === nomeAtual) return;
+
+      try {
+        const response = await fetch(`/api/plataformas/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome: novoNome })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert(`✅ Plataforma atualizada para "${novoNome}"!`);
+          fecharModalGerenciarPlataformas();
+          location.reload();
+        } else {
+          alert('❌ Erro ao editar plataforma: ' + result.error);
+        }
+      } catch (error) {
+        console.error('❌ Erro:', error);
+        alert('❌ Erro ao editar plataforma');
+      }
+    }
+
+    async function excluirPlataforma(id) {
+      if (!confirm('❌ Tem certeza que deseja excluir esta plataforma?\n\nEsta ação não pode ser desfeita.')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/plataformas/${id}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('✅ Plataforma excluída com sucesso!');
+          fecharModalGerenciarPlataformas();
+          location.reload();
+        } else {
+          alert('❌ Erro ao excluir plataforma: ' + result.error);
+        }
+      } catch (error) {
+        console.error('❌ Erro:', error);
+        alert('❌ Erro ao excluir plataforma');
+      }
+    }
+
+    async function sincronizarPlataformaEspecifica(id) {
+      try {
+        const response = await fetch(`/api/plataformas/${id}/sincronizar`, {
+          method: 'POST'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          const { novas_vendas, produtos_atualizados } = result.data;
+          alert(`✅ Sincronização concluída!\n\n• ${novas_vendas} novas vendas\n• ${produtos_atualizados} produtos atualizados`);
+        } else {
+          alert('❌ Erro na sincronização: ' + result.error);
+        }
+      } catch (error) {
+        console.error('❌ Erro:', error);
+        alert('❌ Erro ao sincronizar plataforma');
+      }
+    }
+
+    // ===== FUNÇÃO TOAST =====
+    function mostrarToast(mensagem, tipo = 'info') {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: ${tipo === 'success' ? '#16a34a' : tipo === 'error' ? '#dc2626' : '#3b82f6'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 400px;
+        word-wrap: break-word;
+      `;
+      toast.textContent = mensagem;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
     }
 
     console.log('🌐 Página de plataformas carregada com design padronizado');

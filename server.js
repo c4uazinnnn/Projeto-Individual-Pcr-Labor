@@ -4,11 +4,12 @@ const session = require('express-session');
 require('dotenv').config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3001;
 
 // Configuração do EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.set('view cache', false); // Desabilitar cache do EJS
 
 // Middleware para processar JSON e URL encoded
 app.use(express.json());
@@ -39,9 +40,13 @@ const rotasUsuarios = require('./routes/rotasUsuarios');
 const rotasPedidos = require('./routes/rotasPedidos');
 const rotasTarefas = require('./routes/rotasTarefas');
 const rotasFornecedores = require('./routes/rotasFornecedores');
+const rotasPlataformas = require('./routes/rotasPlataformas');
+const rotasEmails = require('./routes/rotasEmails');
+const rotasAPI = require('./routes/rotasAPI');
 
 app.use('/', rotasPaginas); // Rotas de páginas primeiro
 app.use('/', rotasPrincipais);
+app.use('/api', rotasAPI); // Rotas da API principal
 app.use('/api/produtos', rotasProdutos);
 app.use('/api/vendas', rotasVendas);
 app.use('/api/empresas', rotasEmpresas);
@@ -49,6 +54,8 @@ app.use('/api/usuarios', rotasUsuarios);
 app.use('/api/pedidos', rotasPedidos);
 app.use('/api/tarefas', rotasTarefas);
 app.use('/api/fornecedores', rotasFornecedores);
+app.use('/api/plataformas', rotasPlataformas);
+app.use('/api/emails', rotasEmails);
 
 // Middleware de tratamento de erros
 app.use((err, req, res, next) => {

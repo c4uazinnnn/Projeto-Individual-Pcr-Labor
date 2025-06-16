@@ -479,6 +479,58 @@ const updateUsuario = async (req, res) => {
   }
 };
 
+// Atualizar perfil do usuário logado
+const updatePerfil = async (req, res) => {
+  try {
+    const id_usuario = req.id_usuario; // Vem do middleware de autenticação
+    const { nome, email, telefone, documento } = req.body;
+
+    console.log(`👤 Atualizando perfil do usuário logado ID: ${id_usuario}`, { nome, email, telefone, documento });
+
+    // Verificar se o usuário existe
+    const usuarioExistente = await Usuario.getById(id_usuario);
+    if (!usuarioExistente) {
+      return res.status(404).json({
+        success: false,
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    // Dados para atualização
+    const dadosAtualizacao = {
+      nome: nome || usuarioExistente.nome,
+      email: email || usuarioExistente.email,
+      telefone: telefone || usuarioExistente.telefone,
+      documento: documento || usuarioExistente.documento
+    };
+
+    console.log('📝 Dados para atualização do perfil:', dadosAtualizacao);
+
+    const updatedUsuario = await Usuario.update(id_usuario, dadosAtualizacao);
+
+    if (updatedUsuario) {
+      console.log('✅ Perfil atualizado com sucesso:', updatedUsuario);
+
+      res.status(200).json({
+        success: true,
+        data: updatedUsuario,
+        message: 'Perfil atualizado com sucesso'
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Erro ao atualizar perfil'
+      });
+    }
+  } catch (error) {
+    console.error('❌ Erro ao atualizar perfil:', error);
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
 const updatePassword = async (req, res) => {
   try {
     const { novaSenha } = req.body;
@@ -613,6 +665,7 @@ module.exports = {
   getUsuarioById,
   createUsuario,
   updateUsuario,
+  updatePerfil,
   updatePassword,
   deleteUsuario,
   getMetodosPagamento,

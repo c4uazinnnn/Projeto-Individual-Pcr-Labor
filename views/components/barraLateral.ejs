@@ -33,9 +33,9 @@
         <div id="concluido" style="min-height: 50px; padding: 5px; border: 1px dashed #16a34a; border-radius: 6px; background: #f1f8e9;"></div>
       </div>
 
-      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0; display: grid; gap: 8px;">
+      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
         <button onclick="adicionarTarefa()" style="width: 100%; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s ease; font-weight: 600;" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'">
-          ➕ Adicionar Nova Tarefa
+          + Adicionar Nova Tarefa
         </button>
       </div>
     </div>
@@ -371,33 +371,28 @@
     }
   }
 
-  // ===== SISTEMA DE TAREFAS SIMPLES COM PERSISTÊNCIA =====
+  // ===== SISTEMA DE TAREFAS SIMPLES (LOCALSTORAGE) =====
 
-  let tarefas = [];
+  let tarefas = [
+    { id: 1, texto: 'Verificar estoque de kits PCR', status: 'a_fazer' },
+    { id: 2, texto: 'Atualizar preços no Mercado Livre', status: 'fazendo' },
+    { id: 3, texto: 'Responder emails de clientes', status: 'concluido' }
+  ];
 
   // Carregar tarefas do localStorage
   function carregarTarefas() {
-    const tarefasSalvas = localStorage.getItem('tarefasPCRLabor');
+    const tarefasSalvas = localStorage.getItem('tarefas');
     if (tarefasSalvas) {
       tarefas = JSON.parse(tarefasSalvas);
-      console.log('✅ Tarefas carregadas do localStorage:', tarefas.length);
-    } else {
-      // Tarefas padrão se não houver nada salvo
-      tarefas = [
-        { id: 1, texto: 'Revisar pedidos', status: 'a_fazer' },
-        { id: 2, texto: 'Sync Mercado Livre', status: 'fazendo' },
-        { id: 3, texto: 'Update Shopee', status: 'concluido' }
-      ];
-      salvarTarefas();
-      console.log('✅ Tarefas padrão criadas');
     }
   }
 
   // Salvar tarefas no localStorage
   function salvarTarefas() {
-    localStorage.setItem('tarefasPCRLabor', JSON.stringify(tarefas));
-    console.log('💾 Tarefas salvas no localStorage');
+    localStorage.setItem('tarefas', JSON.stringify(tarefas));
   }
+
+
 
   function renderizar() {
     const aFazer = document.getElementById('aFazer');
@@ -416,53 +411,45 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 12px;
+        padding: 8px;
+        margin-bottom: 5px;
         background: white;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        cursor: grab;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        border-left: 4px solid ${getBorderColor(tarefa.status)};
+        border-radius: 6px;
+        border-left: 3px solid ${getBorderColor(tarefa.status)};
+        cursor: move;
         transition: all 0.2s ease;
-        ${tarefa.status === 'concluido' ? 'opacity: 0.8;' : ''}
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       `;
+
       div.draggable = true;
       div.dataset.id = tarefa.id;
+      div.dataset.status = tarefa.status;
 
       div.innerHTML = `
-        <span style="font-size: 14px;">${getStatusIcon(tarefa.status)}</span>
-        <span style="flex: 1; font-size: 13px; font-weight: 500; color: #333; ${tarefa.status === 'concluido' ? 'text-decoration: line-through;' : ''}">${tarefa.texto}</span>
-        <button onclick="deletar(${tarefa.id})" style="background: #ef4444; color: white; border: none; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s ease;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">🗑️</button>
+        <span style="font-size: 12px;">${getStatusIcon(tarefa.status)}</span>
+        <span style="flex: 1; font-size: 12px; color: #333;">${tarefa.texto}</span>
+        <button onclick="deletar(${tarefa.id})" style="background: #ef4444; color: white; border: none; border-radius: 3px; padding: 2px 6px; font-size: 10px; cursor: pointer;">×</button>
       `;
 
-      // Drag events
-      div.addEventListener('dragstart', e => {
+      // Adicionar eventos de drag
+      div.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('text/plain', tarefa.id);
+        e.dataTransfer.setData('application/json', JSON.stringify(tarefa));
         div.style.opacity = '0.5';
       });
 
-      div.addEventListener('dragend', e => {
+      div.addEventListener('dragend', () => {
         div.style.opacity = '1';
       });
 
-      // Hover effects
-      div.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-2px)';
-        this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
-      });
-
-      div.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-      });
-
+      // Adicionar à coluna correta
       if (tarefa.status === 'a_fazer') {
         aFazer.appendChild(div);
         contA++;
       } else if (tarefa.status === 'fazendo') {
         fazendo.appendChild(div);
         contF++;
-      } else {
+      } else if (tarefa.status === 'concluido') {
         concluido.appendChild(div);
         contC++;
       }
@@ -495,21 +482,24 @@
     const texto = prompt('Digite a nova tarefa:');
     if (texto && texto.trim()) {
       const nova = {
-        id: Date.now(),
+        id: Date.now(), // ID único baseado no timestamp
         texto: texto.trim(),
         status: 'a_fazer'
       };
+
       tarefas.push(nova);
-      salvarTarefas(); // Salvar após adicionar
+      salvarTarefas();
       renderizar();
       mostrarToast('✅ Nova tarefa adicionada!', '#16a34a');
     }
   }
 
+  // Função removida - usando prompt simples
+
   function deletar(id) {
     if (confirm('Deletar esta tarefa?')) {
       tarefas = tarefas.filter(t => t.id !== id);
-      salvarTarefas(); // Salvar após deletar
+      salvarTarefas();
       renderizar();
       mostrarToast('🗑️ Tarefa deletada!', '#ef4444');
     }
@@ -519,7 +509,7 @@
     const tarefa = tarefas.find(t => t.id === id);
     if (tarefa) {
       tarefa.status = novoStatus;
-      salvarTarefas(); // Salvar após mover
+      salvarTarefas();
       renderizar();
 
       const mensagens = {
@@ -599,6 +589,18 @@
   `;
   document.head.appendChild(style);
 
+  // ===== FUNCIONALIDADES AVANÇADAS DE TAREFAS =====
+
+  // Tornar funções globais
+  window.adicionarTarefa = adicionarTarefa;
+  window.deletar = deletar;
+
+  // Sistema simples - sem funções complexas
+
+  // Funções auxiliares básicas removidas - sistema simples
+
+  // Todas as funções complexas removidas - sistema simples localStorage
+
   // Inicializar
   document.addEventListener('DOMContentLoaded', function() {
     generateCalendar();
@@ -608,7 +610,7 @@
     renderizar();
     configurarDrop();
 
-    console.log('🚀 Sistema de tarefas inicializado com persistência');
+    console.log('🚀 Sistema de tarefas inicializado');
   });
 
 </script>

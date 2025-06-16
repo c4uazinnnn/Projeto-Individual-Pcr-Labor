@@ -33,4 +33,10 @@ router.post('/importar', ServicoImportacaoExcel.getUploadMiddleware(), controlad
 // GET /api/produtos/template/excel - Baixar template Excel
 router.get('/template/excel', controladorProdutos.baixarTemplateExcel);
 
+// GET /api/produtos/exportar - Exportar produtos para CSV
+router.get('/exportar', controladorProdutos.exportarProdutos);
+
+// POST /api/produtos/importar-csv - Importar produtos via CSV
+router.post('/importar-csv', controladorProdutos.importarProdutos);
+
 module.exports = router;

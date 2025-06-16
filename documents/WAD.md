@@ -257,18 +257,113 @@ CREATE TABLE IF NOT EXISTS MovimentacaoEstoque (
 ```
 
 ### 3.1.1 BD e Models (Semana 5)
-*Descreva aqui os Models implementados no sistema web*
+
+O sistema implementa modelos de dados seguindo o padrão MVC para organizar as operações do banco de dados.
+
+#### **Models Implementados:**
+
+**1. Modelo de Empresas (`modeloEmpresa.js`)**
+- Gerencia dados das empresas
+- Campos principais: id_empresa, nome_fantasia, cnpj
+
+**2. Modelo de Usuários (`modeloUsuarios.js`)**
+- Controla login e dados dos usuários
+- Campos principais: id_usuario, nome, email, senha_hash, id_empresa
+- Usa bcrypt para hash das senhas
+
+**3. Modelo de Produtos (`modeloProdutos.js`)**
+- Gerencia produtos e estoque
+- Campos principais: id_produto, nome, sku, preco, estoque_atual, categoria
+- Controla alertas de estoque baixo
+
+**4. Modelo de Vendas (`modeloVendas.js`)**
+- Registra vendas por plataforma
+- Campos principais: id_venda, id_produto, quantidade, valor_total, data
+- Calcula métricas básicas
+
+**5. Modelo de Pedidos (`modeloPedidos.js`)**
+- Controla pedidos de compra
+- Campos principais: id_pedido, id_produto, quantidade, status, fornecedor
+- Status: PENDENTE, APROVADO, ENTREGUE
+
+**6. Modelo de Fornecedores (`modeloFornecedores.js`)**
+- Dados dos fornecedores
+- Campos principais: id_fornecedor, nome, cnpj, email, telefone
+
+**7. Modelo de Plataformas (`modeloPlataformas.js`)**
+- Plataformas de venda (Shopee, Mercado Livre)
+- Campos principais: id_plataforma, nome
+
+**8. Modelo de Tarefas (`modeloTarefas.js`)**
+- Sistema de tarefas simples
+- Campos principais: id_tarefa, titulo, status, id_usuario
+
+**9. Modelo de Emails (`modeloEmail.js`)**
+- Sistema básico de emails internos
+- Campos principais: id_email, assunto, corpo, remetente, destinatario
+
+#### **Características Técnicas:**
+- Usa PostgreSQL com consultas SQL diretas
+- Pool de conexões para performance
+- Validação básica de dados
+- Filtros por empresa (multi-tenant)
 
 ### 3.2. Arquitetura (Semana 5)
 
-*Posicione aqui o diagrama de arquitetura da sua solução de aplicação web. Atualize sempre que necessário.*
+O sistema usa a arquitetura **MVC (Model-View-Controller)** com **Node.js**, **Express.js** e **PostgreSQL**.
 
-**Instruções para criação do diagrama de arquitetura**  
-- **Model**: A camada que lida com a lógica de negócios e interage com o banco de dados.
-- **View**: A camada responsável pela interface de usuário.
-- **Controller**: A camada que recebe as requisições, processa as ações e atualiza o modelo e a visualização.
-  
-*Adicione as setas e explicações sobre como os dados fluem entre o Model, Controller e View.*
+#### **Estrutura da Aplicação:**
+
+```
+CLIENTE (Browser)
+       ↓ HTTP
+SERVIDOR EXPRESS.JS
+├── Middleware (autenticação, sessões)
+├── Rotas (rotasPaginas, rotasProdutos, etc.)
+├── Controllers (Dashboard, Vendas, Produtos)
+       ↓
+MODELS (modeloProdutos, modeloVendas, etc.)
+       ↓ SQL
+BANCO POSTGRESQL
+```
+
+#### **Como Funciona:**
+
+**1. Usuário acessa uma página**
+- Browser faz requisição HTTP
+- Express.js recebe a requisição
+
+**2. Processamento**
+- Middleware verifica autenticação
+- Rota direciona para o Controller correto
+- Controller processa a lógica
+
+**3. Dados**
+- Controller chama o Model necessário
+- Model faz consulta SQL no PostgreSQL
+- Dados retornam para o Controller
+
+**4. Resposta**
+- Controller renderiza a View (EJS)
+- HTML é enviado para o browser
+- Página é exibida para o usuário
+
+#### **Componentes:**
+
+**Frontend (View):**
+- Templates EJS
+- CSS customizado
+- JavaScript para gráficos (Chart.js)
+
+**Backend (Controller):**
+- Express.js
+- Sistema de sessões
+- APIs REST básicas
+
+**Dados (Model):**
+- PostgreSQL (Supabase)
+- Consultas SQL diretas
+- Pool de conexões
 
 ### 3.3. Wireframes (Semana 03)
 
@@ -287,20 +382,269 @@ Esse wireframe foi criado no Figma e pode ser acessado pelo link acima. Na prime
 
 ### 3.4. Guia de estilos (Semana 05)
 
-*Descreva aqui orientações gerais para o leitor sobre como utilizar os componentes do guia de estilos de sua solução.*
+O sistema segue um guia de estilos simples baseado nos wireframes criados.
+
+#### **Cores Principais:**
+- **Verde PCR**: `#018820` - Cor principal (botões, logo)
+- **Verde Hover**: `#016a1a` - Para efeitos hover
+- **Azul**: `#3b82f6` - Informações
+- **Laranja**: `#f59e0b` - Alertas
+- **Cinza**: `#333` - Textos
+- **Fundo**: `#f8f9fa` - Fundo da aplicação
+
+#### **Tipografia:**
+- **Fonte**: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+- **Títulos**: 32px (H1), 24px (H2), 18px (H3)
+- **Texto**: 14px normal
+- **Pequeno**: 12px
+
+#### **Componentes:**
+
+**Botões:**
+```css
+.btn-primary {
+  background: #018820;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+}
+```
+
+**Cards:**
+```css
+.summary-card {
+  background: white;
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+```
+
+#### **Layout:**
+- **Header**: Fixo no topo, 70px altura
+- **Sidebar**: Direita, 300px largura
+- **Conteúdo**: Área central com padding 30px
+
+#### **Responsividade:**
+- **Mobile (< 768px)**: Sidebar oculta, cards em coluna
+- **Desktop**: Layout completo com sidebar
+
+#### **Elementos Visuais:**
+- Emojis para ícones
+- Chart.js para gráficos
+- Hover effects simples
+- Bordas arredondadas (6-8px)
 
 
 ### 3.5. Protótipo de alta fidelidade (Semana 05)
 
-*Posicione aqui algumas imagens demonstrativas de seu protótipo de alta fidelidade e o link para acesso ao protótipo completo (mantenha o link sempre público para visualização).*
+O protótipo foi criado no Figma seguindo os wireframes e o guia de estilos.
+
+#### **Link do Protótipo:**
+🔗 **[Protótipo no Figma](https://www.figma.com/design/bnIgHQ4EuyuMgQGea0ux2k/Pcr-Labor?node-id=17-193&t=MLZOHU1rxbvsHszI-1)**
+
+#### **Telas Criadas:**
+
+**1. Login**
+- Campos de email e senha
+- Logo PCR Labor
+- Botão de acesso
+
+**2. Dashboard**
+- Header horizontal
+- Sidebar com tarefas e calendário
+- Cards de métricas
+- Gráficos básicos
+
+**3. Vendas**
+- Tabela de vendas
+- Gráficos simples
+- Filtros por período
+
+**4. Estoque**
+- Lista de produtos
+- Alertas de estoque baixo
+- Status visual
+
+**5. Pedidos**
+- Lista por status
+- Formulário de criação
+- Dados do fornecedor
+
+**6. Plataformas**
+- Comparativo básico
+- Métricas por canal
+
+**7. Perfil**
+- Dados do usuário
+- Configurações básicas
+
+#### **Características:**
+- Cores do guia de estilos
+- Layout responsivo básico
+- Navegação entre telas
+- Componentes reutilizáveis
+
+O protótipo serviu como base para a implementação do sistema.
 
 ### 3.6. WebAPI e endpoints (Semana 05)
 
-*Utilize um link para outra página de documentação contendo a descrição completa de cada endpoint. Ou descreva aqui cada endpoint criado para seu sistema.*  
+O sistema implementa APIs REST básicas para as principais funcionalidades.
+
+#### **Base URL:** `http://localhost:3000/api`
+
+#### **Principais Endpoints:**
+
+**Dashboard:**
+- `GET /api/dashboard-stats` - Estatísticas do dashboard
+
+**Produtos:**
+- `GET /api/produtos` - Lista produtos
+- `POST /api/produtos` - Cria produto
+- `PUT /api/produtos/:id` - Atualiza produto
+
+**Vendas:**
+- `GET /api/vendas` - Lista vendas
+- `POST /api/vendas` - Registra venda
+
+**Pedidos:**
+- `GET /api/pedidos` - Lista pedidos
+- `POST /api/pedidos` - Cria pedido
+- `PUT /api/pedidos/:id/status` - Atualiza status
+
+**Fornecedores:**
+- `GET /api/fornecedores` - Lista fornecedores
+- `POST /api/fornecedores` - Cadastra fornecedor
+
+**Usuários:**
+- `POST /login` - Login
+- `POST /logout` - Logout
+- `GET /api/usuarios/perfil` - Dados do usuário
+
+**Tarefas:**
+- `GET /api/tarefas` - Lista tarefas
+- `POST /api/tarefas` - Cria tarefa
+
+#### **Autenticação:**
+- Sistema de sessões
+- Middleware `verificarAutenticacao`
+- Redirecionamento para login se não autenticado
+
+#### **Formato de Resposta:**
+```json
+{
+  "success": true,
+  "data": [...],
+  "message": "Operação realizada com sucesso"
+}
+```
+
+#### **Códigos HTTP:**
+- 200: Sucesso
+- 401: Não autenticado
+- 404: Não encontrado
+- 500: Erro do servidor
 
 ### 3.7 Interface e Navegação (Semana 07)
 
-*Descreva e ilustre aqui o desenvolvimento do frontend do sistema web, explicando brevemente o que foi entregue em termos de código e sistema. Utilize prints de tela para ilustrar.*
+O frontend foi desenvolvido seguindo os wireframes criados, com foco na usabilidade.
+
+#### **Tecnologias:**
+- **Templates**: EJS
+- **CSS**: CSS3 customizado
+- **JavaScript**: Vanilla JS + Chart.js
+- **Ícones**: Emojis
+
+#### **Layout:**
+
+**Header (Topo):**
+- Logo PCR Labor
+- Menu de navegação horizontal
+- Altura: 70px
+
+**Área Principal:**
+- Conteúdo central
+- Padding: 30px
+- Margem direita para sidebar
+
+**Sidebar (Direita):**
+- Largura: 300px
+- Tarefas, calendário, IA
+- Fixa na lateral
+
+#### **Páginas Implementadas:**
+
+**1. Login**
+- Formulário simples
+- Campos email/senha
+- Validação básica
+
+**2. Dashboard**
+- Cards de métricas
+- Gráficos (Chart.js)
+- Dados em tempo real
+
+**3. Vendas**
+- Tabela de vendas
+- Gráficos básicos
+- Filtros simples
+
+**4. Estoque**
+- Lista de produtos
+- Alertas de estoque baixo
+- Status visual
+
+**5. Pedidos**
+- Lista por status
+- Formulário de criação
+- Dados do fornecedor
+
+**6. Plataformas**
+- Comparativo básico
+- Gráficos por canal
+
+**7. Perfil**
+- Dados do usuário
+- Configurações básicas
+
+#### **Componentes:**
+
+**Cards:**
+```css
+.summary-card {
+  background: white;
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+```
+
+**Botões:**
+```css
+.btn-primary {
+  background: #018820;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+}
+```
+
+#### **Responsividade:**
+- Mobile: Sidebar oculta
+- Desktop: Layout completo
+- Breakpoint: 768px
+
+#### **Navegação:**
+- Menu horizontal
+- Estados ativos
+- Hover effects
+- Links funcionais
+
+#### **Interatividade:**
+- Gráficos interativos
+- Formulários com validação
+- Feedback visual
+- Loading states básicos
 
 ---
 
@@ -308,19 +652,212 @@ Esse wireframe foi criado no Figma e pode ser acessado pelo link acima. Na prime
 
 ### 4.1 Demonstração do Sistema Web (Semana 8)
 
-*VIDEO: Insira o link do vídeo demonstrativo nesta seção*
-*Descreva e ilustre aqui o desenvolvimento do sistema web completo, explicando brevemente o que foi entregue em termos de código e sistema. Utilize prints de tela para ilustrar.*
+O sistema PCR Labor foi desenvolvido como uma aplicação web funcional para gestão empresarial, implementando as principais funcionalidades planejadas.
+
+#### **🎥 Vídeo Demonstrativo**
+*[Link do vídeo será inserido após gravação]*
+
+#### **Sistema Implementado:**
+
+**Tecnologias:**
+- Backend: Node.js + Express.js (MVC)
+- Frontend: EJS + CSS + JavaScript
+- Banco: PostgreSQL (Supabase)
+- Autenticação: Sistema de sessões
+
+#### **Funcionalidades Principais:**
+
+**1. Autenticação**
+- Login/logout funcional
+- Sistema de sessões
+- Middleware de proteção
+- Credenciais: admin@pcrlabor.com / admin123
+
+**2. Dashboard**
+- Métricas básicas em tempo real
+- Cards de resumo
+- Gráficos com Chart.js
+- Dados consolidados
+
+**3. Gestão de Vendas**
+- Registro de vendas
+- Filtros básicos
+- Relatórios simples
+- Integração com estoque
+
+**4. Controle de Estoque**
+- Cadastro de produtos
+- Alertas de estoque baixo
+- Categorização
+- Status visual
+
+**5. Sistema de Pedidos**
+- Criação de pedidos
+- Status: Pendente, Aprovado, Entregue
+- Integração com fornecedores
+- Workflow básico
+
+**6. Fornecedores**
+- Cadastro de fornecedores
+- Histórico de pedidos
+- Dados de contato
+
+**7. Plataformas**
+- Comparativo básico
+- Métricas por canal
+- Shopee implementado
+
+**8. Tarefas**
+- Sistema Kanban simples
+- Estados básicos
+- Sidebar integrada
+
+**9. Assistente IA**
+- Respostas baseadas em dados
+- Integração com métricas
+- Dicas contextuais
+
+#### **Dados de Demonstração:**
+- 1 empresa cadastrada
+- 1 usuário administrador
+- Produtos de exemplo
+- Vendas de teste
+- Fornecedores fictícios
+
+#### **Responsividade:**
+- Layout adaptável
+- Mobile básico
+- Sidebar responsiva
+
+#### **Status Atual:**
+- Sistema funcional
+- Todas as páginas implementadas
+- APIs básicas funcionando
+- Banco de dados configurado
+- Pronto para demonstração
 
 ### 4.2 Conclusões e Trabalhos Futuros (Semana 8)
 
-*Indique pontos fortes e pontos a melhorar de maneira geral.*
-*Relacione também quaisquer outras ideias que você tenha para melhorias futuras.*
+O desenvolvimento do sistema PCR Labor foi um projeto individual completo, desde o planejamento até a implementação final.
+
+#### **Objetivos Alcançados:**
+
+**Funcionalidades Implementadas:**
+✅ Sistema de login/logout
+✅ Dashboard com métricas básicas
+✅ Gestão de vendas
+✅ Controle de estoque
+✅ Sistema de pedidos
+✅ Cadastro de fornecedores
+✅ Análise por plataforma
+✅ Sistema de tarefas
+✅ Assistente IA básico
+✅ Interface responsiva
+
+**Requisitos Técnicos:**
+✅ Arquitetura MVC
+✅ Banco PostgreSQL
+✅ APIs REST básicas
+✅ Frontend com EJS
+✅ Sistema de autenticação
+
+#### **Pontos Fortes:**
+
+**1. Estrutura Organizada**
+- Separação MVC clara
+- Código organizado em módulos
+- Padrões consistentes
+
+**2. Interface Funcional**
+- Design seguindo wireframes
+- Navegação intuitiva
+- Responsividade básica
+
+**3. Funcionalidades Completas**
+- Todas as páginas implementadas
+- Integração entre módulos
+- Dados funcionais
+
+#### **Pontos de Melhoria:**
+
+**1. Testes**
+- Implementar testes unitários
+- Validação de formulários
+- Tratamento de erros
+
+**2. Performance**
+- Otimização de consultas
+- Cache de dados
+- Compressão de assets
+
+**3. Segurança**
+- Validação mais robusta
+- Sanitização de inputs
+- Logs de auditoria
+
+#### **Trabalhos Futuros:**
+
+**Curto Prazo:**
+- Integração real com APIs externas
+- Relatórios em PDF
+- Notificações por email
+- Melhorias na IA
+
+**Médio Prazo:**
+- App mobile
+- Dashboard avançado
+- Sistema de backup
+- Múltiplos usuários
+
+**Longo Prazo:**
+- Machine Learning
+- Análise preditiva
+- Integração IoT
+- Escalabilidade
+
+#### **Aprendizados:**
+
+**Técnicos:**
+- Desenvolvimento full-stack
+- Arquitetura MVC
+- APIs REST
+- Banco de dados
+
+**Pessoais:**
+- Gestão de projeto
+- Resolução de problemas
+- Documentação
+- Planejamento
+
+#### **Conclusão:**
+
+O sistema PCR Labor atende aos objetivos propostos como projeto individual de faculdade. Implementa as funcionalidades principais de um sistema de gestão empresarial, demonstrando conhecimento técnico e capacidade de desenvolvimento completo.
+
+O projeto serve como base sólida para futuras expansões e melhorias, representando uma solução funcional para gestão de pequenas e médias empresas do setor laboratorial.
+
 
 
 
 ## <a name="c5"></a>5. Referências
 
-_Incluir as principais referências de seu projeto, para que seu parceiro possa consultar caso ele se interessar em aprofundar. Um exemplo de referência de livro e de site:_<br>
+### **Documentação Técnica**
+
+**Node.js e Express.js**
+- Node.js Official Documentation. Disponível em: https://nodejs.org/docs/
+- Express.js Guide. Disponível em: https://expressjs.com/
+- MDN Web Docs - JavaScript. Disponível em: https://developer.mozilla.org/pt-BR/docs/Web/JavaScript
+
+**Banco de Dados**
+- PostgreSQL Documentation. Disponível em: https://www.postgresql.org/docs/
+- Supabase Documentation. Disponível em: https://supabase.com/docs
+- Database Design Best Practices. Disponível em: https://www.postgresql.org/docs/current/ddl-best-practices.html
+
+**Frontend**
+- EJS Template Engine. Disponível em: https://ejs.co/
+- Chart.js Documentation. Disponível em: https://www.chartjs.org/docs/
+- CSS Grid Layout Guide. Disponível em: https://css-tricks.com/snippets/css/complete-guide-grid/
+
+
 
 ---
 ---

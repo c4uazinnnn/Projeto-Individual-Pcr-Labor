@@ -371,6 +371,129 @@ const baixarTemplateExcel = async (req, res) => {
   }
 };
 
+// Exportar produtos para CSV
+const exportarProdutos = async (req, res) => {
+  try {
+    const id_empresa = req.id_empresa;
+    const produtos = await Produto.getAll(id_empresa);
+
+    // Preparar dados para exportação
+    const dadosExportacao = produtos.map(p => ({
+      'ID': p.id_produto,
+      'Nome': p.nome,
+      'SKU': p.sku,
+      'Preço Venda': p.preco,
+      'Preço Base': p.preco_base || 0,
+      'Custo Frete': p.custo_frete || 0,
+      'Estoque Atual': p.estoque_atual,
+      'Estoque Mínimo': p.estoque_minimo || 10,
+      'Descrição': p.descricao || '',
+      'Data Cadastro': new Date(p.created_at).toLocaleDateString('pt-BR')
+    }));
+
+    res.json({
+      success: true,
+      data: dadosExportacao,
+      message: 'Dados preparados para exportação'
+    });
+  } catch (error) {
+    console.error('❌ Erro ao exportar produtos:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao exportar produtos'
+    });
+  }
+};
+
+// Importar produtos via CSV
+const importarProdutos = async (req, res) => {
+  try {
+    const id_empresa = req.id_empresa;
+    const { produtos } = req.body;
+
+    if (!produtos || !Array.isArray(produtos)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Dados de produtos inválidos'
+      });
+    }
+
+    const resultados = {
+      sucesso: 0,
+      erros: 0,
+      detalhes: []
+    };
+
+    for (const produto of produtos) {
+      try {
+        // Validar dados obrigatórios
+        if (!produto.nome || !produto.sku) {
+          resultados.erros++;
+          resultados.detalhes.push({
+            linha: produto.linha || 'N/A',
+            erro: 'Nome e SKU são obrigatórios',
+            produto: produto.nome || 'Sem nome'
+          });
+          continue;
+        }
+
+        // Verificar se SKU já existe
+        const skuExistente = await Produto.getBySku(produto.sku, id_empresa);
+        if (skuExistente) {
+          resultados.erros++;
+          resultados.detalhes.push({
+            linha: produto.linha || 'N/A',
+            erro: 'SKU já existe',
+            produto: produto.nome
+          });
+          continue;
+        }
+
+        // Criar produto
+        const novoProduto = await Produto.create({
+          id_empresa,
+          nome: produto.nome,
+          sku: produto.sku,
+          preco: produto.preco || 0,
+          preco_base: produto.preco_base || 0,
+          custo_frete: produto.custo_frete || 0,
+          estoque_atual: produto.estoque_atual || 0,
+          estoque_minimo: produto.estoque_minimo || 10,
+          descricao: produto.descricao || null
+        });
+
+        resultados.sucesso++;
+        resultados.detalhes.push({
+          linha: produto.linha || 'N/A',
+          sucesso: true,
+          produto: produto.nome,
+          id_produto: novoProduto.id_produto
+        });
+
+      } catch (error) {
+        resultados.erros++;
+        resultados.detalhes.push({
+          linha: produto.linha || 'N/A',
+          erro: error.message,
+          produto: produto.nome || 'Erro na linha'
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      data: resultados,
+      message: `Importação concluída: ${resultados.sucesso} sucessos, ${resultados.erros} erros`
+    });
+  } catch (error) {
+    console.error('❌ Erro ao importar produtos:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao importar produtos'
+    });
+  }
+};
+
 module.exports = {
   renderProdutos,
   renderEstoque,
@@ -381,5 +504,7 @@ module.exports = {
   deleteProduto,
   updateEstoque,
   importarProdutosExcel,
-  baixarTemplateExcel
+  baixarTemplateExcel,
+  exportarProdutos,
+  importarProdutos
 };

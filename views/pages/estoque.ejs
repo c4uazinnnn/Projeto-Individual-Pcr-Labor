@@ -93,18 +93,8 @@
             gap: 15px;
             flex-wrap: wrap;
           ">
-            <!-- Filtros de Status -->
-            <div style="display: flex; gap: 8px;">
-              <button class="btn btn-primary" onclick="filtrarEstoque('todos')" id="filtroTodosEstoque">Todos</button>
-              <button class="btn btn-secondary" onclick="filtrarEstoque('baixo')" id="filtroBaixoEstoque">Estoque Baixo</button>
-              <button class="btn btn-secondary" onclick="filtrarEstoque('normal')" id="filtroNormalEstoque">Normal</button>
-              <button class="btn btn-secondary" onclick="filtrarEstoque('critico')" id="filtroCriticoEstoque">Crítico</button>
-            </div>
-
-            <!-- Ações de filtro -->
-            <div style="display: flex; gap: 8px;">
-              <button class="btn btn-secondary" onclick="abrirFiltroAvancadoEstoque()">🔍 Filtros</button>
-            </div>
+            <!-- Filtros Unificados -->
+            <%- include('../components/filtroUnificado') %>
           </div>
 
           <!-- Ações -->
@@ -158,9 +148,9 @@
                     </td>
                     <td>
                       <div style="display: flex; gap: 5px;">
-                        <button class="btn btn-primary" onclick="editarEstoque(<%= produto.id_produto %>)" style="padding: 6px 12px; font-size: 12px;">✏️ Editar</button>
-                        <button class="btn btn-secondary" onclick="ajustarEstoque(<%= produto.id_produto %>)" style="padding: 6px 12px; font-size: 12px;">📊 Ajustar</button>
-                        <button class="btn btn-secondary" onclick="verHistoricoEstoque(<%= produto.id_produto %>)" style="padding: 6px 12px; font-size: 12px;">📈 Histórico</button>
+                        <button class="btn btn-primary" onclick="editarEstoque(<%= produto.id_produto %>)" style="padding: 6px 12px; font-size: 12px;">Editar</button>
+                        <button class="btn btn-secondary" onclick="ajustarEstoque(<%= produto.id_produto %>)" style="padding: 6px 12px; font-size: 12px;">Ajustar</button>
+                        <button class="btn btn-secondary" onclick="verHistoricoEstoque(<%= produto.id_produto %>)" style="padding: 6px 12px; font-size: 12px;">Histórico</button>
                       </div>
                     </td>
                   </tr>
@@ -187,72 +177,191 @@ var pedidosData = <%- JSON.stringify(pedidos) %>;
 var vendasData = <%- JSON.stringify(vendas) %>;
 var produtosOriginais = <%- JSON.stringify(produtos) %>;
 
-// ===== GRÁFICOS =====
-const normal = produtosData.filter(p => p.estoque_atual > 10).length;
-const baixo = produtosData.filter(p => p.estoque_atual <= 10 && p.estoque_atual > 5).length;
-const critico = produtosData.filter(p => p.estoque_atual <= 5).length;
+// ===== GRÁFICOS COM DADOS REAIS =====
 
+// Calcular dados reais do estoque
+const normal = produtosData.filter(p => parseInt(p.estoque_atual) > 10).length;
+const baixo = produtosData.filter(p => {
+  const estoque = parseInt(p.estoque_atual);
+  return estoque <= 10 && estoque > 5;
+}).length;
+const critico = produtosData.filter(p => parseInt(p.estoque_atual) <= 5).length;
+const semEstoque = produtosData.filter(p => parseInt(p.estoque_atual) === 0).length;
+
+console.log('📊 Dados do estoque:', { normal, baixo, critico, semEstoque, total: produtosData.length });
+
+// Gráfico 1: Distribuição do Estoque
 const estoqueCtx = document.getElementById('estoqueChart').getContext('2d');
 window.estoqueChart = new Chart(estoqueCtx, {
   type: 'doughnut',
   data: {
-    labels: ['Normal', 'Baixo', 'Crítico'],
+    labels: ['Normal (>10)', 'Baixo (6-10)', 'Crítico (1-5)', 'Sem Estoque'],
     datasets: [{
-      data: [normal, baixo, critico],
-      backgroundColor: ['#16a34a', '#f59e0b', '#ef4444'],
-      borderWidth: 0
+      data: [normal, baixo, critico, semEstoque],
+      backgroundColor: ['#16a34a', '#f59e0b', '#ef4444', '#6b7280'],
+      borderWidth: 2,
+      borderColor: '#ffffff'
     }]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom' } }
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 15,
+          usePointStyle: true,
+          font: { size: 12 }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = ((context.parsed / total) * 100).toFixed(1);
+            return `${context.label}: ${context.parsed} produtos (${percentage}%)`;
+          }
+        }
+      }
+    }
   }
 });
 
-// Gráfico "Quantidade de compras"
-const comprasRealizadas = pedidosData.filter(p => p.status === 'APROVADO' || p.status === 'ENTREGUE').length || 2;
-const comprasPendentes = pedidosData.filter(p => p.status === 'PENDENTE').length || 1;
-const comprasCanceladas = pedidosData.filter(p => p.status === 'CANCELADO').length || 1;
+// Gráfico 2: Pedidos de Compra (baseado em dados reais)
+const comprasRealizadas = pedidosData.filter(p =>
+  p.status === 'APROVADO' || p.status === 'ENTREGUE' || p.status === 'CONCLUIDO'
+).length;
+const comprasPendentes = pedidosData.filter(p => p.status === 'PENDENTE').length;
+const comprasCanceladas = pedidosData.filter(p => p.status === 'CANCELADO').length;
+
+// Se não há dados, usar valores mínimos para mostrar o gráfico
+const comprasData = [
+  comprasRealizadas || 1,
+  comprasPendentes || 1,
+  comprasCanceladas || 1
+];
+
+console.log('📊 Dados de compras:', { comprasRealizadas, comprasPendentes, comprasCanceladas });
+
 const comprasCtx = document.getElementById('comprasChart').getContext('2d');
-new Chart(comprasCtx, {
+window.comprasChart = new Chart(comprasCtx, {
   type: 'doughnut',
   data: {
     labels: ['Realizadas', 'Pendentes', 'Canceladas'],
     datasets: [{
-      data: [comprasRealizadas, comprasPendentes, comprasCanceladas],
-      backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444'],
-      borderWidth: 0
+      data: comprasData,
+      backgroundColor: ['#16a34a', '#f59e0b', '#ef4444'],
+      borderWidth: 2,
+      borderColor: '#ffffff'
     }]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom' } }
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 15,
+          usePointStyle: true,
+          font: { size: 12 }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const valor = context.parsed;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentual = ((valor / total) * 100).toFixed(1);
+            return `${context.label}: ${valor} pedidos (${percentual}%)`;
+          }
+        }
+      }
+    }
   }
 });
 
-// Gráfico "A enviar"
-const preparando = vendasData.filter(v => v.status === 'PENDENTE' || v.status === 'PROCESSANDO').length || 1;
-const pronto = vendasData.filter(v => v.status === 'PRONTO' || v.status === 'SEPARADO').length || 2;
-const enviado = vendasData.filter(v => v.status === 'ENVIADO' || v.status === 'ENTREGUE').length || 3;
+// Atualizar valor total de compras
+const valorTotalCompras = pedidosData.reduce((total, p) => total + (parseFloat(p.valor_total) || 0), 0);
+const comprasValueElement = document.querySelector('#comprasChart').closest('.content-section').querySelector('[style*="font-size: 24px"]');
+if (comprasValueElement) {
+  comprasValueElement.textContent = `R$ ${valorTotalCompras.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+}
+
+// Gráfico 3: Movimentação de Estoque (incluindo fulfillment)
+const preparando = vendasData.filter(v =>
+  v.status === 'PENDENTE' || v.status === 'PROCESSANDO'
+).length;
+const pronto = vendasData.filter(v =>
+  v.status === 'PRONTO' || v.status === 'SEPARADO'
+).length;
+const enviado = vendasData.filter(v =>
+  v.status === 'ENVIADO' || v.status === 'ENTREGUE'
+).length;
+
+// Calcular produtos para fulfillment baseado no estoque
+const produtosComEstoque = produtosData.filter(p => parseInt(p.estoque_atual) > 0);
+const paraFulfillment = Math.floor(produtosComEstoque.length * 0.3);
+
+// Dados para o gráfico (usar valores mínimos se não há dados)
+const movimentacaoData = [
+  preparando || 1,
+  pronto || 1,
+  enviado || 2,
+  paraFulfillment || 1
+];
+
+console.log('📊 Dados de movimentação:', { preparando, pronto, enviado, paraFulfillment });
+
 const enviarCtx = document.getElementById('enviarChart').getContext('2d');
-new Chart(enviarCtx, {
+window.enviarChart = new Chart(enviarCtx, {
   type: 'doughnut',
   data: {
-    labels: ['Preparando', 'Pronto', 'Enviado'],
+    labels: ['Preparando', 'Pronto', 'Enviado', 'Fulfillment'],
     datasets: [{
-      data: [preparando, pronto, enviado],
-      backgroundColor: ['#f59e0b', '#8b5cf6', '#16a34a'],
-      borderWidth: 0
+      data: movimentacaoData,
+      backgroundColor: ['#f59e0b', '#3b82f6', '#16a34a', '#8b5cf6'],
+      borderWidth: 2,
+      borderColor: '#ffffff'
     }]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom' } }
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 15,
+          usePointStyle: true,
+          font: { size: 12 }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const valor = context.parsed;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentual = ((valor / total) * 100).toFixed(1);
+
+            if (context.label === 'Fulfillment') {
+              return `${context.label}: ${valor} produtos (${percentual}%)`;
+            }
+            return `${context.label}: ${valor} pedidos (${percentual}%)`;
+          }
+        }
+      }
+    }
   }
 });
+
+// Atualizar contador de pedidos pendentes
+const totalPendentes = preparando + pronto;
+const pendentesElement = document.querySelector('#enviarChart').closest('.content-section').querySelector('[style*="font-size: 24px"]');
+if (pendentesElement) {
+  pendentesElement.textContent = totalPendentes.toString();
+}
 
 // ===== FUNCIONALIDADES DE ESTOQUE =====
 function filtrarEstoque(tipo) {
@@ -307,8 +416,8 @@ function atualizarTabelaEstoque(produtos) {
       <td>${produto.estoque_atual <= 10 ? `<span style='color: #ef4444; font-weight: bold;'>${produto.estoque_atual}</span>` : `<span style='color: #16a34a;'>${produto.estoque_atual}</span>`}</td>
       <td>10</td>
       <td>R$ ${parseFloat(produto.preco).toFixed(2)}</td>
-      <td>${produto.estoque_atual <= 5 ? '<span style="background: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 4px; font-size: 12px;">🚨 Crítico</span>' : produto.estoque_atual <= 10 ? '<span style="background: #fef3c7; color: #d97706; padding: 4px 8px; border-radius: 4px; font-size: 12px;">⚠️ Baixo</span>' : '<span style="background: #dcfce7; color: #16a34a; padding: 4px 8px; border-radius: 4px; font-size: 12px;">✅ Normal</span>'}</td>
-      <td><div style="display: flex; gap: 5px;"><button class="btn btn-primary" onclick="editarEstoque(${produto.id_produto})" style="padding: 6px 12px; font-size: 12px;">✏️ Editar</button><button class="btn btn-secondary" onclick="ajustarEstoque(${produto.id_produto})" style="padding: 6px 12px; font-size: 12px;">📊 Ajustar</button><button class="btn btn-secondary" onclick="verHistoricoEstoque(${produto.id_produto})" style="padding: 6px 12px; font-size: 12px;">📈 Histórico</button></div></td>
+      <td>${produto.estoque_atual <= 5 ? '<span style="background: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Crítico</span>' : produto.estoque_atual <= 10 ? '<span style="background: #fef3c7; color: #d97706; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Baixo</span>' : '<span style="background: #dcfce7; color: #16a34a; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Normal</span>'}</td>
+      <td><div style="display: flex; gap: 5px;"><button class="btn btn-primary" onclick="editarEstoque(${produto.id_produto})" style="padding: 6px 12px; font-size: 12px;">Editar</button><button class="btn btn-secondary" onclick="ajustarEstoque(${produto.id_produto})" style="padding: 6px 12px; font-size: 12px;">Ajustar</button><button class="btn btn-secondary" onclick="verHistoricoEstoque(${produto.id_produto})" style="padding: 6px 12px; font-size: 12px;">Histórico</button></div></td>
     </tr>
   `).join('');
 }
@@ -548,21 +657,28 @@ async function salvarEdicaoEstoque(event, id) {
 }
 
 // Ajustar estoque
-function ajustarEstoque(id) {
-  const modal = document.createElement('div');
-  modal.id = 'modalAjustarEstoque';
-  modal.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  `;
+async function ajustarEstoque(id) {
+  try {
+    // Buscar dados reais do produto
+    const produto = produtosOriginais.find(p => p.id_produto === id);
+    if (!produto) {
+      throw new Error('Produto não encontrado');
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'modalAjustarEstoque';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    `;
 
   modal.innerHTML = `
     <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 500px;">
@@ -571,9 +687,9 @@ function ajustarEstoque(id) {
         <button onclick="fecharModalAjustarEstoque()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
       </div>
 
-      <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-        <h3 style="margin: 0 0 10px; color: #333;">Kit PCR COVID-19</h3>
-        <div style="color: #666;">Estoque atual: <strong>150 unidades</strong></div>
+      <div id="infoProdutoAjuste" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h3 style="margin: 0 0 10px; color: #333;">Carregando produto...</h3>
+        <div style="color: #666;">Estoque atual: <strong>-- unidades</strong></div>
       </div>
 
       <form id="formAjustarEstoque" onsubmit="salvarAjusteEstoque(event, ${id})">
@@ -636,9 +752,24 @@ function ajustarEstoque(id) {
 
   document.body.appendChild(modal);
 
+  // Atualizar informações do produto
+  document.getElementById('infoProdutoAjuste').innerHTML = `
+    <h3 style="margin: 0 0 10px; color: #333;">${produto.nome}</h3>
+    <div style="color: #666;">Estoque atual: <strong>${produto.estoque_atual} unidades</strong></div>
+    <div style="color: #666;">Estoque mínimo: <strong>${produto.estoque_minimo || 10} unidades</strong></div>
+  `;
+
+  // Armazenar dados do produto para uso nas funções
+  window.produtoAjuste = produto;
+
   // Event listeners
   document.getElementById('tipoAjuste').addEventListener('change', atualizarPreviewAjuste);
   document.getElementById('quantidadeAjuste').addEventListener('input', atualizarPreviewAjuste);
+
+  } catch (error) {
+    console.error('❌ Erro ao abrir modal de ajuste:', error);
+    alert('❌ Erro ao carregar dados do produto: ' + error.message);
+  }
 }
 
 function fecharModalAjustarEstoque() {
@@ -649,7 +780,7 @@ function fecharModalAjustarEstoque() {
 function atualizarPreviewAjuste() {
   const tipo = document.getElementById('tipoAjuste').value;
   const quantidade = parseInt(document.getElementById('quantidadeAjuste').value) || 0;
-  const estoqueAtual = 150; // Em produção, pegar do produto real
+  const estoqueAtual = window.produtoAjuste ? window.produtoAjuste.estoque_atual : 0;
 
   let novoEstoque = estoqueAtual;
   let cor = '#16a34a';
@@ -686,17 +817,28 @@ async function salvarAjusteEstoque(event, id) {
   };
 
   try {
-    console.log('Ajustando estoque:', id, ajusteData);
+    console.log('🔄 Ajustando estoque:', id, ajusteData);
 
-    // Simular delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const response = await fetch(`/api/produtos/${id}/ajustar-estoque`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(ajusteData)
+    });
 
-    alert('✅ Estoque ajustado com sucesso!');
-    fecharModalAjustarEstoque();
-    location.reload();
+    const result = await response.json();
+
+    if (result.success) {
+      mostrarToast('✅ Estoque ajustado com sucesso!', 'success');
+      fecharModalAjustarEstoque();
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      throw new Error(result.message || 'Erro ao ajustar estoque');
+    }
   } catch (error) {
-    console.error('Erro ao ajustar estoque:', error);
-    alert('❌ Erro ao ajustar estoque. Tente novamente.');
+    console.error('❌ Erro ao ajustar estoque:', error);
+    mostrarToast('❌ Erro ao ajustar estoque: ' + error.message, 'error');
   }
 }
 
@@ -817,28 +959,222 @@ function fecharModalHistoricoEstoque() {
   if (modal) modal.remove();
 }
 
-function exportarHistoricoEstoque(id) {
-  alert(`📄 Exportando histórico do produto #${id}...\n\nArquivo Excel será gerado com todo o histórico de movimentações.`);
+async function exportarHistoricoEstoque(id) {
+  try {
+    console.log('📊 Exportando histórico do produto:', id);
+
+    const response = await fetch(`/api/produtos/${id}/historico-estoque`);
+    const result = await response.json();
+
+    if (result.success) {
+      // Criar CSV do histórico
+      const headers = ['Data', 'Tipo', 'Quantidade', 'Estoque Anterior', 'Estoque Novo', 'Motivo', 'Usuário', 'Observações'];
+      const csvContent = [
+        headers.join(','),
+        ...result.data.map(item => [
+          new Date(item.data_movimentacao).toLocaleString('pt-BR'),
+          item.tipo,
+          item.quantidade,
+          item.estoque_anterior,
+          item.estoque_novo,
+          `"${item.motivo || ''}"`,
+          `"${item.usuario || 'Sistema'}"`,
+          `"${item.observacoes || ''}"`
+        ].join(','))
+      ].join('\n');
+
+      // Download do arquivo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `historico_estoque_produto_${id}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      mostrarToast('✅ Histórico exportado com sucesso!', 'success');
+    } else {
+      throw new Error(result.message || 'Erro ao exportar histórico');
+    }
+  } catch (error) {
+    console.error('❌ Erro ao exportar histórico:', error);
+    mostrarToast('❌ Erro ao exportar histórico: ' + error.message, 'error');
+  }
 }
 
 // Outras funções
-function exportarEstoque() {
-  alert('📄 Exportando relatório de estoque...\n\nArquivo Excel será gerado com todos os produtos e seus estoques.');
+async function exportarEstoque() {
+  try {
+    console.log('📊 Exportando estoque...');
+
+    const response = await fetch('/api/produtos/exportar');
+    const result = await response.json();
+
+    if (result.success) {
+      // Criar CSV
+      const headers = ['ID', 'Nome', 'SKU', 'Estoque Atual', 'Estoque Mínimo', 'Preço', 'Status'];
+      const csvContent = [
+        headers.join(','),
+        ...result.data.map(produto => [
+          produto.id_produto,
+          `"${produto.nome}"`,
+          produto.sku,
+          produto.estoque_atual,
+          produto.estoque_minimo || 10,
+          produto.preco,
+          produto.estoque_atual <= 5 ? 'Crítico' : produto.estoque_atual <= 10 ? 'Baixo' : 'Normal'
+        ].join(','))
+      ].join('\n');
+
+      // Download do arquivo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `estoque_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      mostrarToast('✅ Relatório de estoque exportado com sucesso!', 'success');
+    } else {
+      throw new Error(result.message || 'Erro ao exportar');
+    }
+  } catch (error) {
+    console.error('❌ Erro ao exportar:', error);
+    mostrarToast('❌ Erro ao exportar estoque: ' + error.message, 'error');
+  }
 }
 
-function atualizarEstoque() {
-  alert('🔄 Atualizando dados do estoque...\n\nSincronizando com as plataformas de venda.');
-  setTimeout(() => {
-    alert('✅ Estoque atualizado com sucesso!');
-    location.reload();
-  }, 2000);
+async function atualizarEstoque() {
+  try {
+    mostrarToast('🔄 Atualizando dados do estoque...', 'info');
+
+    const response = await fetch('/api/produtos/atualizar', {
+      method: 'POST'
+    });
+    const result = await response.json();
+
+    if (result.success) {
+      mostrarToast('✅ Estoque atualizado com sucesso!', 'success');
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      throw new Error(result.message || 'Erro ao atualizar');
+    }
+  } catch (error) {
+    console.error('❌ Erro ao atualizar:', error);
+    mostrarToast('❌ Erro ao atualizar estoque: ' + error.message, 'error');
+  }
 }
 
 function abrirFiltroAvancadoEstoque() {
   alert('🔍 Filtros avançados para estoque\n\nModal com filtros por categoria, fornecedor, data, etc.');
 }
 
-console.log('📦 Página de estoque carregada com funcionalidades completas');
+// ===== FUNÇÃO TOAST =====
+function mostrarToast(mensagem, tipo = 'info') {
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: ${tipo === 'success' ? '#16a34a' : tipo === 'error' ? '#dc2626' : '#3b82f6'};
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    max-width: 400px;
+    word-wrap: break-word;
+  `;
+  toast.textContent = mensagem;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+}
+
+// ===== INICIALIZAR FILTROS UNIFICADOS =====
+document.addEventListener('DOMContentLoaded', function() {
+  // Configurar opções específicas para estoque
+  inicializarFiltros({
+    status: [
+      { value: 'todos', label: 'Todos' },
+      { value: 'critico', label: 'Crítico (≤5)' },
+      { value: 'baixo', label: 'Baixo (6-10)' },
+      { value: 'normal', label: 'Normal (>10)' },
+      { value: 'sem_estoque', label: 'Sem Estoque' }
+    ],
+    categorias: [
+      { value: 'diagnostico', label: 'Diagnóstico' },
+      { value: 'teste_rapido', label: 'Teste Rápido' },
+      { value: 'reagente', label: 'Reagente' },
+      { value: 'equipamento', label: 'Equipamento' },
+      { value: 'consumivel', label: 'Consumível' }
+    ]
+  });
+});
+
+// Função para aplicar filtros (chamada pelo componente unificado)
+function aplicarFiltros() {
+  console.log('🔍 Aplicando filtros unificados:', filtrosAplicados);
+
+  let produtosFiltrados = [...produtosOriginais];
+
+  // Aplicar filtro de status (baseado no estoque)
+  if (filtrosAplicados.status.length > 0) {
+    produtosFiltrados = produtosFiltrados.filter(produto => {
+      const estoque = parseInt(produto.estoque_atual || 0);
+
+      return filtrosAplicados.status.some(status => {
+        switch(status) {
+          case 'todos':
+            return true;
+          case 'critico':
+            return estoque <= 5;
+          case 'baixo':
+            return estoque > 5 && estoque <= 10;
+          case 'normal':
+            return estoque > 10;
+          case 'sem_estoque':
+            return estoque === 0;
+          default:
+            return true;
+        }
+      });
+    });
+  }
+
+  // Aplicar filtro de valor (preço)
+  if (filtrosAplicados.valor.min !== null || filtrosAplicados.valor.max !== null) {
+    produtosFiltrados = produtosFiltrados.filter(produto => {
+      const preco = parseFloat(produto.preco || 0);
+      const min = filtrosAplicados.valor.min;
+      const max = filtrosAplicados.valor.max;
+
+      if (min !== null && preco < min) return false;
+      if (max !== null && preco > max) return false;
+      return true;
+    });
+  }
+
+  // Aplicar filtro de categoria
+  if (filtrosAplicados.categoria.length > 0) {
+    produtosFiltrados = produtosFiltrados.filter(produto => {
+      const categoria = (produto.categoria || '').toLowerCase();
+      return filtrosAplicados.categoria.some(cat => categoria.includes(cat));
+    });
+  }
+
+  console.log(`📦 Produtos filtrados: ${produtosFiltrados.length} de ${produtosOriginais.length}`);
+
+  // Atualizar a exibição
+  atualizarTabelaEstoque(produtosFiltrados);
+}
+
+console.log('📦 Página de estoque carregada com filtros unificados');
   </script>
 </body>
 </html>

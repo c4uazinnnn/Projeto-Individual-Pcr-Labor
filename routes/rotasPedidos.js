@@ -2,7 +2,11 @@
 
 const express = require('express');
 const router = express.Router();
+const { verificarAutenticacaoAPI } = require('../middleware/autenticacao');
 const controladorPedidos = require('../controllers/controladorPedidos');
+
+// Aplicar middleware de autenticação em todas as rotas
+router.use(verificarAutenticacaoAPI);
 
 // Rotas API para pedidos
 router.get('/', controladorPedidos.getAllPedidos);

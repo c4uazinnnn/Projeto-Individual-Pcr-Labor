@@ -151,11 +151,18 @@ class DataIntegrationService {
   // Calcular métricas em tempo real
   static async calculateMetrics(id_empresa = null) {
     try {
+      console.log('🔍 ServicoIntegracaoDados.calculateMetrics() chamado com id_empresa:', id_empresa);
+
       const [produtos, vendas, plataformas] = await Promise.all([
         Produto.getAll(id_empresa),
         Venda.getAll(id_empresa),
-        Plataforma.getVendasPorPlataforma()
+        Plataforma.getVendasPorPlataforma(id_empresa) // FILTRADO POR EMPRESA
       ]);
+
+      console.log('📊 Dados retornados pelos modelos:');
+      console.log(`   - Produtos: ${produtos.length}`);
+      console.log(`   - Vendas: ${vendas.length}`);
+      console.log(`   - Plataformas: ${plataformas.length}`);
 
       // Calcular métricas
       const totalProdutos = produtos.length;

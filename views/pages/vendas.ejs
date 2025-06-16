@@ -77,56 +77,14 @@
         </div>
       </div>
 
-      <!-- Filtros entre gráfico e histórico -->
-      <div style="
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 30px;
-      ">
-        <div style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 15px;
-        ">
-          <div style="
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-          ">
-            <!-- Filtros de Período (ordem decrescente) -->
-            <div style="display: flex; gap: 8px;">
-              <button id="filtroAno" class="btn btn-secondary" onclick="filtrarPeriodo('ano')">Este ano</button>
-              <button id="filtro6Meses" class="btn btn-secondary" onclick="filtrarPeriodo('6meses')">Últimos 6 meses</button>
-              <button id="filtroMes" class="btn btn-primary" onclick="filtrarPeriodo('mes')">Este mês</button>
-              <button id="filtroSemana" class="btn btn-secondary" onclick="filtrarPeriodo('semana')">Últimos 7 dias</button>
-              <button id="filtroHoje" class="btn btn-secondary" onclick="filtrarPeriodo('hoje')">Hoje</button>
-              <button id="filtroTodos" class="btn btn-secondary" onclick="filtrarPeriodo('todos')">Todos</button>
-            </div>
+      <!-- Filtros Unificados -->
+      <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
+        <%- include('../components/filtroUnificado') %>
 
-            <!-- Separador -->
-            <div style="
-              border-left: 2px solid #e0e0e0;
-              height: 40px;
-            "></div>
-
-            <!-- Filtros de Plataforma -->
-            <div style="display: flex; gap: 8px;">
-              <button id="filtroTodasPlataformas" class="btn btn-primary" onclick="filtrarPlataforma('todas')">🛒 Todas</button>
-              <button id="filtroShopee" class="btn btn-secondary" onclick="filtrarPlataforma('shopee')">🟠 Shopee</button>
-              <button id="filtroMercadoLivre" class="btn btn-secondary" onclick="filtrarPlataforma('mercadolivre')">🟡 Mercado Livre</button>
-              <button id="filtroPCRLabor" class="btn btn-secondary" onclick="filtrarPlataforma('pcrlabor')">🟢 PCR Labor</button>
-            </div>
-          </div>
-
-          <!-- Ações -->
-          <div style="display: flex; gap: 10px;">
-            <button class="btn btn-secondary" onclick="abrirFiltroAvancado()">🔍 Filtros</button>
-            <button class="btn btn-secondary" onclick="sincronizarPlataformas()">🔄 Sincronizar</button>
-          </div>
+        <!-- Ações Adicionais -->
+        <div style="display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+          <button class="btn btn-secondary" onclick="sincronizarPlataformas()">� Sincronizar</button>
+          <button class="btn btn-secondary" onclick="exportarVendas()">� Exportar</button>
         </div>
       </div>
 
@@ -166,7 +124,7 @@
                           ✅ Concluída
                         </span>
                         <button class="btn btn-secondary" onclick="verDetalhesVenda(<%= venda.id_venda || index %>)" style="padding: 6px 12px; font-size: 12px;">
-                          👁️ Ver
+                          Ver
                         </button>
                       </div>
                     </div>
@@ -249,12 +207,10 @@
   </div>
 
   <script>
-    // ===== CONFIGURAÇÃO DO GRÁFICO DE VENDAS =====
+    // Dados das vendas passados do servidor
+    var vendasOriginais = <%- JSON.stringify(vendas) %>;
 
-    /**
-     * Gráfico principal de vendas - Linha temporal
-     * Configurado como variável global para permitir atualizações dinâmicas
-     */
+    // ===== CONFIGURAÇÃO DO GRÁFICO DE VENDAS =====
     const vendasCtx = document.getElementById('vendasChart').getContext('2d');
 
     window.vendasChart = new Chart(vendasCtx, {
@@ -603,14 +559,30 @@
       }
     }
 
-    function novaVenda() {
-      abrirModalNovaVenda();
+    async function novaVenda() {
+      try {
+        // Buscar produtos e plataformas disponíveis
+        const [produtosResponse, plataformasResponse] = await Promise.all([
+          fetch('/api/produtos'),
+          fetch('/api/plataformas')
+        ]);
+
+        const produtosResult = await produtosResponse.json();
+        const plataformasResult = await plataformasResponse.json();
+
+        const produtos = produtosResult.success ? produtosResult.data : [];
+        const plataformas = plataformasResult.success ? plataformasResult.data : [];
+
+        abrirModalNovaVenda(produtos, plataformas);
+      } catch (error) {
+        console.error('❌ Erro ao carregar dados:', error);
+        alert('❌ Erro ao carregar produtos e plataformas');
+      }
     }
 
     // ===== FILTROS FUNCIONAIS COMPLETOS =====
     let filtroAtual = 'mes';
     let plataformaAtual = 'todas';
-    let vendasOriginais = <%- JSON.stringify(vendas) %>;
 
     function filtrarPeriodo(periodo) {
       filtroAtual = periodo;
@@ -1569,6 +1541,80 @@
         alert('❌ Erro ao criar venda. Tente novamente.');
       }
     }
+
+    // ===== INICIALIZAR FILTROS UNIFICADOS =====
+    document.addEventListener('DOMContentLoaded', function() {
+      // Configurar opções específicas para vendas
+      inicializarFiltros({
+        status: [
+          { value: 'confirmada', label: 'Confirmada' },
+          { value: 'pendente', label: 'Pendente' },
+          { value: 'cancelada', label: 'Cancelada' },
+          { value: 'processando', label: 'Processando' }
+        ],
+        categorias: [
+          { value: 'shopee', label: 'Shopee' },
+          { value: 'mercadolivre', label: 'Mercado Livre' },
+          { value: 'pcrlabor', label: 'PCR Labor' },
+          { value: 'site', label: 'Site Próprio' }
+        ]
+      });
+    });
+
+    // Função para aplicar filtros (chamada pelo componente unificado)
+    function aplicarFiltros() {
+      console.log('🔍 Aplicando filtros unificados:', filtrosAplicados);
+
+      let vendasFiltradas = [...vendasOriginais];
+
+      // Aplicar filtro de data
+      if (filtrosAplicados.data) {
+        const dataInicio = new Date(filtrosAplicados.data.inicio);
+        const dataFim = new Date(filtrosAplicados.data.fim);
+
+        vendasFiltradas = vendasFiltradas.filter(venda => {
+          const dataVenda = new Date(venda.data);
+          return dataVenda >= dataInicio && dataVenda <= dataFim;
+        });
+      }
+
+      // Aplicar filtro de status
+      if (filtrosAplicados.status.length > 0) {
+        vendasFiltradas = vendasFiltradas.filter(venda => {
+          const status = (venda.status || 'confirmada').toLowerCase();
+          return filtrosAplicados.status.includes(status);
+        });
+      }
+
+      // Aplicar filtro de valor
+      if (filtrosAplicados.valor.min !== null || filtrosAplicados.valor.max !== null) {
+        vendasFiltradas = vendasFiltradas.filter(venda => {
+          const valor = parseFloat(venda.valor_total || 0);
+          const min = filtrosAplicados.valor.min;
+          const max = filtrosAplicados.valor.max;
+
+          if (min !== null && valor < min) return false;
+          if (max !== null && valor > max) return false;
+          return true;
+        });
+      }
+
+      // Aplicar filtro de categoria (plataforma)
+      if (filtrosAplicados.categoria.length > 0) {
+        vendasFiltradas = vendasFiltradas.filter(venda => {
+          const plataforma = (venda.plataforma_nome || '').toLowerCase();
+          return filtrosAplicados.categoria.some(cat => plataforma.includes(cat));
+        });
+      }
+
+      console.log(`📊 Vendas filtradas: ${vendasFiltradas.length} de ${vendasOriginais.length}`);
+
+      // Atualizar a exibição
+      atualizarListaVendas(vendasFiltradas);
+      atualizarMetricas(vendasFiltradas);
+    }
+
+    console.log('💰 Página de Vendas carregada com filtros unificados');
   </script>
 </body>
 </html>

@@ -71,16 +71,21 @@ class Plataforma {
 
       const params = [];
       if (id_empresa) {
-        query += ` AND v.id_empresa = $1`;
+        query += ` AND v.id_empresa = $1`; // CORRETO: AND no JOIN para filtrar vendas
         params.push(id_empresa);
       }
 
       query += ` GROUP BY p.id_plataforma, p.nome
                  ORDER BY valor_total DESC NULLS LAST`;
 
+      console.log('🔍 Query plataformas:', query);
+      console.log('📊 Params:', params);
+
       const result = await db.query(query, params);
+      console.log('✅ Resultado plataformas:', result.rows);
       return result.rows;
     } catch (error) {
+      console.error('❌ Erro na query plataformas:', error);
       throw new Error(`Erro ao buscar vendas por plataforma: ${error.message}`);
     }
   }

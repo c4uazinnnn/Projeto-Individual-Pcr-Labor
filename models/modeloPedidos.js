@@ -5,11 +5,40 @@ const db = require('../config/db');
 class Pedido {
   static async getAll(id_empresa = null) {
     try {
-      // Retornar array vazio por enquanto para evitar erros de banco
-      console.log('⚠️ Modelo de pedidos retornando array vazio (temporário)');
-      return [];
+      console.log('📋 Buscando todos os pedidos...');
+
+      let query = `
+        SELECT
+          p.*,
+          prod.nome as produto_nome,
+          prod.sku,
+          plat.nome as plataforma_nome
+        FROM Pedido p
+        LEFT JOIN Produto prod ON p.id_produto = prod.id_produto
+        LEFT JOIN Plataforma plat ON p.id_plataforma = plat.id_plataforma
+      `;
+
+      const params = [];
+      if (id_empresa) {
+        query += ` WHERE prod.id_empresa = $1`;
+        params.push(id_empresa);
+      }
+
+      query += ` ORDER BY p.created_at DESC`;
+
+      console.log('📋 Query pedidos:', query);
+      console.log('📋 Params:', params);
+
+      const result = await db.query(query, params);
+
+      console.log(`✅ ${result.rows.length} pedidos encontrados`);
+      if (result.rows.length > 0) {
+        console.log('📋 Primeiro pedido:', result.rows[0]);
+      }
+
+      return result.rows;
     } catch (error) {
-      console.error('Erro ao buscar pedidos:', error);
+      console.error('❌ Erro ao buscar pedidos:', error);
       return [];
     }
   }
@@ -45,10 +74,7 @@ class Pedido {
         status,
         data_pedido,
         valor_total,
-        fornecedor,
-        prioridade,
-        data_entrega,
-        observacoes
+        fornecedor
       } = pedidoData;
 
       const query = `
@@ -59,12 +85,9 @@ class Pedido {
           status,
           data_pedido,
           valor_total,
-          fornecedor,
-          prioridade,
-          data_entrega,
-          observacoes
+          fornecedor
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
       `;
 
@@ -75,10 +98,7 @@ class Pedido {
         status,
         data_pedido,
         valor_total,
-        fornecedor,
-        prioridade,
-        data_entrega,
-        observacoes
+        fornecedor
       ];
 
       console.log('📤 Executando query com valores:', values);
@@ -96,18 +116,56 @@ class Pedido {
 
   static async update(id, pedidoData) {
     try {
-      const { id_produto, id_plataforma, quantidade, status, data_pedido, valor_total } = pedidoData;
+      console.log(`📝 Atualizando pedido ${id} com dados:`, pedidoData);
+
+      const {
+        id_produto,
+        id_plataforma,
+        quantidade,
+        status,
+        data_pedido,
+        valor_total,
+        fornecedor
+      } = pedidoData;
+
       const query = `
         UPDATE Pedido
-        SET id_produto = $1, id_plataforma = $2, quantidade = $3, status = $4,
-            data_pedido = $5, valor_total = $6, updated_at = CURRENT_TIMESTAMP
-        WHERE id_pedido = $7
+        SET id_produto = $1,
+            id_plataforma = $2,
+            quantidade = $3,
+            status = $4,
+            data_pedido = $5,
+            valor_total = $6,
+            fornecedor = $7,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id_pedido = $8
         RETURNING *
       `;
-      const result = await db.query(query, [id_produto, id_plataforma, quantidade, status, data_pedido, valor_total, id]);
+
+      const values = [
+        id_produto,
+        id_plataforma || 1,
+        quantidade,
+        status,
+        data_pedido,
+        valor_total,
+        fornecedor,
+        id
+      ];
+
+      console.log('📤 Executando update com valores:', values);
+
+      const result = await db.query(query, values);
+
+      if (result.rows.length === 0) {
+        throw new Error(`Pedido com ID ${id} não encontrado`);
+      }
+
+      console.log('✅ Pedido atualizado:', result.rows[0]);
+
       return result.rows[0];
     } catch (error) {
-      console.error('Erro ao atualizar pedido:', error);
+      console.error('❌ Erro ao atualizar pedido:', error);
       throw error;
     }
   }
@@ -125,11 +183,35 @@ class Pedido {
 
   static async getPedidosPorStatus(id_empresa = null) {
     try {
-      // Retornar dados vazios por enquanto para evitar erros de banco
-      console.log('⚠️ Modelo de pedidos por status retornando array vazio (temporário)');
-      return [];
+      console.log('📊 Buscando pedidos por status...');
+
+      let query = `
+        SELECT
+          p.status,
+          COUNT(*) as total,
+          SUM(p.valor_total) as valor_total
+        FROM Pedido p
+        LEFT JOIN Produto prod ON p.id_produto = prod.id_produto
+      `;
+
+      const params = [];
+      if (id_empresa) {
+        query += ` WHERE prod.id_empresa = $1`;
+        params.push(id_empresa);
+      }
+
+      query += ` GROUP BY p.status ORDER BY total DESC`;
+
+      console.log('📊 Query status:', query);
+      console.log('📊 Params:', params);
+
+      const result = await db.query(query, params);
+
+      console.log(`✅ ${result.rows.length} status encontrados`);
+
+      return result.rows;
     } catch (error) {
-      console.error('Erro ao buscar pedidos por status:', error);
+      console.error('❌ Erro ao buscar pedidos por status:', error);
       return [];
     }
   }

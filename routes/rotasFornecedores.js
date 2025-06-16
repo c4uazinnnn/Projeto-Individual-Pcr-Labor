@@ -5,22 +5,8 @@ const router = express.Router();
 const { verificarAutenticacaoAPI } = require('../middleware/autenticacao');
 const controladorFornecedores = require('../controllers/controladorFornecedores');
 
-// Middleware temporário para simular autenticação durante debug
-const middlewareTemporario = (req, res, next) => {
-  // Simular dados de usuário para teste
-  req.id_empresa = 1;
-  req.usuario = {
-    id_usuario: 1,
-    nome: 'Admin',
-    email: 'admin@pcrlabor.com',
-    id_empresa: 1,
-    empresa_nome: 'PCR Labor'
-  };
-  next();
-};
-
-// Aplicar middleware temporário em vez do de autenticação
-router.use(middlewareTemporario);
+// Aplicar middleware de autenticação
+router.use(verificarAutenticacaoAPI);
 
 // GET /api/fornecedores - Buscar todos os fornecedores
 router.get('/', controladorFornecedores.getAllFornecedores);
@@ -36,5 +22,11 @@ router.put('/:id', controladorFornecedores.updateFornecedor);
 
 // DELETE /api/fornecedores/:id - Deletar fornecedor
 router.delete('/:id', controladorFornecedores.deleteFornecedor);
+
+// GET /api/fornecedores/exportar - Exportar fornecedores
+router.get('/exportar', controladorFornecedores.exportarFornecedores);
+
+// POST /api/fornecedores/importar - Importar fornecedores
+router.post('/importar', controladorFornecedores.importarFornecedores);
 
 module.exports = router;
